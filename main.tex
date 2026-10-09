@@ -1,0 +1,120 @@
+\documentclass[a4paper,	11pt]{report}
+% \usepackage[letterpaper,top=2cm,bottom=2cm,left=4cm,right=4cm,marginparwidth=1.75cm]{geometry}
+% Include preambles
+\input{preamble.tex}
+\input{math_preamble.tex}
+
+% Document settings
+\input{settings.tex}
+
+\begin{document}
+
+
+% Title Page
+\titleGP
+\newpage
+\thispagestyle{empty}
+
+% Table of Contents
+\tableofcontents
+
+% 1 - Introducción
+
+%   1.1 Motivación
+
+%   1.2 Objetivos
+
+%   1.3 Organización de la Tesina
+
+% 2 - Herramientas y Antecedentes
+
+%    2.1 Lenguaje Modelica
+
+%    2.2 Librería Multicuerpos
+
+%    2.3 Visualizadores
+
+%   2.4 Simulaciones Man-in-the-Loop
+
+%    2.5 Trabajos Relacionados
+
+% 3 -  Desarrollo
+
+%    3.1 Librería de Dinámica de Autos
+
+%    3.2 Interfaces de Comunicación
+
+%    3.3 Visualizador
+
+% 4 - Ejemplos y Resultados
+
+%   4.1 Modelos y Simulaciones a lazo abierto
+
+%   4.2 Modelos y Simulaciones en tiempo real.
+
+% 5 - Conclusiones
+
+% 6 - Referencias Bibliográficas
+
+% Abstract
+\chapter*{Resumen}
+\label{sec:abstract}
+\input{src/abstract.tex}
+
+\chapter*{Agradecimientos}
+\label{sec:acknowledgment}
+\input{src/acknowledgment.tex}
+
+% Preliminaries
+\chapter{Introducción}
+\label{sec:introduction}
+\input{src/introduction.tex}
+
+\section{Motivación}
+\label{sec:motivation}
+\input{src/motivation.tex}
+
+\section{Objetivo}
+\label{sec:objective}
+\input{src/objective.tex}
+
+% \section{Trabajos publicados durante la tesina}
+% \label{sec:publications}
+% \input{src/publications.tex}
+
+\section{Estructura del informe}
+\label{sec:struture}
+\input{src/struture.tex}
+
+\chapter{Herramientas y Antecedentes}
+\label{sec:prev_concepts}
+\input{src/prev_concepts.tex}
+
+% Contributions
+\chapter{Desarrollo}
+\label{sec:method}
+\input{src/method.tex}
+
+\chapter{Experimentos}
+\label{sec:experiments}
+\input{src/experiments.tex}
+
+% Conclusions and Future Work
+\chapter{Conclusiones y Trabajo Futuro}
+\label{sec:conclusions}
+\input{src/conclusions.tex}
+
+\appendix
+\label{sec:appendix}
+\include{src/appendix.tex}
+
+% just to avoid warning "Empty `thebibliography' environment". Remove after adding some citations
+\nocite{*}
+
+% Bibliography
+\bibliographystyle{elsarticle-num}
+\begin{small}
+\bibliography{tesina}
+\end{small}
+
+\end{document}

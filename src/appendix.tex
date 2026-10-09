@@ -1,0 +1,71 @@
+\chapter{Defecto identificado en OpenModelica 1.25.5}
+\label{sec:defectos}
+
+En el desarrollo de esta tesina se identificó un defecto de OpenModelica~1.25.5 que condicionaron decisiones de arquitectura. Se documenta aquí con sus casos de reproducción para que puedan comunicarse al proyecto.
+
+% En el curso de este trabajo se identificaron tres defectos de OpenModelica~1.25.5 que condicionaron decisiones de arquitectura. Se documentan aquí con sus casos mínimos de reproducción, tanto para justificar esas decisiones como para que puedan comunicarse al proyecto. Los tres se caracterizaron por eliminación, descartando una a una las causas alternativas.
+
+\section{Un reloj periódico de muestreo impide integrar con CVODE}
+\label{sec:defecto-reloj}
+
+
+
+\paragraph{Síntoma.} Con el integrador CVODE, la simulación deja de avanzar en un punto de tiempo determinado (siempre constante con el mismo modelo) y emite indefinidamente el diagnóstico \textit{«Desired step to small»}. No hay mensaje de error ni terminación: la simulación queda consumiendo procesador sin avanzar.
+
+\paragraph{Caso mínimo.} Basta con agregar a un modelo que funciona correctamente el siguiente fragmento:
+
+\begin{verbatim}
+discrete Integer ticks(start = 0, fixed = true);
+equation
+  when sample(0, 0.01) then
+    ticks = pre(ticks) + 1;
+  end when;
+\end{verbatim}
+
+La variable \verb|ticks| no está conectada a ningún componente y no interviene en otra ecuación. Con estar tres líneas el caso del modelo evaluado no supera nunca los  $19$ s, sin ellas completa $50$ s en $0{,}6$ s de cómputo. Tres bloques \verb|Modelica.Blocks.Discrete.Sampler| transmitiendo valores constantes producen el mismo efecto.
+
+% La variable \verb|ticks| no está conectada a nada y no interviene en ninguna otra ecuación. Con estas tres líneas el modelo no supera los $19$ s; sin ellas completa $50$ s en $0{,}6$ s de cómputo. Tres bloques \verb|Modelica.Blocks.Discrete.Sampler| transmitiendo valores constantes producen el mismo efecto, al igual que una variante en la que el reloj alimenta un estado continuo aislado mediante \verb|der(x) = 1e-30*held|.
+
+
+
+\paragraph{Descartado por medición.} El comportamiento es independiente de cualquier comando ingresado y del estado del vehículo, de la velocidad y distancia recorridas, de la vía de entrada de datos, del bloque\verb|RealtimeSynchronize|, de la representación de la orientación y de la frecuencia del reloj.
+
+
+
+\paragraph{Alcance.} DASSL no presenta el problema, la consecuencia práctica es que CVODE resulta inutilizable para un sistema con intervención humana, que por definición muestrea su entrada. Es el defecto que motiva la arquitectura de la Sección~\ref{sec:cosim}.
+
+% \section{\texttt{Frames.to\_Q} hace fallar al generador de código FMI}
+% \label{sec:defecto-toq}
+
+% \paragraph{Síntoma.} Un modelo que expone la orientación de un cuerpo como cuaternión, obtenido con \verb|Modelica.Mechanics.MultiBody.Frames.to_Q|, se exporta como FMU sin errores pero aborta al inicializarlo:
+
+% \begin{verbatim}
+% generic_array.c:72: check_copy_sanity:
+%     Assertion `generic_array_ndims_eq(src, dst)' failed.
+%     src->ndims != dst->ndims, 2 != 1
+% \end{verbatim}
+
+% El diagnóstico corresponde a la copia de una matriz de $3\times3$ sobre un vector de tres componentes en el código generado.
+
+% \paragraph{Localización.} El mismo modelo se compila y simula sin dificultad como ejecutable autónomo, de modo que el defecto está en el generador de código FMI y no en el modelo. Se acotó comparando cuatro variantes que difieren únicamente en lo que exponen: una sin salidas, una con las tres coordenadas de posición y una con las nueve componentes de la matriz de rotación inicializan correctamente; la que expone el cuaternión mediante \verb|to_Q| es la única que aborta. La forma en que se declaran las salidas —arreglos o escalares— no influye.
+
+% \paragraph{Alternativa.} Exportar la matriz de rotación y convertirla a cuaternión fuera del modelo.
+
+% \section{Los FMU de co-simulación terminan durante el avance}
+% \label{sec:defecto-cs}
+
+% \paragraph{Síntoma.} Un FMU exportado con \verb|fmuType = "cs"| se instancia, supera la inicialización, configura el integrador —el registro muestra los parámetros de CVODE— y a continuación el proceso termina abruptamente, sin mensaje, dentro del primer segundo de tiempo simulado.
+
+% \paragraph{Alcance.} Ocurre incluso con una envoltura que no expone ninguna salida, de modo que no depende de lo que el modelo comunique. Se verificó con los tres modelos de vehículo.
+
+% \paragraph{Alternativa.} Exportar con \verb|fmuType = "me"|. El FMU de intercambio de modelos no contiene integrador propio, con lo cual el entorno de ejecución afectado no participa: la aplicación externa provee la integración. Con esta variante los mismos modelos completan sin dificultad horizontes de $50$ s.
+
+% \section{Observaciones adicionales}
+
+% Durante el trabajo se encontraron además tres comportamientos que, sin constituir defectos, resultan contraintuitivos y conviene registrar.
+
+% \paragraph{\texttt{translateModelFMU} no genera archivo.} La instrucción traduce el modelo, informa éxito y no produce ningún FMU. La que genera el archivo es \verb|buildModelFMU|.
+
+% \paragraph{Las opciones repetidas no se combinan.} Indicar dos veces \verb|-override| en la línea de órdenes produce el error \textit{«Command line option override is supposed to be combined on repetition. This has not been implemented yet»}; con \verb|-lv| la segunda aparición sustituye silenciosamente a la primera. Como OMEdit genera su propio \verb|-override|, los valores deben fijarse desde su interfaz y no agregarse a mano.
+
+% \paragraph{\texttt{evaluateParameters} inhabilita las sustituciones.} Con el módulo de preoptimización \verb|evaluateParameters| activo, los parámetros se evalúan en tiempo de compilación y \verb|-override| deja de tener efecto sobre ellos, lo que impide barrer valores sin recompilar.

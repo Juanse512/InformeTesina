@@ -1,0 +1,131 @@
+% ---------------- Packages ----------------
+%\usepackage{hyphenat}
+
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+% \usepackage[fleqn]{amsmath}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+% \usepackage{dtsyntax}
+% \usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
+\usepackage[normalem]{ulem}
+\usepackage{pdflscape}
+\usepackage{amssymb}
+\usepackage{longtable}
+%\usepackage{tikz}
+%\usepackage{algorithm}
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathmorphing, calc, arrows.meta}
+
+\usepackage{placeins}
+
+% \usepackage[a4paper,top=2.5cm,bottom=3cm,inner=2.5cm,outer=2.5cm]{geometry}
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=4cm,right=4cm,marginparwidth=1.75cm]{geometry}
+
+\usepackage{multirow}
+% For \includegraphics with valign
+\usepackage[export]{adjustbox}
+
+\usepackage{tablefootnote}
+
+% M: Tabla en vez de Cuadro
+\usepackage[spanish,es-tabla]{babel}
+
+\usepackage{xargs} % Use more than one optional parameter in a new commands
+
+% Algorithms boxes
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% For \qtyrange and \hertz
+\usepackage{siunitx}
+\usepackage{textcomp}
+\DeclareSIUnit{\pixel}{px}
+\DeclareSIUnit{\fps}{fps}
+
+\usepackage{subfig}
+% \usepackage{subcaption}
+
+% Code c++
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tabularx}
+
+
+\renewcommand{\lstlistingname}{Código}
+
+% Define Modelica language style for listings
+\lstdefinelanguage{Modelica}{
+	keywords={
+		algorithm, and, annotation, block, break, class, connect, connector,
+		constant, discrete, each, else, elseif, elsewhen, encapsulated, end,
+		enumeration, equation, expandable, extends, external, false, final,
+		flow, for, function, if, import, in, initial, inner, input, loop,
+		model, not, operator, or, outer, output, package, parameter, partial,
+		protected, public, record, redeclare, replaceable, return, stream,
+		then, true, type, when, while, within
+	},
+	sensitive=true,
+	comment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]",
+	morestring=[b]'
+}
+
+% Configure general listing settings
+\lstset{
+	language=Modelica,
+	basicstyle=\small\ttfamily,
+	keywordstyle=\color{blue}\bfseries,
+	commentstyle=\color{gray}\itshape,
+	stringstyle=\color{teal},
+	numbers=left,
+	numberstyle=\tiny\color{gray},
+	stepnumber=1,
+	numbersep=8pt,
+	showstringspaces=false,
+	breaklines=true,
+	frame=single,
+	captionpos=b
+}
+
+
+% ---------------- Macros / Custom commands ----------------
+
+% Title page
+\newcommand*{\titleGP}{\begingroup
+    \centering
+    \vspace*{\baselineskip}
+    \thispagestyle{empty}
+
+    \rule{\textwidth}{1.6pt}\vspace*{-\baselineskip}\vspace*{2pt}
+    \rule{\textwidth}{0.4pt}\\[\baselineskip]
+
+    {\LARGE Simulador en tiempo real de dinámica vehicular usando modelos orientados
+a objetos. } \\[0.2\baselineskip]
+
+    \rule{\textwidth}{0.4pt}\vspace*{-\baselineskip}\vspace{3.2pt}
+    \rule{\textwidth}{1.6pt}\\[\baselineskip]
+
+    \vspace*{2\baselineskip}
+
+    \includegraphics[width=0.3\textwidth]{img/logo-unr.png}
+
+    \vspace*{2\baselineskip}
+
+    \scshape
+    Tesina de Grado\\[\baselineskip]
+    Licenciatura en Ciencias de la Computación\par
+
+    \vspace*{2\baselineskip}
+
+    {\Large Autor: Juan Segundo Valero\\}
+    {Legajo: V-3012/1}
+    \vspace*{2\baselineskip}
+    {\Large \\ Director: Ernesto Kofman} \vfill
+
+    \vspace*{2\baselineskip}
+    {\scshape \today} \\[0.3\baselineskip]
+
+\endgroup}

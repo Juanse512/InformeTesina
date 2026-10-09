@@ -1,0 +1,164 @@
+\begin{thebibliography}{10}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \def\href#1#2{#2} \def\path#1{#1}\fi
+
+\bibitem{cellier2006}
+F.~E. Cellier, E.~Kofman, Continuous System Simulation, Springer, Nueva York,
+  EE.UU., 2006.
+
+\bibitem{msl}
+{Modelica Association}, Modelica standard library,
+  \url{https://doc.modelica.org/}, documentación oficial, versión 4.0.0
+  (2020).
+
+\bibitem{om_compiler}
+{Open Source Modelica Consortium}, {OpenModelica} {User's} {Guide} ---
+  {OpenModelica} {Compiler},
+  \url{https://openmodelica.org/doc/OpenModelicaUsersGuide/latest/compiler.html},
+  versión 1.28.0-dev. Consultado en octubre de 2026.
+
+\bibitem{modelon}
+Clientes de {Modelon}, \url{https://modelon.com/}.
+
+\bibitem{modelicart}
+M.~Dempsey, G.~Fish, A.~Picarelli, Using {Modelica} models for
+  driver-in-the-loop simulators, in: 9th International MODELICA Conference,
+  Munich, Alemania, 2012.
+
+\bibitem{modelica2003}
+S.~Heller, T.~Bunte, Implementation of driving manouvers and a controller for
+  active car steering, in: 3rd International Modelica Conference, Link{\"o}pin,
+  Suecia, 2003.
+
+\bibitem{sdl}
+Simple {DirectMedia} {Layer}, \url{https://www.libsdl.org/}.
+
+\bibitem{di}
+{DirectInput},
+  \url{https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416842(v=vs.85)}.
+
+\bibitem{msl_multibody}
+{Modelica Association}, Modelica standard library ---
+  {Modelica.Mechanics.MultiBody}, \url{https://doc.modelica.org/},
+  documentación oficial, versión 4.0.0 (2020).
+
+\bibitem{otter2003}
+M.~Otter, H.~Elmqvist, S.~E. Mattsson, The new {Modelica} {MultiBody} library,
+  in: 3rd International Modelica Conference, Link{\"o}ping, Suecia, 2003.
+
+\bibitem{mdd}
+B.~Thiele, T.~Bellmann, {Modelica\_DeviceDrivers}: A free library for
+  interfacing hardware drivers to modelica models,
+  \url{https://github.com/modelica-3rdparty/Modelica_DeviceDrivers},
+  documentación oficial, versión 2.2.0 (2022).
+
+\bibitem{gillespie1992}
+T.~D. Gillespie, Fundamentals of Vehicle Dynamics, SAE International, 1992.
+
+\bibitem{milliken1995}
+W.~F. Milliken, D.~L. Milliken, Race Car Vehicle Dynamics, SAE International,
+  1995.
+
+\bibitem{meriam2012}
+J.~L. Meriam, L.~G. Kraige, Engineering Mechanics: Dynamics, 7th Edition, John
+  Wiley \& Sons, 2012.
+
+\bibitem{doublewishbone}
+S.~B. Madhu~Kodati, Kinematic analysis of the double wishbone suspension
+  system, iNaCoMM2013 (2013).
+
+\bibitem{mchperson}
+P.~Czop, Application of an inverse data-driven model for reconstructing wheel
+  movement signals, METROLOGY AND MEASUREMENT SYSTEMS (2011).
+
+\bibitem{reimpell2001}
+J.~Reimpell, H.~Stoll, J.~W. Betzler, The Automotive Chassis: Engineering
+  Principles, 2nd Edition, Butterworth-Heinemann, 2001.
+
+\bibitem{multilink}
+J.~Mohebi, G.~Stepan, A.~Horvath, Full car model dynamics with anti-lock brake
+  system (10 2020).
+
+\bibitem{trailing}
+M.~Kazemi, K.~Heidari~Shirazi, A.~Ghanbarzadeh, Optimization of semi-trailing
+  arm suspension for improving handling and stability of passenger car,
+  Proceedings of the Institution of Mechanical Engineers, Part K: Journal of
+  Multi-body Dynamics 226 (2012) 108--121.
+\newblock \href {https://doi.org/10.1177/1464419312440069}
+  {\path{doi:10.1177/1464419312440069}}.
+
+\bibitem{rajamani2012}
+R.~Rajamani, Vehicle Dynamics and Control, 2nd Edition, Springer, 2012.
+
+\bibitem{armstrong1994}
+B.~Armstrong-H{\'e}louvry, P.~Dupont, C.~C. de~Wit, A survey of models,
+  analysis tools and compensation methods for the control of machines with
+  friction, Automatica 30~(7) (1994) 1083--1138.
+
+\bibitem{petzold1982}
+L.~R. Petzold, A description of {DASSL}: A differential/algebraic system
+  solver, Tech. Rep. SAND82-8637, Sandia National Laboratories, Livermore, CA,
+  EE.UU. (1982).
+
+\bibitem{cohen1995}
+S.~D. Cohen, A.~C. Hindmarsh, {CVODE}, a stiff/nonstiff {ODE} solver in {C},
+  Tech. Rep. UCRL-JC-121014, Rev. 1, Lawrence Livermore National Laboratory,
+  Livermore, CA, EE.UU. (1995).
+
+\bibitem{unity_docs}
+{Unity Technologies}, Unity documentation --- {Scripting API and User Manual},
+  \url{https://docs.unity3d.com/}, unity 6 (versión 6000.2) (2025).
+
+\bibitem{fmpy}
+T.~Sommer, {FMPy}: Simulate {Functional} {Mock-up} {Units} ({FMUs}) in
+  {Python}, \url{https://github.com/CATIA-Systems/FMPy}, version 0.3.31.
+
+\bibitem{hindmarsh2005}
+A.~C. Hindmarsh, P.~N. Brown, K.~E. Grant, S.~L. Lee, R.~Serban, D.~E.
+  Shumaker, C.~S. Woodward, {SUNDIALS}: Suite of nonlinear and
+  differential/algebraic equation solvers, ACM Transactions on Mathematical
+  Software 31~(3) (2005) 363--396.
+
+\bibitem{blochwitz2012}
+T.~Blochwitz, M.~Otter, J.~{\AA}kesson, et~al., {Functional} {Mockup}
+  {Interface} 2.0: The standard for tool independent exchange of simulation
+  models, in: 9th International Modelica Conference, Munich, Alemania, 2012.
+
+\bibitem{giaraffa_springs1}
+M.~Giaraffa, Tech tip: Springs \& dampers, part one --- the phantom knowledge,
+  \url{https://optimumg.com/wp-content/uploads/2020/01/SpringsDampers_Tech_Tip_1.pdf},
+  consultado en octubre de 2026.
+
+\bibitem{giaraffa_springs3}
+M.~Giaraffa, Tech tip: Springs \& dampers, part three --- revenge of the
+  damping ratio,
+  \url{https://optimumg.com/wp-content/uploads/2020/01/SpringsDampers_Tech_Tip_3.pdf},
+  consultado en octubre de 2026.
+
+\bibitem{hyperphysics_tires}
+R.~Nave, Friction and automobile tires,
+  \url{https://hyperphysics.gsu.edu/hbase/Mechanics/frictire.html}, consultado
+  en octubre de 2026.
+
+\bibitem{om_flattening}
+{Open Source Modelica Consortium}, {OpenModelica} {User's} {Guide} ---
+  flattening models to {BaseModelica},
+  \url{https://openmodelica.org/doc/OpenModelicaUsersGuide/latest/basemodelica.html},
+  versión 1.28.0-dev. Consultado en octubre de 2026.
+
+\bibitem{om_solving}
+{Open Source Modelica Consortium}, {OpenModelica} {User's} {Guide} --- solving
+  {Modelica} models,
+  \url{https://openmodelica.org/doc/OpenModelicaUsersGuide/latest/solving.html},
+  versión 1.28.0-dev. Consultado en octubre de 2026.
+
+\bibitem{om_flags}
+{Open Source Modelica Consortium}, {OpenModelica} {User's} {Guide} ---
+  {OpenModelica} compiler flags,
+  \url{https://openmodelica.org/doc/OpenModelicaUsersGuide/latest/omchelptext.html},
+  versión 1.28.0-dev. Consultado en octubre de 2026.
+
+\end{thebibliography}
