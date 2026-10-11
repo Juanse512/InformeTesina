@@ -317,13 +317,77 @@ La biblioteca \textit{MultiBody} incorpora componentes exclusivamente gráficos 
 
 Vale la pena mencionar que los susbsistemas de transmisión, dirección y frenado emplean elementos de la biblioteca \textit{Modelica.Mechanics.Rotational}, que contiene elementos de mecánica rotacional unidimensionales, tales como los conectores de brida (\verb|Flange_a|, \verb|Flange_b|), las fuentes de posición y par (\verb|Sources.Position|, \verb|Sources.Torque|), el sensor de velocidad (\verb|Sensors.SpeedSensor|) y el anclaje fijo (\verb|Components.Fixed|), que se acoplan al dominio tridimensional mediante la brida de eje de las articulaciones \verb|Revolute| y \verb|Prismatic|.
 
+\section{Biblioteca \textit{Modelica\_DeviceDrivers}}
+
+Para la comunicación entre el modelo Modelica y los sistemas externos (el visualizador y el puente de hardware) se emplea la biblioteca \textit{Modelica\_DeviceDrivers} (MDD), una biblioteca de código abierto destinada a interconectar controladores de hardware y protocolos de comunicación con modelos de Modelica \cite{mdd}. De ella se utilizaron componentes de tres grupos funcionales: el empaquetado serializado de datos, la comunicación por UDP y la sincronización con el tiempo real. Estos bloques son los que materializan los modelos del paquete \verb|Interfaces| descritos más adelante. Toda la información sobre los modelos que se describen a continuación se obtuvo de la documentación oficial \cite{mdd_docs}.
+
+\subsection*{Empaquetado de datos (\textit{SerialPackager})}
+
+El subpaquete \verb|Packagin.SerialPackager| resuelve la serialización de datos en un formato binario transmisible para la comunicación por red. Según la documentación oficial, el objetivo del \textit{SerialPackager} es permitir agregar y recuperar datos de un paquete de manera independiente del dispositivo \cite{mdd}. Los bloques se encadenan a través de conectores (\verb|pkgIn| y \verb|pkgOut|) que representan un buffer de paquete a compartir, el cual va siendo construido o desarmado a medida que se recorre la cadena.
+
+
+\subsubsection{Packager}
+Es el bloque de cabecera de la cadena: inicializa el búfer del paquete sobre el que los bloques posteriores escriben o del que leen.
+
+\subsubsection{AddFloat}
+
+Toma un vector de valores \verb|Real| y los convierte en un número de punto flotante de $32$ bits para luego añadirlos al paquete. El parámetro \verb|nu| indica el número de entradas. Se emplea del lado emisor para serializar las coordenadas y/o señales.
+
+
+
+\subsubsection{GetFloat} 
+Realiza la operación inversa a \verb|AddFloat|, extrae un vector de números de punto flotante del paquete recibido y los convierte a doble precisión antes de asignarlo a un arreglo \verb|Real| de Modelica \cite{mdd}. Se emplea del lado receptor para obtener las señales entrantes
+
+\subsection*{Comunicación por UDP}
+
+El subpaquete \verb|Communication| provee los bloques de entrada y salida de red que transportan el paquete serializado a través del protocolo UDP.
+
+
+
+\subsubsection{UDPSend}
+Bloque que permite el envío de datagramas UDP hacia la red. Recibe el paquete ensamblado a través de su conector \verb|pkgIn| y lo emite como un datagrama hacia el puerto \verb|port_send| con un período definido por \verb|sampleTime|. Es el bloque final de la cadena de transmisión.
+
+
+
+\subsubsection{UDPReceive}
+Bloque que permite la recepción de datagramas UDP. Escucha en el puerto definido por \verb|port_recv|, mediante un hilo de recepción en el segundo plano y expone los bytes serializados recibidos a través de su conector \verb|pkgOut| para que luego los bloques \verb|GetFloat| los desempaqueten. Es el bloque inicial de la cadena de recepción.
+
+\subsection*{Sincronización con el tiempo real}
+
+
+
+\subsubsection{RealtimeSynchronize}
+Este bloque se encarga de la sincronización del tiempo de la simulación con el reloj de tiempo real del sistema operativo. Su funcionamiento consiste en comparar, mediante una función externa en C, el tiempo de simulación con el reloj del sistema, deteniendo la ejecución del hilo hasta que el primero alcanza al segundo. Es indispensable para que una simulación que podría ejecutarse más rápid que el tiempo real se ajuste al ritmo del mundo físico, condición necesaria tanto para una visualización fiel, como para cerrar el feedback del conductor. La documentación advierte de que se trata de una sincronización blanda (\textit{soft real-time}) no apta para aplicaciones de tiempo real estricto ni de seguridad crítica \cite{mdd}, pero para un simulador de conducción interactivo, esta aproximación me pareció suficiente. El bloque admite ademas un modo muestreado (\textit{sampled}) que ofrece un comportamiento más determinista y menos sensible al solver.
+
+En conjunto, estos bloques se utilizan en dos sentidos:  en la transmisión, \verb|Packager| $\rightarrow$ \verb|AddFloat| (uno por señal) $\rightarrow$ \verb|UDPSend|, y en la recepción, \verb|UDPReceive| $\rightarrow$ \verb|GetFloat| (uno por señal), todo ello sincronizado por \verb|RealtimeSynchronize|.
 
 
 \section{Visualizadores}
 Para realizar el entorno de interacción entre el modelo matemático y el usuario, resulta fundamental contar con una herramienta de visualización capaz de recibir, procesar y renderizar los datos del vehículo de forma fluida y con latencia baja. En la industria de la simulación profesional existen plataformas dedicadas a este propósito, tales como rFpro o las versiones profesionales de Assetto Corsa. Sin embargo, estas soluciones son de carácter propietario e involucran costos de licencia prohibitivos para la investigación independiente. Adicionalmente, al ser plataformas integrales, presentan características que resultan redundantes o irrelevantes para este trabajo, el cual requiere estrictamente un motor de representación gráfica externo.
 \\
 
-Para el desarrollo de esta tesina se seleccionó el motor gráfico Unity como entorno de visualización. Esta elección se fundamenta en su arquitectura flexible, su extensa documentación técnica y, principalmente, su capacidad nativa para integrarse de manera eficiente con bibliotecas externas (a través de scripts y protocolos de red). Utilizando esta plataforma, se implementará un entorno tridimensional que actuará como cliente visualizador, el cual estará dedicado exclusivamente a interpretar el flujo de datos telemétricos provenientes de Modelica y reflejar, en tiempo real estricto, el estado dinámico del vehículo y su posicionamiento espacial dentro del entorno virtual.
+Para el desarrollo de esta tesina se seleccionó el motor gráfico Unity como entorno de visualización. Esta elección se fundamenta en su arquitectura flexible, su extensa documentación técnica y, principalmente, su capacidad nativa para integrarse de manera eficiente con bibliotecas externas (a través de scripts y protocolos de red). Utilizando esta plataforma, se implementará un entorno tridimensional que actuará como cliente visualizador, el cual estará dedicado exclusivamente a interpretar el flujo de datos telemétricos provenientes de Modelica y reflejar, en tiempo real estricto, el estado dinámico del vehículo y su posicionamiento espacial dentro del entorno virtual. \\
+
+
+\subsection{El motor gráfico Unity}
+
+%Unity es un motor gráfco de desarrollo multiplataforma para aplicaciones interactivas en tiempo real
+La arquitectura de Unity se organiza en torno a algunos conceptos fundamentales, definidos en su documentación oficial \cite{unity_docs}, que resultan necesarios para comprender la interfaz desarrollada:
+
+\begin{itemize}
+	\item \textbf{Escena y \textit{GameObjects}.} Una escena contiene un conjunto de objetos (\textit{GameObjects}), que son los contenedores básicos de todo elemento del mundo virtual, en este caso se utilizan para el chasis y las cuatro ruedas del auto.
+	
+	\item \textbf{Componente \textit{Transform}.} Cada \textit{GameObject} posee un componente \verb|Transform| que almacena la posición, rotación, escala y estado de jerarquía del objeto. Al modificar este componente, el objeto puede reposicionarse y reorientarse en la escena.
+	
+	\item \textbf{\textit{MonoBehaviour} y \textit{scripts}.} El comportamiento programable de un objeto se agrega mediante \textit{scripts} escritos en C\# que derivan de la clase base \verb|MonoBehaviour|. Esta clase expone una serie de funciones de ciclo de vida que el motor invoca automáticamente, como \verb|Start| (inicialización) y \verb|FixedUpdate| (actualización por intervalo).
+	
+	
+	\item \textbf{Bucle de física \textit{FixedUpdate}.} A diferencia de \verb|Update|, que se ejecuta una vez por fotograma renderizado y por lo tanto su frecuencia varía dependiendo del rendimiento del computador, \verb|FixedUpdate| se invoca a intervalos fijos como parte del bucle de física del motor \cite{unity_docs}, lo que garantiza un ritmo de actualización determinista, independiente de la tasa de refresco gráfico.
+	
+	
+	\item \textbf{Sistema de coordenadas.} Unity emplea un sistema de coordenadas levógiro (sentido anti-horario) con el eje $Y$ apuntando hacia arriba, y representa las rotaciones internamente como cuaterniones. Esta convención difiere de la de Modelica, que es dextrógira (sentido horario) y también con $Y$ vertical, discrepancia que la interfaz debe resolver explícitamente.
+\end{itemize}
+
 
 \section{Simulaciones Man-In-The-Loop}
 El término simulación \textit{Man-in-the-Loop} (MITL), también denominado \textit{Human-in-the-Loop} (HITL) o, en el contexto específico de la simulación automotriz, \textit{Driver-in-the-Loop} (DIL), hace referencia a aquellos entornos de simulación que integran de forma activa y directa a un humano dentro del control del sistema. En estas arquitecturas, las acciones del usuario modifican dinámicamente las variables de estado y la evolución del modelo físico. Este enfoque se vuelve indispensable cuando las decisiones, reacciones y comportamientos del operador presentan un grado de variabilidad que resulta complejo de replicar mediante algoritmos deterministas o modelos matemáticos.\\
