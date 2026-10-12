@@ -33,12 +33,36 @@ El modelo \verb|FrameToReal| cumple con la función de sensor de posición sobre
 
 Las tres salidas son de tipo \verb|RealOutput| (pertenecientes a \verb|Modelica.Blocks.Interfaces|), lo que las hace directamente compatibles con cualquier bloque de procesamiento de señales del ecosistema Modelica.\\
 
+\begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.5\textwidth]{img/FrameToReal.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de FrameToReal en OpenModelica]{Diagrama de bloques del modelo FrameToReal generado en OpenModelica.}
+	\label{fig:frame_to_real}
+\end{figure}
+
+
 \subsubsection{FrameToUDP}
 
 El modelo \verb|FrameToUDP| construye sobre la funcionalidad de \verb|FrameToReal|, agregando una cadena de serialización y transmisión de datos por red basada en la biblioteca \verb|Modelica_DeviceDrivers|. Su objetivo es enviar la posición del vehículo a un cliente externo, en este caso, a el motor gráfico Unity, mediante el protocolo UDP, permitiendo la visualización en tiempo real del estado del sistema/vehículo. \\
 
 Por dentro, el modelo encadena los siguientes componentes: \verb|FrameToReal| que extrae las tres coordenadas del marco de referencia como variables \verb|Real|, un bloque \verb|Packager| que inicializa el buffer del datagrama, tres instancias de \verb|AddFloat| que agregan cada coordenada como un número de punto flotante de 32 bits en formato IEEE 754 little-endian \cite{mdd}, finalmente, \verb|UDPSend| transmite el paquete resultante al puerto 12345 (configurable) con un período de muestreo de 
 0{,}01 s, es decir a una frecuencia de 100Hz, esta frecuencia puede ser aumentada para mejorar la fidelidad de la simulación a cambio de necesitar más poder de procesamiento.
+
+\begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.5\textwidth]{img/FrameToUDP.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de FrameToUDP en OpenModelica]{Diagrama de bloques del modelo FrameToUDP generado en OpenModelica.}
+	\label{fig:frame_to_udp}
+\end{figure}
+
 
 Como fue explicado en la sección de \textit{DeviceDrivers}, el paquete también incluye un componente adicional \verb|RealtimeSynchronize|, que sincroniza el reloj de la simulación con el reloj del sistema operativo. Esta sincronización es indispensable para que la frecuencia de los datagramas corresponda efectivamente a 100 paquetes (o lo configurado) por segundo en tiempo real, garantizando así, la coherencia entre el modelo de Modelica y el visualizador utilizado.\\
 
@@ -58,6 +82,17 @@ Se optó por representar la orientación mediante un cuaternión y no por la mat
 \end{align}
 
 
+\begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.5\textwidth]{img/FrameToRealOrientation.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de FrameToRealOrientation en OpenModelica]{Diagrama de bloques del modelo FrameToRealOrientation generado en OpenModelica.}
+	\label{fig:frame_to_real_orientation}
+\end{figure}
+
 
 Cabe destacar que $\text{to\_Q}(R)$, devuelve la rotación del cuerpo respecto del mundo expresada como cuaternión activo. El script que actúa como cliente receptor del lado de Unity convierte esta rotación al sistema de Unity aplicando la misma inversión de eje que a la posición, lo que equivale a negar las componentes $x$ e $y$ de la parte vectorial y conservar $z$ y $w$. Es importante destacar que negar la componente $z$ en su lugar produce la rotación inversa, lo que se ve reflejado como una representación errónea del movimiento del eje de giro de la rueda, cosa que fue una fuente de complicaciones durante el desarrollo.\\
 
@@ -67,6 +102,17 @@ El modelo \verb|FrameToUDPOrientation| es el equivalente a \verb|FrameToUDP| per
  las tres coordenadas de posición y las cuatro componentes del cuaternión. El puerto de destino (\verb|port_send|) y el período de muestreo (\verb|sampleTime|) se declaran como parámetros, lo que permite, además de intercambiar fidelidad por performace, instanciar varias transmisores al mismo tiempo, por ejemplo, incluyendo uno para el chasis y otros cuatro, uno para cada rueda, todos dirigidos a puertos distintos.\\
 
 Cada valor se serializa mediante un bloque \verb|AddFloat| independiente encadenado en secuencia, en lugar de un único bloque configurado para siete valores. Esta decisión se tomó debido a una limitación observada en el compilador OpenModelica~1.25.5, en el que la modificación del parámetro de tamaño del bloque \verb|AddFloat| provoca un error interno de instanciación, el encadenamiento de bloques con el tamaño por defecto evita dicho comportamiento.\\
+
+\begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.5\textwidth]{img/FrameToUDPOrientation.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de FrameToUDPOrientation en OpenModelica]{Diagrama de bloques del modelo FrameToUDPOrientation generado en OpenModelica.}
+	\label{fig:frame_to_udp_orientation}
+\end{figure}
 
 Dado que en la topología del vehículo los frames de las ruedas se ubican sobre la salida de la junta de rotación, la orientación transmitida incluye tanto el ángulo de dirección como el giro propio de la rueda, permitiendo que sea representada de forma correcta por el entorno gráfico. El ejemplo \verb|CarExampleUDP| demuestra este sistema, instanciando el vehículo y el entorno y aplicando una señal de dirección para probar el giro de la dirección y conecta cinco transmisores \verb|FrameToUDPOrientation| (chasis y cuatro ruedas) a puertos consecutivos del 12345 al 12349.\\
 
@@ -87,12 +133,48 @@ El modelo \verb|Road| es el componente de más alto nivel del paquete y actúa c
 
 Hacia el resto del modelo, \verb|Road| expone cuatro conectores de tipo \verb|Frame_a|, uno perteneciente a cada esquina del vehículo: delantera izquierda (\verb|FL|), delantera derecha (\verb|FR|), trasera izquierda (\verb|RL|) y trasera derecha (\verb|RR|). Estos frames se conectan directamente con los de los centros de rueda del modelo del vehículo, constituyendo la conexión mecánica entre el entorno/mundo de simulación y el chasis.\\
 
+\begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.5\textwidth]{img/Road.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de Road en OpenModelica]{Diagrama de bloques del modelo Road generado en OpenModelica. El modelo ubicado en el centro es una instancia de \textit{Floor4Corners}, el bloque de color marrón es una instancia de \textit{TerrainMap} y el bloque verde de \textit{TerrainVisualizer}}
+	\label{fig:road}
+\end{figure}
+
+\newpage
 
 \subsubsection{Floors}
 
 El subpaquete \verb|Floors| implementa el modelo de contacto entre la rueda y el suelo mediante una jerarquía de tres clases. Arriba, \verb|Floor4Corners| agrega cuatro instancias del modelo \verb|Floor|, una por rueda, y les pasa a cada uno un conjunto de parámetros físicos compartidos: la rigidez del suelo \verb|ground_c| ($c = 10^5$ N/m), el coeficiente de amortiguamiento normal \verb|ground_d| ($d = 5000$ N$\cdot$s/m), el coeficiente de fricción longitudinal \verb|ground_mu| ($\mu_\text{long} = 10000$ N$\cdot$s/m) y el coeficiente de fricción lateral \verb|mu_lat| ($\mu_\text{lat} = 100000$ N$\cdot$s/m). El radio de la rueda \verb|R_wheel| se propaga hacia abajo mediante cláusulas \texttt{inner}/\texttt{outer} desde el nivel de simulación. \\
 
-El modelo \verb|Floor| es un modelo compuesto que instancia dos subcomponentes, \verb|GroundSpring| y \verb|GroundFriction|, compartiando el mismo conector de contacto \verb|wheelContact|, de tipo \verb|Frame_b|. \\
+El modelo \verb|Floor| es un modelo compuesto que instancia dos subcomponentes, \verb|GroundSpring| y \verb|GroundFriction|, compartiendo el mismo conector de contacto \verb|wheelContact|, de tipo \verb|Frame_b|. \\
+
+
+\begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.5\textwidth]{img/Floor.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de Floor en OpenModelica]{Diagrama de bloques del modelo Floor generado en OpenModelica.}
+	\label{fig:floor}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.5\textwidth]{img/Floor4Corners.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de Floor4Corners en OpenModelica]{Diagrama de bloques del modelo Floor4Corners generado en OpenModelica. Cuatro instancias de \textit{Floor} se conecta a los marcos que funcionan como contacto con las ruedas.}
+	\label{fig:floor4corners}
+\end{figure}
+\newpage
 
 \subsubsection{GroundSpring}
 Este componente aplica la fuerza normal vertical, utilizando un modelo de resorte-amortiguador lineal. La fuerza aplicada es nula mientras el centro de la rueda (más su radio) se encuentre por encima de la superficie del terreno, y crece de forma proporcional a la profundidad de penetración del neumático. La ley de fuerza utilizada es \cite{gillespie1992}:
@@ -201,6 +283,18 @@ Cada modelo de vehículo instancia su propio \verb|AeroDrag| conectado al frame 
 
 Queda fuera del alcance de esta tesina la carga aerodinámica vertical (\textit{downforce}), el desplazamiento del centro de presiones respecto del centro del chasis (razón por la que el arrastre no genera momento de cabeceo), la dependencia de $C_d$ con el ángulo de guiñada, y la presencia de viento, el aire se supone en reposo respecto del sistema global.\\
 
+\begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.5\textwidth]{img/AeroDrag.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de AeroDrag en OpenModelica]{Diagrama de bloques del modelo AeroDrag generado en OpenModelica.}
+	\label{fig:aero_drag}
+\end{figure}
+
+
 Quedan fuera del alcance del modelo actual la sustentación y la carga aerodinámica vertical (\textit{downforce}), el desplazamiento del centro de presiones respecto del origen del marco del chasis (razón por la que el arrastre no genera momento de cabeceo), la dependencia de $C_d$ con el ángulo de guiñada, y la presencia de viento: el aire se supone en reposo respecto del sistema global.\\
 
 \subsection{Cars}
@@ -218,8 +312,41 @@ La biblioteca incluye tres modelos de vehículo parametrizados:
 
 \begin{itemize}
     \item \verb|Car|: vehículo genérico de tracción trasera. Chasis rectangular de 400 kg (3{,}0 m $\times$ 1{,}8 m $\times$ 0{,}5 m), suspensión \verb|DoubleWishbone| en las cuatro puntas (par delantero con dirección), \verb|Tire| pasivo delante y \verb|DrivingTire| detrás, diferencial \verb|SolidAxle|. Basado en un Formula Ford 1600.
+	
+	\begin{figure}[htbp]
+		\centering
+		% Replace 'example-image' with your file name
+		\includegraphics[width=0.8\textwidth]{img/Car.png} 
+		
+		\vspace{1em} % Adds spacing between image and quote
+		
+		\caption[Diagrama de Car en OpenModelica]{Diagrama de bloques del modelo Car generado en OpenModelica, que representa un monoplaza FF1600.}
+		\label{fig:car}
+	\end{figure}
+	    
+
     \item \verb|CivicEKCar|: Basado en un Honda Civic EK hatchback de tracción delantera. 990 kg de masa suspendida, batalla 2620 mm, \verb|DoubleWishbone| en todas las esquinas (rigidez 16 kN/m delantera / 14 kN/m trasera, amortiguamiento 1800 N$\cdot$s/m), neumático 185/65R14 ($R = 0{,}30$ m).
+    \begin{figure}[htbp]
+    	\centering
+    	% Replace 'example-image' with your file name
+    	\includegraphics[width=0.8\textwidth]{img/CivicEKCar.png} 
+    	
+    	\vspace{1em} % Adds spacing between image and quote
+    	
+    	\caption[Diagrama de Car en OpenModelica]{Diagrama de bloques del modelo CivicEKCar generado en OpenModelica, que representa un Honda Civic EK.}
+    	\label{fig:civic_ek}
+    \end{figure}
     \item \verb|E36Car|:  Basado en un BMW E36 de tracción trasera. 1000 kg de masa suspendida, batalla 2700 mm, \verb|McPherson| delante (20 kN/m, 2200 N$\cdot$s/m) y \verb|MultiLink| detrás (16 kN/m, 2200 N$\cdot$s/m), neumático 195/65R15 ($R = 0{,}31$ m).
+    \begin{figure}[htbp]
+    	\centering
+    	% Replace 'example-image' with your file name
+    	\includegraphics[width=0.8\textwidth]{img/E36Car.png} 
+    	
+    	\vspace{1em} % Adds spacing between image and quote
+    	
+    	\caption[Diagrama de Car en OpenModelica]{Diagrama de bloques del modelo E36Car generado en OpenModelica, que representa un BMW E36.}
+    	\label{fig:e36_car}
+    \end{figure}
 \end{itemize}
 
 \subsubsection*{Parts.Chassis}
@@ -262,6 +389,17 @@ Se implementan tres topologías de suspensión de diferente complejidad cinemát
 La suspensión de doble brazo triangular, más conocida por su nombre en inglés \verb|double wishbone|, es una de las geometrías más empleadas en vehículos de competición y alto rendimiento, tanto en el eje delantero como en el trasero. Mecánicamente, consiste en cuatro barras en el plano frontal del vehículo, cuyos eslabones son: el chasis, el brazo superior (\textit{upper A-arm}), el mangueto (\textit{knuckle}) y el brazo inferior (\textit{lower A-arm}). Cada brazo pivota en el chasis mediante una rótula o bujes de goma (modelados en Modelica como \verb|Revolute| con eje transversal $\{1,0,0\}$) y se une al mangueto en su extremo exterior mediante rótulas esféricas (los puntos de rótula superior e inferior, \textit{upper} y \textit{lower ball joints}).\\
 
 La principal ventaja de esta topología es el control independiente de la geometría cinemática de la rueda. A diferencia de una suspensión convencional, este diseño emplea brazos de diferente longitud y con diferentes alturas de montaje en el chasis, lo que permite gestionar el cambio de caída (\textit{camber}) de la rueda durante el recorrido vertical.  El \textit{centro instantáneo de rotación} (IC) del mangueto (la intersección de las rectas que pasan por cada brazo) determina el eje alrededor del cual oscila la rueda en cada instante. Elevando el IC por encima del suelo mediante la geometría de los brazos, se obtiene una recuperación de camber que mantiene al neumático más perpendicular al suelo durante el balanceo de carrocería, maximizando el área de huella y la fuerza lateral generada en curvas rápidas.\\
+
+\begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.8\textwidth]{img/DoubleWishbone_diag.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de DoubleWishbone en OpenModelica]{Diagrama de bloques del modelo DoubleWishbone generado en OpenModelica.}
+	\label{fig:double_wishbone}
+\end{figure}
 
 En la implementación de Modelica, el bucle cinemático cerrado que forma el mecanismo de cuatro barras no puede expresarse con una cadena abierta de articulaciones y cuerpos. Para resolverlo, se utiliza el objeto \verb|JointRRR| de la biblioteca \textit{MultiBody}, que parametriza analíticamente un sistema de tres revolutes y dos barras de longitud fija. El primer revolute (\verb|frame_a|) se ubica en la rótula superior, con el brazo superior como la rama de árbol cinemático, los dos revolutos restantes, junto con sus barras asociadas, forman el cierre del bucle: la barra \verb|rRod1_ia| $= \{0, -(h_\text{sup} + h_\text{inf}), 0\}$ representa el mangueto (de longitud $h_\text{sup} + h_\text{inf} = 0{,}40$ m en la parametrización por defecto) y la barra \verb|rRod2_ib| $= \{0, 0, \pm L_\text{inf}\}$ representa el brazo inferior. Esta forma de modelar el sistema permite al compilador de OpenModelica resolver el sistema de restricciones algebraicas sin introducir multiplicaciones de Lagrange extra reduciendo el índice del DAE resultante y mejorando la estabilidad numérica \cite{otter2003}.\\
 
@@ -355,6 +493,17 @@ La dirección se implementa mediante un \verb|Revolute| adicional con eje vertic
 
 El puntal McPherson (\verb|McPherson Strut|) es la topología de suspensión mas utilizada en la industria automotriz de gran escala debido a su bajo coste, simplicidad constructiva y peso reducido. En un diseño real, el puntal es un elemento estructural que integra el amortiguador telescópico y la guía superior de la rueda: su extremo superior se fija a la carrocería mediante un rodamiento de apoyo que permite la rotación para la dirección, y su extremo inferior se une al mangueto (\verb|knuckle|). Un brazo inferior de triángulo (a veces conocido como parrilla) aporta la única restricción cinemática lateral, haciendo que el conjunto tenga un único grado de libertad de desplazamiento vertical. A diferencia del \verb|double wishbone|, el mangueto no tiene un punto de rótula superior independiente: el propio puntal actúa como guía rígida del mangueto, de modo que el eje de este cambia de orientación con el ángulo de dirección.\\
 
+\begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.8\textwidth]{img/McPherson.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de McPherson en OpenModelica]{Diagrama de bloques del modelo McPherson generado en OpenModelica.}
+	\label{fig:mcpherson_diag}
+\end{figure}
+
 El modelo de esta librería, \verb|McPherson| adopta una simplificación deliberada: reemplaza el mecanismo de cinco eslabones (chasis, puntal, mangueto, brazo inferior, subchasis) por una única articulación \verb|Prismatic| de eje $\{0,-1,0\}$, que controla el desplazamiento vertical de la rueda. Esta decisión de implementación elimina el brazo inferior como restricción cinemática activa, y con ello también se pierde la variacíon de anchura de vía y de caída que aparecería en un modelo más detallado, a cambio de una mejor performance y simplicidad del modelo. Para reemplazar al brazo inferior se introduce una traslación fija \verb|knuckleOffset| que desplaza el centro de rueda respecto al extremo del puntal: \verb|wheelOffsetY| eleva el centro de rueda sobre la base del puntal (equivalente a la altura del mangueto) y \verb|wheelOffsetZ| lo desplaza lateralmente hacia el exterior (equivalente a la longitud efectiva del brazo inferior). Estos dos parámetros deben ajustarse en cada modelo de vehículo concreto para que la anchura de vía y la altura de rodaje del eje delantero sean coherentes con la geometría real del vehículo.\\
 
 El resorte-amortiguador conecta el montaje superior fijo al chasis (\verb|shockTopMount|, elevado 0{,}28 m sobre el punto de anclaje del puntal con las configuraciones estándar) con la base del puntal (\verb|strutTravel.frame_b|). Por defecto, la longitud libre del conjunto es de 0{,}41 m, calculada geométricamente como $\sqrt{(0{,}28)^2 + (0{,}30)^2}$ para que el resorte este sin carga con el puntal a 0{,}30 m de compresión inicial. La dirección se implementa con el mismo \verb|Revolute| de eje vertical y la misma lógica condicional que en \verb|DoubleWishbone|.\\
@@ -439,6 +588,18 @@ La simplificación introducida es aceptable en el contexto de la dinámica vehic
 
 La suspensión multibrazo (más conocida como \textit{Multilink}) es la arquitectura de mayor complejidad cinemática de las implementadas. En un eje trasero Multilink (como el eje \textit{Z} (o \textit{Z-Axle} utilizada en el BMW E36) cada rueda está guida por cinco eslabones independientes: uno o dos brazos transversales, uno o dos brazos longitudinales y un tirante adicional \cite{reimpell2001}.  La separación de las funciones de guiado longitudinal, lateral y angular en eslabones distintos ofrece una mayor libertad de diseño comparada con otros tipos de geometría, el diseñador puede utilizar de forma casi independiente la convergencia (\textit{toe}), la caída (\textit{camber}), el avance (\textit{caster}) y la inclinación del pivote (\textit{kingpin inclination}) resultantes de cualquier combinación de desplazamiento vertical y fuerza de neumático.\\
 
+
+\begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.8\textwidth]{img/Multilink_diag.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de Multilink en OpenModelica]{Diagrama de bloques del modelo Multilink generado en OpenModelica.}
+	\label{fig:multilink_diag}
+\end{figure}
+
 El modelo \verb|MultiLink| implementa una versión reducida con dos eslabones transversales  (un enlace superior y un enlace inferior), conservando la topología de cuatro barras del doble triángulo pero con brazos más cortos y con el pivote del enlace inferior desplazado longitudinalmente. El cierre del bucle cinemático emplea exactamente la misma estrategia \verb|JointRRR| que \verb|DoubleWishbone|: la barra \verb|rRod1_ia| modela el mangueto y la barra \verb|rRod2_ib| modela el enlace inferior (longitud \verb|lowerLinkLength| $= 0{,}38$ m en dirección lateral).\\
 
 % El elemento que lo diferencia de \verb|DoubleWishbone| es el parámetro \verb|rearLinkOffset|, que traslada el punto de anclaje del enlace inferior en el chasis una distancia definida (por defecto 0{,}08 m) en la dirección longitudinal $X$. Esta asimetría introduce un acoplamiento entre el desplazamiento vertical de la rueda y su ángulo de convergencia: cuando la rueda sube en compresión, el extremo interior del enlace inferior traza un arco en torno a un pivote desplazado, generando un movimiento de convergencia (\textit{toe-in}) pasivo. Este efecto (conocido como \textit{passive rear-wheel steering}) mejora la estabilidad en frenada y en la entrada a curva al aumentar la rigidez efectiva del eje ante perturbaciones laterales, sin necesitar actuadores adicionales \cite{milliken1995,reimpell2001}.  Es precisamente esta característica la que distingue al eje \textit{Z} de una simple suspensión de doble triángulo trasera.\\
@@ -514,6 +675,17 @@ La fuerza resultante se aplica utilizando dos elementos \verb|Forces.Force| que 
 
 % \paragraph{Propiedades.} En recorrido simétrico la diferencia de la Ecuación~\ref{eq:arb} se anula y la barra no interviene en absoluto, de modo que las frecuencias verticales del vehículo quedan intactas y su efecto se limita al balanceo. La ley es además puramente algebraica, por lo que el elemento agrega ecuaciones pero no estados continuos y no incrementa el tamaño del vector que el integrador debe resolver, consideración que pesa en un modelo destinado a ejecutarse en tiempo real. El parámetro \verb|c_arb| expresa la rigidez de la barra referida a la rueda, en N/m; su valor por defecto es nulo, lo que la deja inactiva.\\
 
+\begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.8\textwidth]{img/AntiRollBar.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de AntiRollBar en OpenModelica]{Diagrama de bloques del modelo AntiRollBar generado en OpenModelica.}
+	\label{fig:antirollbar}
+\end{figure}
+
 Los tres vehículos fueron equipados con barras en ambos ejes. El monoplaza lleva $13$ kN/m en cada uno, el E36, $31$ kN/m adelante y $16$ kN/m atrás, el Civic, $41$ y $23$ kN/m. En los dos vehículos de calle el reparto es delantero, disposición habitual para favorecer el subviraje en el límite, lo que lleva a una mayor seguridad en el manejo.\\
 
 
@@ -525,7 +697,30 @@ El subpaquete \verb|Tires| se encarga de modelar los neumáticos como cuerpos r�
     
     \item \verb|Tire|: Neumático pasivo. El \verb|Revolute| que se encarga del giro tiene su brida de eje expuesta como \verb|brakeFlange| (\verb|flange_b|) para la conexión del freno, pero no recibe par motor, representa una rueda no traccionada.
     
+    \begin{figure}[htbp]
+    	\centering
+    	% Replace 'example-image' with your file name
+    	\includegraphics[width=0.5\textwidth]{img/Tire_diag.png} 
+    	
+    	\vspace{1em} % Adds spacing between image and quote
+    	
+    	\caption[Diagrama de Tire en OpenModelica]{Diagrama de bloques del modelo Tire generado en OpenModelica.}
+    	\label{fig:tire_diag}
+    \end{figure}
+    
+    
     \item \verb|DrivingTire|: Neumático motriz. El modelo es idéntico a \verb|Tire|, pero añade un conector \verb|spinInput| (\verb|Flange_a|) que recibe el par de torque del diferencial. La brida de freno (\verb|brakeFlange|) y la de tracción (\verb|spinInput|) se comparten sobre el mismo eje del \verb|Revolute|, de modo que el par neto aplicado es la suma algebraica de ambas contribuciones.
+    \begin{figure}[htbp]
+    	\centering
+    	% Replace 'example-image' with your file name
+    	\includegraphics[width=0.5\textwidth]{img/DrivingTire.png} 
+    	
+    	\vspace{1em} % Adds spacing between image and quote
+    	
+    	\caption[Diagrama de DrivingTire en OpenModelica]{Diagrama de bloques del modelo DrivingTire generado en OpenModelica.}
+    	\label{fig:driving_tire}
+    \end{figure}
+    
 \end{itemize}
 
 El subcomponente \verb|TireVisualizer| renderiza cada neumático, copiando el objeto de la librería \textit{Visualizers} de \textit{MultiBody} \verb|MultiBody.Visualizers.VoluminousWheel|, esta se encarga de generar un toroide para la forma del neumático en sí y un cilindro hueco que representa la llanta, ambos parametrizados con el radio \verb|rTire| propagado desde el nivel de ejemplo mediante \texttt{outer}. El único cambio que se le aplicó a la clase original fueron cambios de coordenadas y orientaciones para que sigan un recorrido fiel al modelo que se está simulando.\\
@@ -545,11 +740,9 @@ El subcomponente \verb|TireVisualizer| renderiza cada neumático, copiando el ob
 
 El subpaquete \verb|Differentials| modela el componente que se encarga de transmitir el par proveniente de la transmisión a las ruedas. La clase parcial \verb|Differential| define únicamente la interfaz mecánica común: una brida rotacional de entrada de par \verb|pedalInput| (\verb|Flange_a|), alimentada por la transmisión, y dos bridas rotacionales de salida hacia las ruedas (\verb|left_out| y \verb|right_out|). No contiene ecuaciones, ya que es cada subclase concreta la que decide cómo el par se distribuye en las dos ruedas.\\
 
-\subsubsection*{Eje rígido}
+\subsubsection*{SolidAxle}
 
 Un eje rígido (\textit{solid axle} o \textit{live axle}) conecta mecánicamente ambas ruedas del mismo eje mediante semiejes que giran necesariamente a la misma velocidad angular. Esta arquitectura es la más sencilla posible desde el punto de vista constructivo, tiene consecuencias directas en el comportamiento en la curva, al doblar, la rueda exterior debe recorrer un arco de mayor radio que la interior y, por lo tanto debería girar más rápido, pero, al estar ambas ruedas girando a la misma velocidad, esta diferencia de velocidad se absorbe mediante deslizamiento lateral de los neumáticos (\textit{tire scrub}), lo que genera calor, desgaste y una tendencia al sobreviraje en curvas cerradas. En lo que respecta a la dinámica del vehículo, el eje rígido introduce un acoplamiento entre el movimiento de guiñada (\textit{yaw}) del chasis y el estado de tracción de ambas ruedas: en una curva cerrada con aceleración, la rueda interior tiende a patinar antes que la exterior, ya que recibe el mismo par pero con menor carga, comportamiento característico del vehículo de tracción trasera con eje sólido. Este tipo de eje es muy común en kartings debido a su simplicidad de mantenimiento. \\
-
-\paragraph{Implementación como nodo mecánico de par.}
 
 A diferencia de un enfoque basado en una restricción cinemática de velocidad, que forzaría ambas ruedas a igual velocidad, pero que introduciría un lazo algebraico de índice elevado e impediría que el par de frenado modificara la velocidad de las ruedas motrices, \verb|SolidAxle| se implementa como un simple nodo mecánico: conecta la brida de entrada \verb|pedalInput| directamente a ambas salidas \verb|left_out| y \verb|right_out|, de modo que la transmisión y las dos ruedas comparten un único nodo rotacional:
 
@@ -558,6 +751,17 @@ A diferencia de un enfoque basado en una restricción cinemática de velocidad, 
 \end{equation}
 
 Ambas ruedas traseras giran a la misma velocidad angular, sin acción diferencial de velocidad, como corresponde a un eje bloqueado, y el par entregado por la transmisión se distribuye mecanicamente a través de ese nodo hacia las ruedas, en vez de ser forzado por una fuente interna. El modelo no tiene parámetros propios: el esfuerzo motor se fija en la transmisión (parámetro \verb|torqueValue| de \verb|MockTransmission|).\\
+
+ \begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.5\textwidth]{img/SolidAxle.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de SolidAxle en OpenModelica]{Diagrama de bloques del modelo SolidAxle generado en OpenModelica.}
+	\label{fig:solid_axle}
+\end{figure}
 
 La ventaja de modelar el diferencial mediante intercambio de par radica en la interacción entre este y el freno. Como todos los conectores son bridas rotacionales (\verb|Flange|), cualquier par aplicado sobre las bridas de las ruedas se suma sobre el nodo compartido, de manera que el par aplicado por un objeto \verb|DiscBrake| sobre una rueda se resta directamente del par motor y desacelera el eje, como lo haría un freno real, sin necesidad de vencer ninguna restricción cinemática. La velocidad resultante de las ruedas no se impone, si no que emerge naturalmente del par motor, el de frenado, la inerciad e las ruedas y las fuerzas de contacto con el suelo. Esta clase se podría extender agregando un diferencial abierto o uno autoblocante encaminando el par de entrada a través de un \verb|IdealPlanetary| o de ecuaciones de reparto de par que permitan una diferencia de velocidad entre las dos ruedas.\\
 
@@ -582,6 +786,18 @@ donde $r_\text{eff}$ es el radio efectivo medio del disco. En el modelo \verb|Di
 Los valores de \verb|maxBrakeTorque| asignados a los distintos vehículos de la biblioteca —2000 N$\cdot$m para el modelo genérico, 2500 N$\cdot$m en el eje delantero del E36 y 3000 N$\cdot$m en el trasero, son coherentes con los rangos de par de frenado de vehículos de turismo de producción \cite{rajamani2012}.\\
 
 % \paragraph{El problema de la discontinuidad y la regularización \textit{tanh}.}
+
+ \begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.5\textwidth]{img/DiscBrake.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de DiscBrake en OpenModelica]{Diagrama de bloques del modelo DiscBrake generado en OpenModelica.}
+	\label{fig:disc_brake}
+\end{figure}
+
 
 La función $\text{sign}(\omega)$  presenta una discontinuidad en $\omega = 0$ que tiene consecuencias graves para la integración numérica: en los solucionadores DAE de paso variable, toda discontinuidad activa un mecanismo de detección de cruce por cero (\textit{zero-crossing detection}) que obliga a reducir el paso de integración y relanzar el solver desde el instante del evento \cite{armstrong1994}. En un modelo de vehículo con cuatro frenos activos, esto puede disparar eventos múltiples y sincronizados que afectan de manera significativamente negativa al rendimiento en tiempo real. Adicionalmente, cuando la velocidad angular oscila en torno a cero (rueda próxima a bloqueo), la función signo puede provocar alternancia rápida de signo del par (chattering) que excita modos de alta frecuencia numéricamente.\\
 
@@ -633,6 +849,30 @@ El paquete\verb|Examples| compila los modelos ejecutables de alto nivel: los pun
 
 
 Todos los ejemplos comparten la misma estructura de ensamblaje. En primer lugar, declaran el radio de rueda como un parámetro global \\ \verb|inner parameter Real R_wheel|, que se propaga por el mecanismo \texttt{inner}/\texttt{outer} a los neumáticos y a los modelos de contacto con el suelo. A continuación instancian tres bloques principales: un vehículo (\verb|Car|, \verb|CivicEKCar| o \verb|E36Car|), el entorno \verb|Roads.Road|, que a su vez posee el \verb|World|, el terreno y los cuatro contactos de rueda, y un conjunto de fuentes de señal que emulan las acciones del conductor. Estas fuentes se conectan a las entradas normalizadas \verb|throttleInput|, \verb|steerInput| y \verb|brakeInput| del vehículo, mientras que los cuatro conectores \verb|frame_FL/FR/RL/RR| del vehículo se acoplan a los del entorno, cerrando el contacto rueda-suelo.\\
+
+ \begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.5\textwidth]{img/CarExample.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de CarExample en OpenModelica]{Diagrama de bloques del modelo CarExample generado en OpenModelica. Se incluye solo este diagrama para representar los modelos sin intercambio de información por red ya que los otros ejemplos creados tienen la misma topología, solo cambiando el modelo del vehículo que se ubica en el centro.}
+	\label{fig:car_example}
+\end{figure}
+\newpage
+
+ \begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.5\textwidth]{img/CarExampleUDP.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de CarExampleUDP en OpenModelica]{Diagrama de bloques del modelo CarExampleUDP generado en OpenModelica. Este modelo cumple la misma función que \textit{CarExample}, pero manda las poses de las ruedas y el chasis mediante UDP.}
+	\label{fig:car_example_dup}
+\end{figure}
+
 
 La biblioteca incluye cuatro ejemplos:
 
@@ -730,6 +970,16 @@ Cada vehículo exportado instancia el modelo del vehículo y el entorno \verb|Ro
 
 Exponer la orientación completa es lo que permite que el visualizador represente el guiñado, balanceo y cabeceo de la carrocería, además del giro propio de cada rueda.\\
 
+ \begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.5\textwidth]{img/CarExport.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de CarExport en OpenModelica]{Diagrama de bloques del modelo CarExport generado en OpenModelica. Se incluye solo este diagrama ya que los otros ejemplos creados tienen la misma topología, solo cambiando el modelo del vehículo que se ubica en el centro.}
+	\label{fig:car_export}
+\end{figure}
 
 
 \subsection{Resolución numérica del modelo}
