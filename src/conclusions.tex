@@ -1,10 +1,10 @@
-El objetivo de esta tesina era desarrollar un simulador de dinámica vehicular capaz de ejecutarse en tiempo real con el conductor dentro del lazo. Las secciones que siguen resumen lo que el trabajo permite afirmar sobre ese objetivo, sobre las herramientas empleadas, sobre los límites que se encontraron y sobre mejoras posibles al proyecto.
+En este capítulo se resume lo que el trabajo permite afirmar sobre el objetivo planteado, sobre las herramientas empleadas, sobre los límites que se encontraron y sobre mejoras posibles al proyecto.
 
 \section{Conclusiones}
 
 \subsection*{Es viable construir un simulador de conducción en Modelica}
 
-La conclusión principal es positiva. Se pudo construir una biblioteca de dinámica vehicular multicuerpo en Modelica que acepta comandos de un conductor humano, o una herramienta externa, avanza la simulación al ritmo del tiempo real y devuelve la pose del vehículo a un entorno gráfico, todo con una latencia aceptable para la interacción con el ser humano. La mediana entre la recepción del comando y el envío de la pose es de entre $13{,}1$ y $15{,}6$ ms  y el percentil $99$ no supera los $31$ ms.
+La conclusión principal es positiva. Se pudo construir una biblioteca de dinámica vehicular multicuerpo en Modelica que acepta comandos de un conductor humano o una herramienta externa, avanza la simulación al ritmo del tiempo real y devuelve la pose del vehículo a un entorno gráfico, todo con una latencia aceptable para la interacción con el ser humano. La mediana entre la recepción del comando y el envío de la pose es de entre $13{,}1$ y $15{,}6$ ms  y el percentil $99$ no supera los $31$ ms.
 
 
 
@@ -12,9 +12,9 @@ La conclusión principal es positiva. Se pudo construir una biblioteca de dinám
 
 \subsection*{La composición orientada a objetos como herramienta de diseño}
 
-Modelica organiza los modelos como componentes conectados por interfaces, esa estructura resultó determinante a la hora de implementar la biblioteca. Por ejemplo, las tres topologías de suspensión implementadas comparten una misma interfaz, por lo que cambiar la geometría de suspensión de un vehículo es tan simple como cambiar un bloque y sus parámetros con otro basado en esa misma clase. Esto se aplica a cualquier componente del vehículo, lo que permite la creación de diferentes variantes de manera muy simple.
+Modelica organiza los modelos como componentes conectados por interfaces. Esa estructura resultó determinante a la hora de implementar la biblioteca. Por ejemplo, las tres topologías de suspensión implementadas comparten una misma interfaz, por lo que cambiar la geometría de suspensión de un vehículo es tan simple como cambiar un bloque y sus parámetros por otro basado en esa misma clase. Esto se aplica a cualquier componente del vehículo, lo que permite la creación de diferentes variantes de manera muy simple.
 
-Esto además permite la fácil expansión de la librería, por ejemplo, las barras estabilizadoras fue un componente que fue agregado a último momento, y lo único que se tuvo que hacer para implementarlo fue crear el modelo que lo represente y conectarlo a los marcos ya expuestos.
+Esto además permite la fácil expansión de la librería, por ejemplo, las barras estabilizadoras fue un componente que se agregó a último momento, y lo único que se tuvo que hacer para implementarlo fue crear el modelo que lo represente y conectarlo a los marcos ya expuestos.
 % Dos observaciones de este trabajo muestran que la propiedad no es solo declarativa. La primera es que los tres vehículos presentan exactamente el mismo número de estados continuos, treinta, pese a montar suspensiones de doble triángulo, de puntal telescópico y multibrazo: la interfaz común no impone un costo de representación, porque el cierre analítico del bucle cinemático evita introducir restricciones adicionales. La segunda es que incorporar la barra estabilizadora, un componente que no existía cuando se diseñaron las suspensiones, no requirió modificar ninguno de los modelos previos: bastó con escribir un componente nuevo que se conecta a los marcos ya expuestos.
 
 % La parametrización también cumple un papel similar. Dos de tres vehículos representados tienen la misma geometría de suspensión, sin embargo son dos tipos de autos muy diferentes ( 
@@ -23,16 +23,16 @@ Esto además permite la fácil expansión de la librería, por ejemplo, las barr
 
 \subsection*{El desacoplamiento por protocolo estándar}
 
-La comunicación entre el simulador, el programa que controla el dispositivo de entrada y el entorno de visualización se resolvió utilizando UDP con un formato binario estandarizado. Esta elección de usar un protocolo de red en vez de, por ejemplo, una comunicación directa entre procesos, permite sustituir cada una de las piezas sin tocar las demás.
+La comunicación entre el simulador, el programa que controla el dispositivo de entrada y el entorno de visualización se resolvió utilizando UDP con un formato binario estandarizado. Esta elección de usar un protocolo de red en vez de, por ejemplo, una comunicación directa entre procesos permite sustituir cada una de las piezas sin tocar las demás.
 
-Los tres programas mencionados anteriormente son tres procesos independientes que solo comparten el mismo formato de mensajes. Durante el desarrollo se cambió la forma de ejecutar el modelo (de un ejecutable de OpenModelica a un FMU controlado desde Python) sin modificar ninguna línea del visualizador ni del programa de entrada. Esto permite en un futuro cosas como cambiar el visualizador por uno más avanzado, o distribuir los procesos en máquinas separadas.
+Los tres programas mencionados anteriormente son tres procesos independientes que solo comparten el mismo formato de mensajes. Durante el desarrollo se cambió la forma de ejecutar el modelo (de un ejecutable de OpenModelica a un FMU controlado desde Python) sin modificar ninguna línea del visualizador ni del programa de entrada. Esto permitiría en un futuro cosas como cambiar el visualizador por uno más avanzado, o distribuir los procesos en máquinas separadas.
 
 
 \subsection*{El desempeño es holgado con CVODE}
 
-A la hora de elegir integradores hay una clara elección, CVODE es a la vez el más rápido y el más robusto de todos los ensayados. Es entre $1{,}1$ y $1{,}3$ veces más rápido que CVODE, a la vez que más robusto en los casos de prueba y $3$ a $22$ veces más rápido que \verb|gbode|.
+A la hora de elegir integradores hay una clara elección, CVODE es a la vez el más rápido y el más robusto de todos los ensayados. Es entre $1{,}1$ y $1{,}3$ veces más rápido que DASSL y $3$ a $22$ veces más rápido que \verb|gbode|.
 
-Con esa elección el márgen con respecto al tiempo real es más que suficiente. Ejecutando el modelo en lazo abierto está entre $2{,}4$ y $16{,}1$ veces con respecto al tiempo real. Al cerrar el lazo el márgen en menor, lo que es esperado debido a que la entrada deja de ser constante y el sistema debe coordinar la comunicación, pero sigue siendo suficiente, la latencia total se mantiene en el orden de la decena de milisegundos, lo que deja espacio para agregar modelos de suspensión o neumáticos más complejos por ejemplo.
+Con esa elección el márgen con respecto al tiempo real es más que suficiente. Ejecutando el modelo en lazo abierto, el desempeño se encuentra entre $2{,}4$ y $16{,}1$ veces más rápido que el tiempo real. Al cerrar el lazo el margen en menor, lo que es esperado debido a que la entrada deja de ser constante y el sistema debe coordinar la comunicación, pero sigue siendo suficiente, la latencia total se mantiene en el orden de la decena de milisegundos, lo que deja espacio para agregar modelos de suspensión o neumáticos más complejos por ejemplo.
 
 
 

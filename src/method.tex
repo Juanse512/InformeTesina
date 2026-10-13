@@ -33,17 +33,6 @@ El modelo \verb|FrameToReal| cumple con la función de sensor de posición sobre
 
 Las tres salidas son de tipo \verb|RealOutput| (pertenecientes a \verb|Modelica.Blocks.Interfaces|), lo que las hace directamente compatibles con cualquier bloque de procesamiento de señales del ecosistema Modelica.\\
 
-\begin{figure}[htbp]
-	\centering
-	% Replace 'example-image' with your file name
-	\includegraphics[width=0.5\textwidth]{img/FrameToReal.png} 
-	
-	\vspace{1em} % Adds spacing between image and quote
-	
-	\caption[Diagrama de FrameToReal en OpenModelica]{Diagrama de bloques del modelo FrameToReal generado en OpenModelica.}
-	\label{fig:frame_to_real}
-\end{figure}
-
 
 \subsubsection{FrameToUDP}
 
@@ -80,18 +69,6 @@ Se optó por representar la orientación mediante un cuaternión y no por la mat
     \mathbf{f} &= \mathbf{0} \\
     \boldsymbol{\tau} &= \mathbf{0}
 \end{align}
-
-
-\begin{figure}[htbp]
-	\centering
-	% Replace 'example-image' with your file name
-	\includegraphics[width=0.5\textwidth]{img/FrameToRealOrientation.png} 
-	
-	\vspace{1em} % Adds spacing between image and quote
-	
-	\caption[Diagrama de FrameToRealOrientation en OpenModelica]{Diagrama de bloques del modelo FrameToRealOrientation generado en OpenModelica.}
-	\label{fig:frame_to_real_orientation}
-\end{figure}
 
 
 Cabe destacar que $\text{to\_Q}(R)$, devuelve la rotación del cuerpo respecto del mundo expresada como cuaternión activo. El script que actúa como cliente receptor del lado de Unity convierte esta rotación al sistema de Unity aplicando la misma inversión de eje que a la posición, lo que equivale a negar las componentes $x$ e $y$ de la parte vectorial y conservar $z$ y $w$. Es importante destacar que negar la componente $z$ en su lugar produce la rotación inversa, lo que se ve reflejado como una representación errónea del movimiento del eje de giro de la rueda, cosa que fue una fuente de complicaciones durante el desarrollo.\\
@@ -982,51 +959,6 @@ Exponer la orientación completa es lo que permite que el visualizador represent
 \end{figure}
 
 
-\subsection{Resolución numérica del modelo}
-
-Una vez traducido y compilado, el conjunto de componentes del sistema de simulación se convierte en eun sistema de ecuaciones algebráico-diferenciales (DAE). Además de las ecuaciones diferenciales que describen la dinámica de los cuerpos rígidos, el modelo contiene ecuaciones puramente algebráicas provenientes de las restricciones cinemáticas de los bucles cerrados de suspensión, resultantes de los ensamblajes \verb|JointRRR| y de las ecuaciones de acoplamiento entre conectores. La forma general de este sistema es implícita:
-\begin{equation}
-    F(t,\, y,\, \dot{y}) = 0
-\end{equation}
-
-donde $y$ es el vector de estados y $\dot{y}$ su derivada temporal. La integración de este sistema en el tiempo no puede realizarse de forma analítica, por lo que se recurre a métodos de integración numérica (\textit{solvers}). En el marco de OpenModelica se evaluaron dos solvers de referencia para la ejecución de la simulación: DASSL y CVODE. Ambos comparten la característica de ser especialmente adecuados para sistemas \textit{rígidos} (\textit{stiff}), condición que presenta el modelo del vehículo debido a la coexistencia de dinámicas de muy distinta escala temporal: las variaciones lentas del movimiento del chasis frente a las rápidas de la rigidez de contacto con el suelo y la regularización del frenado.
-
-\subsubsection*{DASSL}
-
-DASSL (\textit{Differential/Algebraic System Solver}) es el solver por defecto de OpenModelica, desarrollado por Petzold en Sandia National Laboratories \cite{petzold1982}. La principal ventaja es que opera directamente sobre la forma implícita  $F(t, y, \dot{y}) = 0$, más general que la forma explícita estándar $\dot{y} = f(t, y)$, lo que lo hace más apto ante sistema DAE como los que surgen del análisis dinámico de sistemas mecánicos multicuerpo. En particular, DASSL es aplicable incluso  cuando la matriz jacobiana $\partial F / \partial \dot{y}$ es singular, situación habitual en presencia de restricciones algebraicas.
-
-
-El algoritmo se basa en la idea de Gear de reemplazar la derivada $\dot{y}$ en la ecuación implícita por una aproximación en diferencias, y resolver la ecuación no lineal resultante en el instante actual $t_n$ mediante el método de Newton. Para ello, emplea la fórmula de diferenciación regresiva (\textit{Backward Differentiation Formula}, BDF) de orden $k$, con $k$ variable entre $1$ y $5$. En su forma más simple, de primer orden, la aproximación es:
-
-\begin{equation}
-    F\!\left(t_n,\, y_n,\, \frac{y_n - y_{n-1}}{\Delta t_n}\right) = 0
-\end{equation}
-
-En cada paso, DASSL selecciona automáticamente tanto el orden $k$ como el tamaño de paso $\Delta t_n$ en función del comportamiento de la solución y de una estimación del error local de truncamiento, empleando además una formulación BDF de coeficiente líder fijo (\textit{fixed-leading-coefficient}) que mejora la estabilidad numérica. La ecuación no lineal se resuelve con una variante del método de Newton cuya matriz de iteración,
-
-\begin{equation}
-    G = \frac{\partial F}{\partial \dot{y}} + \alpha\, \frac{\partial F}{\partial y}
-\end{equation}
-
-donde $\alpha$ es un escalar que depende del paso y el orden. se factoriza y se reutiliza durante tantos pasos como sea posible para reducir el coste computacional. Su robustez frente a la forma DAE completa lo convierte en la opción de referencia para la validación del modelo.
-
-\subsubsection*{CVODE}
-
-CVODE (\textit{C-language Variable-coefficient ODE solver}) fue desarrollado por Cohen y Hindmarsh en Lawrence Livermore National Laboratory como una reescritura en C de los paquetes VODE y VODPK, y forma parte de la suite SUNDIALS \cite{cohen1995}. A diferencia de DASSL, CVODE resuelve el problema de valor incial de forma explícita $\dot{y} = f(t, y)$, por lo tanto, para su uso, el compilador de OpenModelica debe reducir previamente el sistema DAE a una forma de estado equivalente (índice 1 o forma ODE), operación que se apoya en la reducción de índice que aportan los ensamblajes analíticos de las suspensiones.
-
-CVODE resuelve tanto sistemas rígidos como no rígidos mediante dos familias de métodos lineales multipaso de coeficiente, orden y paso variable: las fórmulas de Adams-Moulton (para problemas no rígidos, con orden entre $1$ y $12$) y las fórmulas BDF (para problemas rígidos, con orden entre $1$ y $5$). Ambas familias se expresan en la forma general:
-
-\begin{equation}
-    \sum_{i=0}^{K_1} \alpha_{n,i}\, y_{n-i} + h_n \sum_{i=0}^{K_2} \beta_{n,i}\, \dot{y}_{n-i} = 0
-\end{equation}
-
-donde para el caso BDF se tiene $K_1 = q$ y $K_2 = 0$, siendo $q$ el orden. En cada paso debe resolverse un sistema no lineal, que CVODE aborda mediante iteración funcional (para el caso no rígido, sin resolución de sistemas lineales) o mediante iteración de Newton (para el caso rígido). En este último caso, la iteración de Newton requiere resolver sistemas lineales con la matriz:
-
-\begin{equation}
-    M \approx I - \gamma\, J, \qquad J = \frac{\partial f}{\partial y}, \qquad \gamma = h_n\, \beta_{n,0}
-\end{equation}
-
-Para el tratamiento del jacobiano $J$ en el caso rígido, CVODE ofrece varias opciones: tratamiento denso, en banda, diagonal aproximado, o un método iterativo de Krylov (GMRES precondicionado), lo que le confiere gran flexibilidad y eficiencia. Su arquitectura modular, en la que el integrador principal es independiente del solver lineal empleado, junto con su condición de código moderno y activamente mantenido, lo convierten en una alternativa atractiva a DASSL para la búsqueda de un rendimiento adecuado en la ejecución en tiempo real.\\
 
 \section{Interfaz para el hardware}
 

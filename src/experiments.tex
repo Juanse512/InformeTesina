@@ -1,10 +1,15 @@
 \section{Simulación de Lazo Abierto}
-\section{Costo computacional de la simulación}
+
+En esta sección se va a medir el sistema corriendo en un entorno de simulación por lotes, con el objetivo de medir el desempeño, la complejidad y la fidelidad de los modelos en un entorno controlado. Los experimentos dinámicos se ejecutan siguiendo una misma secuencia de comandos, para lograr una misma base con la que comparar las variables.
+
+%Todas las mediciones anteriores son simulaciones por lotes, el modelo se ejecuta con una maniobra predefinida y se observan los resultados luego de que esta termina. En esta sección se va a medir el sistema completo en funcionamiento, con el volante y pedales físicos generando comandos al vehículo y el visualizador de Unity recibiendo las poses. Esta medición va a caracterizar al simulador tal y como lo experimenta un conductor humano.
+
+\subsection{Costo computacional de la simulación}
 
 El objetivo de esta tesina es desarrollar un simulador capaz de ejecutarse en tiempo real, con el feedback del conductor dentro del lazo. Esta condición implica que el tiempo de cómputo necesario para avanzar la simulación un intervalo $\Delta t$ debe ser menor que $\Delta t$ medido en el reloj real. Esta sección apunta a medir en qué grado los modelos desarrollados cumplen con dicho requisito, y compara los integradores numéricos seleccionados en OpenModelica para este tipo de sistema. Primero se va a evaluar el sistema de lazo abierto, y luego se va a realizar una medición más específica con el entorno completo.
 
 
-\subsection{Protocolo de medición}
+\subsubsection{Protocolo de medición}
 
 Para obtener las mediciones se ejecutó cada uno de los tres modelos desarrollados (\verb|CivicEKCar|, \verb|E36Car| y \verb|Car|, este último referido como FF1600 por el monoplaza en el que se basa) realizando los mismos inputs, que generan una maniobra idéntica y deliberadamente exigente computacionalmente:
 
@@ -19,7 +24,7 @@ La maniobra combina saturación simultánea de demanda longitudinal y lateral ya
 
 Cada modelo se evaluó sobre dos geometrías de terreno, una superficie plana y otra que generaba una superficie sinusoidal, con los dos integradores mencionados anteriormente (DASSL y CVODE), con el agregado de \verb|gbode| en algunos casos, con el objetivo de comparar contra otra familia de solver. Se registran dos magnitudes: el tiempo \textit{total}, que incluye la inicialización del sistema y la escritura de resultados, y el tiempo de \textit{simulación}, correspondiente al tiempo de avance de la integración.  Las mediciones se realizaron sobre el ejecutable ya compilado, de modo que el tiempo de traducción y compilación del modelo queda excluido, ya que no son relevantes a la ejecución en tiempo real.
 
-\subsection*{Resultados}
+\subsubsection{Resultados}
 
 La tabla~\ref{tab:tiempos} grafica las mediciones. El símbolo $\dagger$ marca las ejecuciones que abortaron antes de alcanzar los $10$ s de simulación establecidos, en esos casos el valor registrado corresponde al tiempo total de ejecución de la simulación hasta la falla y por lo tanto no es una medida de tiempo comparable con las ejecuciones que completaron correctamente.
 
@@ -257,7 +262,7 @@ Con la tolerancia en $10^{-4}$ las diferencias crecen dos órdenes de magnitud, 
 % La excepción vuelve a ser el modelo E36, que no admite verificación cruzada porque es el único que ningún otro integrador puede hacer que complete correctamente. El encadenamiento de eventos con tolerancias bajas refuerza de que puede ser un problema del modelo en sí y no del integrador. Queda pendiente identificar la conmutación responsable, probablemente en los topes de suspensión de la topología \verb|MultiLink|, queda como trabajo pendiente.
 
 
-\subsection{Discusión}
+\subsection{Discusión sobre el desempeño}
 
 \subsubsection{Robustez antes que velocidad}
 
@@ -309,6 +314,191 @@ Las principal restricción que posee el modelo es su robustez, un modelo puede r
 
 Este margen extra se puede invertir, en las pruebas de lazo cerrado, parte de este se va a ir a la ejecución tanto de las interfaces como de el entorno gráfico. Sin embargo, el margen es lo suficientemente grande como para agregar modelos de neumático o de suspensión más detallados, o la simulación simultánea de varios vehículos sin comprometer la operación interactiva.
 
+\subsection{Fidelidad del manejo}
+
+Todas las mediciones anteriores son de carácter numérico, cuánto cuesta la simulación, cuánto tardan los integradores en coincidir, y con qué exactitud converge son medidas útiles para comparar el performance del modelo y de los integradores, pero no dicen nada sobre si el resultado se comporta como un vehículo real. Esta sección se centra en responder esa cuestión, comparando cuatro magnitudes del modelo contra lo que predice la teoría de dinámica vehicular y los valores típicos de automóviles reales.
+
+Estos cuatro ensayos se eligieron por ser medibles sin instrumentar el modelo y cubren los ejes de la dinámica vehicular: el vertical, el lateral y el longitudinal.
+
+\subsubsection{Frecuencia propia de la suspensión}
+
+La frecuencia de la suspensión en su translación vertical (\textit{ride frequency}) es la manera más directa de medir el comportamiento vertical de un vehículo ante diferentes perturbaciones.
+
+% La frecuencia de la suspensión en su modo de traslación vertical (\textit{ride frequency}) es el descriptor más inmediato del comportamiento vertical de un vehículo: fija la sensación de firmeza y determina el ancho de banda de las perturbaciones del terreno que la carrocería sigue.
+
+
+% El ensayo se realiza, por lo tanto, dejando asentar el vehículo y perturbando después el estado correspondiente, con acceso al vector de estados a través de la interfaz de bajo nivel del FMU descrita en la Sección~\ref{sec:cosim}. Sobre la respuesta resultante se identifica un sistema de segundo orden, $\ddot{e} = -a\,\dot{e} - b\,e$, cuyo ajuste es lineal en los coeficientes y no depende de localizar máximos —escasos en una respuesta amortiguada—, de donde $\omega_n = \sqrt{b}$ y $\zeta = a / (2\omega_n)$.
+
+Para realizar este ensayo se perturbó el estado de velocidad vertical del chasis, haciendo esto, los neumáticos conservan su compresión y los resortes de su deflexión al inicio, y al aplicar el impulso se excitan de forma natural, haciendo que el chasis se desplace mientras las ruedas permaneces quietas. El impulso empleado es de $0{,}05$ m/s, que produce amplitudes de $1{,}7$ a $2{,}4$ mm.
+
+Sobre el resultado se obtiene un sistema de segundo orden. Dado que es un sistema resorte-amortiguador la ecuación que lo describe es la siguiente (escrita para un desplazamiento $e$ respecto a la altura de equilibrio).
+
+\begin{equation}
+	\ddot{e} = -\frac{c}{m}\,\dot{e} \;-\; \frac{k}{m}\,e
+	\label{eq:segundo-orden}
+\end{equation}
+
+donde $m$ es la masa suspendida, $k$ la rigidez vertical y $c$ el amortiguamiento. De estos datos se pueden obtener la frecuencia natural y el amortiguamiento relativo:
+
+\begin{equation}
+	f_n = \frac{1}{2\pi}\sqrt{\frac{k}{m}},
+	\qquad
+	\zeta = \frac{c/m}{2\sqrt{k/m}}
+	\label{eq:fn-zeta}
+\end{equation}
+
+El valor $R^2$ es el coeficiente de determinación, que es una medida de comparación entre el resultado esperado según la fórmula y el real, particularmente compara las aceleraciones. Un número cercano a 1 de de este valor confirmaría que este sistema es efectivamente de segundo orden y que no hay factores externos que lo modifiquen.
+
+% El ajuste es lineal en ambos cocientes, de modo que tiene solución cerrada y aprovecha todas las muestras en lugar de depender de localizar máximos, que en una respuesta amortiguada son escasos. Su coeficiente de determinación $R^2$ sirve además de control: la Ecuación~\ref{eq:segundo-orden} es una hipótesis sobre el comportamiento del vehículo, no un hecho, y el $R^2$ mide si un único par de cocientes explica efectivamente toda la respuesta registrada. De no ser así, la frecuencia identificada no significaría nada.
+
+% La Figura~\ref{fig:ajuste} superpone, para cada vehículo, la respuesta medida sobre el modelo y la función de segundo orden así identificada. La coincidencia es estrecha en el primer ciclo, que es donde reside la información sobre la frecuencia, y se abre en el rebote posterior: el modelo identificado predice un retroceso por debajo del cero algo mayor que el que el vehículo realmente describe. Esa discrepancia es la que explica que el $R^2$ se sitúe en torno a $0{,}97$ y no en la unidad, y su origen es que el vehículo completo no es un oscilador de un grado de libertad sino que acopla el modo vertical con el de cabeceo. El E36 es el caso que mejor ajusta, con $R^2 = 0{,}987$, y también aquel en que ambas curvas resultan casi indistinguibles.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{img/ajuste_segundo_orden.pdf}
+	\caption[Ajuste de segundo orden sobre la respuesta vertical]{Respuesta vertical libre del chasis tras el impulso de velocidad de $0{,}05$ m/s, en trazo continuo, y función de segundo orden identificada sobre ella, en trazo discontinuo. Un panel por vehículo, con las escalas verticales ajustadas a cada caso. Notar que las amplitudes son de apenas unos milímetros.}
+	\label{fig:ajuste}
+\end{figure}
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{lccccc}
+		\hline
+		Modelo & $f_n$ medida (Hz) & $\zeta$ & $R^2$ & Predicción (Hz) & Vehículo real (Hz) \\
+		\hline
+		FF1600 & $2{,}44$ & $0{,}56$ & $0{,}969$ & $2{,}42$ & $1{,}5$--$2{,}0$ \\
+		E36    & $1{,}33$ & $0{,}45$ & $0{,}987$ & $1{,}24$ & $0{,}5$--$1{,}5$ \\
+		Civic  & $1{,}67$ & $0{,}61$ & $0{,}966$ & $1{,}16$ & $0{,}5$--$1{,}5$ \\
+		\hline
+	\end{tabular}
+	\caption[Frecuencia propia y amortiguamiento de la suspensión]{Frecuencia natural y amortiguamiento relativo del modo vertical de la masa suspendida, identificados sobre la respuesta libre a un impulso de velocidad de $0{,}05$ m/s desde el estado asentado. La predicción es la Ecuación~\ref{eq:fn-zeta} evaluada con la rigidez y la masa declaradas en el modelo en lugar de con los cocientes ajustados, esto es $\frac{1}{2\pi}\sqrt{k_\text{ef}/m_\text{susp}}$, tomando el resorte en serie con la rigidez del neumático. La última columna muestra el rango habitual del tipo de vehículo que cada modelo representa. \cite{giaraffa_springs1}}
+	\label{tab:ride}
+\end{table}
+
+El caso del monoplaza da confianza en el procedimiento, su frecuencia medida coincide con la predicción teórica, es decir, para este vehículo el modelo se comporta como predice la fórmula. Los coeficientes de determinación confirman además que el modo es de segundo orden en los tres casos.
+
+% \paragraph{El ensayo se valida a sí mismo.} El caso del monoplaza es el que da confianza en el procedimiento: su frecuencia medida, $2{,}44$ Hz, coincide con la predicción teórica, $2{,}42$ Hz, dentro del $1\,\%$. Es decir que para este vehículo el modelo se comporta exactamente como predice la fórmula elemental, lo que verifica a la vez la excitación empleada, el procedimiento de identificación y la propia predicción. Los coeficientes de determinación, entre $0{,}97$ y $0{,}99$, confirman además que el modo es efectivamente de segundo orden en los tres casos.
+
+El resultado más interesante es la comparación con vehículos reales, para la que se toman como referencia los rangos de frecuencia de suspensión habituales en la práctica de la dinámica vehicular \cite{giaraffa_springs1,milliken1995}. El E36 se encuentra dentro de los rangos característicos de un vehículo de calle. En el caso del FF1600, si bien queda por encima del valor real esperado, este número no se pudo verificar con exactitud, principalmente por el hecho de que en autos de competición, los reglajes varían mucho entre equipos y circuitos, y no se tiene una fuente certera. Lo relevante, es que se ubica por encima de un vehículo de calle y por debajo de uno de competición con carga aerodinámica fuerte (entre  $3{,}0$ a $5{,}0$ Hz \cite{giaraffa_springs1}), por lo que es un punto medio en el que un monoplaza de este estilo puede vivir.
+
+
+% El FF1600 queda donde corresponde un monoplaza sin carga aerodinámica, más duro que un vehículo de calle pero no tanto como un auto de competición con apoyo aerodinámico. En ambos casos el ensayo muestra que el comportamiento vertical coincide con el vehículo real.
+
+El Civic también queda por encima del rango que le correspondería y es el que más se aparta de su predicción teórica. Esto se debe a que la predicción supone que el resorte se comprime lo mismo que la rueda, pero este está montado sobre los brazos de la suspensión, por lo que el cociente entre ambos recorridos (relación de instalación) depende de donde se fijen sus extremos. Calculando ese cociente en el modelo resulta en que el resorte recorre un $24\%$ más que la rueda, cuando en un vehículo real recorre menos de lo que recorre la rueda. Corregir los puntos de anclaje del conjunto resorte-amortiguador, llevándolos a una posición correspondiente al vehículo real ayudaría a que el modelo tenga valores más cercanos a la realidad, sin necesidad de tocar las rigideces declaradas.
+
+% El Civic, con $1{,}67$ Hz, es el único que queda por encima del rango que le correspondería, y también el que más se aparta de su predicción teórica. Ambas desviaciones tienen la misma causa. La predicción supone que el resorte se comprime lo mismo que sube la rueda, pero el resorte no está montado sobre la rueda sino sobre los brazos de la suspensión, de modo que el cociente entre ambos recorridos —la \textit{relación de instalación}— depende de dónde se fijen sus extremos. En el Civic ese cociente vale $1{,}24$: el resorte recorre un $24\,\%$ más que la rueda, cuando en un automóvil real recorre \emph{menos}, entre un $50$ y un $70\,\%$ de lo que recorre la rueda. Como la rigidez percibida en la rueda escala con el cuadrado de esa relación, el vehículo resulta alrededor de un $50\,\%$ más rígido de lo que sus resortes declaran, y su frecuencia sube en consecuencia. Corregir los puntos de anclaje del conjunto muelle-amortiguador, llevándolos a una posición representativa de un vehículo real, situaría al Civic dentro del rango de calle sin necesidad de retocar las rigideces declaradas, que son valores realistas. Los otros dos vehículos no presentan el problema: el eje delantero del E36 tiene una relación de instalación de $1$ por construcción, su eje trasero de $0{,}92$ y el monoplaza de $0{,}97$.
+
+El amortiguamiento relativo supera en los tres casos el rango habitual de $0{,}2$ a $0{,}4$ de un vehículo de calle \cite{giaraffa_springs3}, lo que se traduciría en una respuesta vertical algo más apagada que la real. Queda pendiente hacer una investigación más profunda para ver que puede llegar a causar esta diferencia.
+
+
+\subsubsection{Cargas estáticas por rueda}
+
+En equilibro, la velocidad vertical del contacto es nula, por lo que la ley de fuerza del suelo se reduce a $N = c \cdot (h + R_\text{wheel} - y)$ y la carga de cada rueda se obtiene de la altura de su centro, sin necesidad de exponer variables protegidas del modelo de contacto. La suma de las cuatro cargas debe igualar el peso total del vehículo, por lo que se va a realizar este ensayo para verificar la distribución de masas de el ensamblaje.
+
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{lccccc}
+		\hline
+		Modelo & $N$ por rueda (N) & Total (N) & Masa implícita (kg) & Esperada (kg) & Reparto \\
+		\hline
+		FF1600 & $1343$ (las cuatro) & $5370$ & $547{,}4$ & $540$ & $50{,}0$ / $50{,}0$ \\
+		E36    & $2780$ / $2821$ & $11\,202$ & $1141{,}9$ & $1140$ & $49{,}6$ / $50{,}4$ \\
+		Civic  & $2789$ (las cuatro) & $11\,156$ & $1137{,}2$ & $1130$ & $50{,}0$ / $50{,}0$ \\
+		\hline
+	\end{tabular}
+	\caption[Cargas estáticas por rueda]{Cargas normales en equilibrio. En el E36 se indican las cargas delantera y trasera, que difieren; en los otros dos las cuatro coinciden. La masa esperada es la suma del chasis, los cuatro neumáticos de $20$ kg y los cuatro bujes de $15$ kg. El reparto es delantero/trasero en porcentaje.}
+	\label{tab:cargas}
+\end{table}
+
+El resultado tiene errores de entre el $0{,}6$ y el $1{,}4\%$, atribuible a la masa de componentes como brazos de suspensión, bujes, etc. que no se incluyen en la estimación. Esto valida la ley de contacto, la propagación del radio del neumático y el ensamblaje completo del vehículo. 
+
+El reparto de cargas revela una limitación del modelo: los tres vehículos resultan equilibrados entre ejes, mientras que en la vida real esto no sucede siempre. Esto se debe a como está modelado el chasis, el hecho de que esté construido como un paralelepípedo de masa uniforme logra una abstracción que captura razonablemente las inercias pero no representa la posición longitudinal del centro de masa.
+
+% El estado asentado muestra además una segunda limitación: la vía (distancia entre ruedas del mismo eje) es mayor de lo que debería en los tres vehículos. El E36 mide $2{,}02$ m de vía delantera y $1{,}96$ m trasera frente a los $1{,}42$ y $1{,}44$ m del vehículo real, el Civic $2{,}00$ m contra $1{,}47$ m y el FF1600 $2{,}46$ m. La causa es que no se pudieron obtener los valores del largo de brazos de suspensión el semiancho al que se fijan los anclajes ni la extensión lateral de los brazos se ajustaron a la geometría del vehículo que cada modelo representa. La consecuencia no es estética: una vía un $40\,\%$ mayor que la real aumenta en esa misma proporción el brazo de palanca con que las cargas verticales resisten el momento de vuelco, de modo que el modelo sobreestima la rigidez al balanceo y los límites laterales de la sección siguiente deben leerse como optimistas por ese motivo.
+
+
+
+\subsubsection{Viraje y características laterales}
+
+Para caracterizar el comportamiento lateral se realiza un ensayo de viraje con dirección constante. Se aprovecha el hecho de que con la resistencia aerodinámica incorporada cada valor de acelerador tiene su propia velocidad de equilibrio. El ensayo se realiza por valor de acelerador y se mide sobre los últimos cinco segundos, donde la velocidad casi no varía (menos del $6\%$ en todos los casos).
+
+% Para caracterizar el comportamiento lateral se recurre al ensayo de viraje con dirección constante. Un ensayo a velocidad constante requeriría un regulador de velocidad, del que el modelo no dispone; en su lugar se aprovecha que, con la resistencia aerodinámica incorporada, cada valor de acelerador tiene su propia velocidad de equilibrio. Se realiza entonces un ensayo por valor de acelerador y se mide sobre los últimos cinco segundos, cuando la velocidad ya casi no varía —la deriva relativa en la ventana se mantiene por debajo del $6\,\%$ en todos los casos—, de modo que cada ensayo aporta un punto con el mismo ángulo de dirección.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{img/fidelidad.pdf}
+	\caption[Ensayos de fidelidad vertical y lateral]{Izquierda: respuesta libre del modo vertical tras perturbar en $5$ mm el estado asentado, con la frecuencia natural y el amortiguamiento identificados. Derecha: radio de giro en función de la aceleración lateral con dirección constante, un punto por valor de acelerador. Las líneas punteadas marcan el radio de Ackermann de cada vehículo, referencia de viraje neutro.}
+	\label{fig:fidelidad}
+\end{figure}
+
+La característica obtenida es la correcta, a baja aceleración lateral el radio se mantiene casi constante y a partir de cierto punto crece abruptamente sin que la aceleración lateral aumente, esto se debe a que el vehículo comienza a subvirar porque el neumático alcanzó su límite de adherencia.
+
+% La característica obtenida es la correcta en su forma. A baja aceleración lateral el radio se mantiene aproximadamente constante y algo por encima del radio de Ackermann, y a partir de cierto punto crece abruptamente sin que la aceleración lateral siga aumentando: el neumático ha alcanzado su límite de adherencia y el vehículo se abre, esto es, subvira en el límite. Es el comportamiento que corresponde y el deseable desde el punto de vista de la seguridad.
+
+El límite lateral alcanzado es de  $0{,}85$ g para el FF1600, $0{,}77$ g para el E36 y $0{,}85$ g para el Civic. Cabe aclarar que es un límite combinado y no puramente lateral, ya que al aplicar acelerador parte del presupuesto de agarre va también a la aceleración. Para un vehículo de calle sobre asfalto seco estos valores son válidos, sin embargo, para el monoplaza resultan bajos \cite{hyperphysics_tires}. Esto se debe a que el modelo de neumático utilizado fue el mismo para los tres vehículos, si se quisiera obtener un valor más preciso, habría que obtener y aplicar los parámetros de un neumático de competición.
+
+% El ángulo de balanceo resulta remarcable. Los dos vehículos de calle se inclinan alrededor de $9$ grados por cada g de aceleración lateral (el E36 $6{,}8$ grados a $0{,}76$ g y el Civic $7{,}7$ a $0{,}82$ g) aproximadamente el doble de los $4$ a $5$ de un automóvil real. El monoplaza, con $3{,}3$ grados por g, queda donde corresponde.
+
+% La causa es que no se implementó un modelo de barra estabilizadora, elemento del que un automóvil de calles obtiene buena parte de su resistencia al balanceo, lo que le permite montar resortes más blandos sin inclinarse demasiado al girar. El monoplaza no presenta esta falla debido a que un vehículo de competición si obtiene esa rigidez de resortes duros.  Agregarla es la corrección de fidelidad lateral más directa después de solucionar el reparto de pesos.
+
+
+% El límite lateral alcanzado es de $0{,}74$ g para el FF1600, $0{,}70$ g para el E36 y $0{,}87$ g para el Civic. Conviene precisar que se trata de un límite combinado y no puramente lateral, puesto que el acelerador está aplicado y consume parte del presupuesto del círculo de fricción. Para un vehículo de calle sobre asfalto seco estos valores son verosímiles; para el monoplaza, en cambio, resultan bajos, ya que un vehículo de competición con neumáticos de compuesto blando supera holgadamente $1$ g.
+
+% No fue posible extraer el gradiente de subviraje en el rango lineal. La resolución de acelerador disponible sitúa al vehículo por encima de $0{,}25$ g ya con el segundo valor ensayado, de modo que no se reúnen suficientes puntos por debajo del límite para ajustar una recta con sentido. Obtenerlo requeriría un regulador de velocidad que permitiera fijar pares (velocidad, radio) arbitrarios, lo que queda como trabajo pendiente.
+
+\subsubsection{Distancia de frenado}
+
+La prueba para verificar el comportamiento longitudinal consiste en acelerar y frenar a fondo luego de un tiempo determinado. Dado que este modelo no modela el downforce, la resistencia aerodinámica es menor, y tampoco tiene en cuenta la deformación del neumático, la frenada debe tener una desaceleración cercana al $1$ g, debido a que la carga normal del vehículo es solo su peso.
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{lccccc}
+		\hline
+		Modelo & $v_0$ (km/h) & Distancia (m) & $a$ media (m/s$^2$) & $a$ media (g) & $a$ pico (m/s$^2$) \\
+		\hline
+		FF1600 & $93$  & $32{,}5$ & $10{,}18$ & $1{,}04$ & $10{,}92$ \\
+		E36    & $116$ & $51{,}4$ & $10{,}06$ & $1{,}03$ & $10{,}54$ \\
+		Civic  & $119$ & $54{,}6$ & $10{,}09$ & $1{,}03$ & $10{,}65$ \\
+		\hline
+	\end{tabular}
+	\caption[Distancia de frenado]{Frenada a fondo desde la velocidad indicada hasta la detención. La desaceleración media se calcula como $v_0^2 / 2d$.}
+	\label{tab:frenada}
+\end{table}
+
+Los resultados son consistentes con la cota mencionada anteriormente. Las desaceleraciones  medias del E36, Civic y FF1600 se sitúan justo sobre el límite de adherencia, superando el $1$ g debido al pico del inicio de la frenada. Las distancias resultantes coinciden con lo esperable.
+
+% El monoplaza se detiene con una aceleración media menor, a pesa de que tiene el mismo coeficiente de fricción. Esto se debe a que la frenada no llega a alcanzar el agarre máximo de los neumáticos con el par que se le aplica, probablemente debido al menor peso del chasis. Si se quiere alcanzar una mejor frenada, se puede simplemente aumentar el parámetro de par máximo en el modelo para poder alcanzar el límite de adherencia.
+
+Los valores pico superan la cota mencionada anteriormente porque corresponden a momentos transitorios en el momento de aplicar el freno, cuando la transferencia de pesos por el cabeceo del chasis incrementa la carga normal en el eje delantero, además de que la resistencia aerodinámica y de rodadura están más presentas a altas velocidades.
+
+
+
+\subsubsection{Discusión sobre la fidelidad}
+
+Tres de los cuatro ensayos dan resultados satisfactorios y el cuarto identifica una limitación concreta.
+
+La contabilidad de las masas cierra con un error menor al $1{,}5\%$ con respecto a la suma de las masas declaradas, lo que valida la ley de contacto, la propagación del radio del neumático y el ensamblaje completo del vehículo. El comportamiento en frenada se corresponde a la cota del coeficiente de fricción y tiene valores coherentes con vehículos reales. El ensayo vertical sitúa tanto al E36 como al FF1600 dentro del rango esperado para la clase de vehículos que son.
+
+La principal limitación es el reparto de cargas entre ejes, que es uniforme cuando no necesariamente debería serlo, esto es una consecuencia directa de modelar el chasis como un paralelepípedo con distribución de masa uniforme. Esta simplificación es la que más afecta al balance del vehículo y limita la fidelidad del comportamiento lateral. Una modificación en esta representación mejoraría la fidelidad significativamente.
+
+% A esta limitación también se suma la ausencia de barras estabilizadoras: los dos vehículos de calle presentan un balanceo equivalente aproximadamente al doble del de un vehículo real. Agregar este componente es la segunda corrección en orden de importancia para mejorar la fidelidad, particularmente del viraje lateral.
+
+% A ella se suma, en el mismo plano lateral, la ausencia de barra estabilizadora: con la vía en su valor correcto, los dos vehículos de calle acusan un gradiente de balanceo cercano a los $9$ grados por g, aproximadamente el doble del de un automóvil real, y en el límite su suspensión exterior alcanza los topes de compresión. Es la segunda corrección en orden de importancia, y no añade estados al sistema, ya que una barra estabilizadora es un resorte torsional entre las dos ruedas de un eje.
+
+% A esto se suma una
+
+% La limitación es el reparto de cargas entre ejes, uniforme cuando debería no serlo, consecuencia directa de modelar el chasis como un cuerpo de masa homogénea. Dado que ese reparto gobierna el balance del vehículo, es la simplificación que más acota la fidelidad lateral del modelo. A ella se suma, en el mismo plano lateral, una vía del orden de un $40\,\%$ mayor que la real en los tres vehículos, que sobreestima la rigidez al balanceo y obliga a leer los límites laterales medidos como optimistas. Son las dos magnitudes cuyo ajuste rendiría la mayor mejora de fidelidad, y ninguna de las dos exige cambios estructurales: la primera pide un chasis con centro de masa desplazado, la segunda un juego de anclajes y longitudes de brazo tomados del vehículo real.
+
+Además quedan dos observaciones menos importantes: El Civic presenta una relación de instalación de $1{,}24$ cuando un automóvil real tiene alrededor de $0{,}5$ a $0{,}7$, lo que explica que la frecuencia vertical quede algo por fuera del rango de su tipo de vehículo. Revisar los puntos de anclaje del conjunto resorte-amortiguador, utilizando valores correspondientes a los reales debería corregir el problema sin modificar las rigideces declaradas. La otra observación es que en los tres modelos el amortiguamiento relativo excede el rango habitual.
+
+Ninguna de estas limitaciones afecta a las conclusiones sobre desempeño de las secciones anteriores, pero si reducen la efectividad de su uso como simulador realista de conducción.
+
+% Ninguna de estas limitaciones afecta a las conclusiones sobre desempeño de las secciones anteriores, que se refieren al costo y la exactitud de la integración y no al realismo del vehículo. Sí acotan, en cambio, el uso del simulador como herramienta de evaluación de comportamiento dinámico, y señalan con precisión qué habría que corregir para levantar esa restricción.
+
+% Otra limitación, respecto al modelo de neumático, es que la fuerza lateral se modela como viscosa, proporcional a la velocidad lateral de deslizamiento, esto no tiene en cuenta, entre otras cosas la deformación del parche de contacto del neumático, ni el contacto de este en más de un punto del suelo. Esto se hizo para simplificar el sistema, debido a la complejidad que requiere desarrollar un modelo de neumáticos realista.
+
+% Cabe añadir una limitación de fondo que estos ensayos ponen de manifiesto indirectamente. La fuerza lateral del neumático se modela como viscosa, proporcional a la velocidad lateral de deslizamiento, mientras que la de un neumático real es proporcional al ángulo de deriva, esto es, al cociente entre esa velocidad y la velocidad de avance. La consecuencia es que la rigidez de deriva efectiva del modelo crece de forma lineal con la velocidad en lugar de permanecer aproximadamente constante, lo que altera el balance del vehículo con la velocidad de un modo que no tiene contrapartida física. Sustituir la ley viscosa por un modelo basado en ángulo de deriva es, de todas las mejoras identificadas, la que más incidiría en la fidelidad del comportamiento lateral.
 
 % \subsection*{Limitaciones de la medición}
 
@@ -426,188 +616,4 @@ La conducción no fue guionada, los tres vehículos no se condujeron de forma id
 
 % La medición del lazo cerrado, en cambio, sí informa percentiles sobre varios miles de pasos, y confirma la advertencia que motivaba esta precaución: un valor medio de tiempo por paso holgadamente inferior al umbral de tiempo real no garantiza por sí solo una experiencia interactiva satisfactoria, puesto que entre el $4$ y el $35\,\%$ de los pasos individuales exceden el presupuesto pese a que el promedio lo cumple. Su principal limitación es de otro tipo: la conducción no fue guionada, de modo que las comparaciones entre vehículos de esa sección no están controladas.
 
-\section{Fidelidad del manejo}
 
-Todas las mediciones anteriores son de carácter numérico, cuánto cuesta la simulación, cuánto tardan los integradores en coincidir, y con qué exactitud converge son medidas útiles para comparar el performance del modelo y de los integradores, pero no dicen nada sobre si el resultado se comporta como un vehículo real. Esta sección se centra en responder esa cuestión, comparando cuatro magnitudes del modelo contra lo que predice la teoría de dinámica vehicular y los valores típicos de automóviles reales.
-
-Estos cuatro ensayos se eligieron por ser medibles sin instrumentar el modelo y cubren los ejes de la dinámica vehicular: el vertical, el lateral y el longitudinal.
-
-\subsection{Frecuencia propia de la suspensión}
-
-La frecuencia de la suspensión en su translación vertical (\textit{ride frequency}) es la manera más directa de medir el comportamiento vertical de un vehículo ante diferentes perturbaciones.
-
-% La frecuencia de la suspensión en su modo de traslación vertical (\textit{ride frequency}) es el descriptor más inmediato del comportamiento vertical de un vehículo: fija la sensación de firmeza y determina el ancho de banda de las perturbaciones del terreno que la carrocería sigue.
-
-
-% El ensayo se realiza, por lo tanto, dejando asentar el vehículo y perturbando después el estado correspondiente, con acceso al vector de estados a través de la interfaz de bajo nivel del FMU descrita en la Sección~\ref{sec:cosim}. Sobre la respuesta resultante se identifica un sistema de segundo orden, $\ddot{e} = -a\,\dot{e} - b\,e$, cuyo ajuste es lineal en los coeficientes y no depende de localizar máximos —escasos en una respuesta amortiguada—, de donde $\omega_n = \sqrt{b}$ y $\zeta = a / (2\omega_n)$.
-
-Para realizar este ensayo se perturbó el estado de velocidad vertical del chasis, haciendo esto, los neumáticos conservan su compresión y los resortes de su deflexión al inicio, y al aplicar el impulso se excitan de forma natural, haciendo que el chasis se desplace mientras las ruedas permaneces quietas. El impulso empleado es de $0{,}05$ m/s, que produce amplitudes de $1{,}7$ a $2{,}4$ mm.
-
-Sobre el resultado se obtiene un sistema de segundo orden. Dado que es un sistema resorte-amortiguador la ecuación que lo describe es la siguiente (escrita para un desplazamiento $e$ respecto a la altura de equilibrio).
-
-\begin{equation}
-    \ddot{e} = -\frac{c}{m}\,\dot{e} \;-\; \frac{k}{m}\,e
-    \label{eq:segundo-orden}
-\end{equation}
-
-donde $m$ es la masa suspendida, $k$ la rigidez vertical y $c$ el amortiguamiento. De estos datos se pueden obtener la frecuencia natural y el amortiguamiento relativo:
-
-\begin{equation}
-    f_n = \frac{1}{2\pi}\sqrt{\frac{k}{m}},
-    \qquad
-    \zeta = \frac{c/m}{2\sqrt{k/m}}
-    \label{eq:fn-zeta}
-\end{equation}
-
-El valor $R^2$ es el coeficiente de determinación, que es una medida de comparación entre el resultado esperado según la fórmula y el real, particularmente compara las aceleraciones. Un número cercano a 1 de de este valor confirmaría que este sistema es efectivamente de segundo orden y que no hay factores externos que lo modifiquen.
-
-% El ajuste es lineal en ambos cocientes, de modo que tiene solución cerrada y aprovecha todas las muestras en lugar de depender de localizar máximos, que en una respuesta amortiguada son escasos. Su coeficiente de determinación $R^2$ sirve además de control: la Ecuación~\ref{eq:segundo-orden} es una hipótesis sobre el comportamiento del vehículo, no un hecho, y el $R^2$ mide si un único par de cocientes explica efectivamente toda la respuesta registrada. De no ser así, la frecuencia identificada no significaría nada.
-
-% La Figura~\ref{fig:ajuste} superpone, para cada vehículo, la respuesta medida sobre el modelo y la función de segundo orden así identificada. La coincidencia es estrecha en el primer ciclo, que es donde reside la información sobre la frecuencia, y se abre en el rebote posterior: el modelo identificado predice un retroceso por debajo del cero algo mayor que el que el vehículo realmente describe. Esa discrepancia es la que explica que el $R^2$ se sitúe en torno a $0{,}97$ y no en la unidad, y su origen es que el vehículo completo no es un oscilador de un grado de libertad sino que acopla el modo vertical con el de cabeceo. El E36 es el caso que mejor ajusta, con $R^2 = 0{,}987$, y también aquel en que ambas curvas resultan casi indistinguibles.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{img/ajuste_segundo_orden.pdf}
-\caption[Ajuste de segundo orden sobre la respuesta vertical]{Respuesta vertical libre del chasis tras el impulso de velocidad de $0{,}05$ m/s, en trazo continuo, y función de segundo orden identificada sobre ella, en trazo discontinuo. Un panel por vehículo, con las escalas verticales ajustadas a cada caso. Notar que las amplitudes son de apenas unos milímetros.}
-\label{fig:ajuste}
-\end{figure}
-
-\begin{table}[H]
-\centering
-\begin{tabular}{lccccc}
-\hline
-Modelo & $f_n$ medida (Hz) & $\zeta$ & $R^2$ & Predicción (Hz) & Vehículo real (Hz) \\
-\hline
-FF1600 & $2{,}44$ & $0{,}56$ & $0{,}969$ & $2{,}42$ & $1{,}5$--$2{,}0$ \\
-E36    & $1{,}33$ & $0{,}45$ & $0{,}987$ & $1{,}24$ & $0{,}5$--$1{,}5$ \\
-Civic  & $1{,}67$ & $0{,}61$ & $0{,}966$ & $1{,}16$ & $0{,}5$--$1{,}5$ \\
-\hline
-\end{tabular}
-\caption[Frecuencia propia y amortiguamiento de la suspensión]{Frecuencia natural y amortiguamiento relativo del modo vertical de la masa suspendida, identificados sobre la respuesta libre a un impulso de velocidad de $0{,}05$ m/s desde el estado asentado. La predicción es la Ecuación~\ref{eq:fn-zeta} evaluada con la rigidez y la masa declaradas en el modelo en lugar de con los cocientes ajustados, esto es $\frac{1}{2\pi}\sqrt{k_\text{ef}/m_\text{susp}}$, tomando el resorte en serie con la rigidez del neumático. La última columna muestra el rango habitual del tipo de vehículo que cada modelo representa. \cite{giaraffa_springs1}}
-\label{tab:ride}
-\end{table}
-
-El caso del monoplaza da confianza en el procedimiento, su frecuencia medida coincide con la predicción teórica, es decir, para este vehículo el modelo se comporta como predice la fórmula. Los coeficientes de determinación confirman además que el modo es de segundo orden en los tres casos.
-
-% \paragraph{El ensayo se valida a sí mismo.} El caso del monoplaza es el que da confianza en el procedimiento: su frecuencia medida, $2{,}44$ Hz, coincide con la predicción teórica, $2{,}42$ Hz, dentro del $1\,\%$. Es decir que para este vehículo el modelo se comporta exactamente como predice la fórmula elemental, lo que verifica a la vez la excitación empleada, el procedimiento de identificación y la propia predicción. Los coeficientes de determinación, entre $0{,}97$ y $0{,}99$, confirman además que el modo es efectivamente de segundo orden en los tres casos.
-
-El resultado más interesante es la comparación con vehículos reales, para la que se toman como referencia los rangos de frecuencia de suspensión habituales en la práctica de la dinámica vehicular \cite{giaraffa_springs1,milliken1995}. El E36 se encuentra dentro de los rangos característicos de un vehículo de calle. En el caso del FF1600, si bien queda por encima del valor real esperado, este número no se pudo verificar con exactitud, principalmente por el hecho de que en autos de competición, los reglajes varían mucho entre equipos y circuitos, y no se tiene una fuente certera. Lo relevante, es que se ubica por encima de un vehículo de calle y por debajo de uno de competición con carga aerodinámica fuerte (entre  $3{,}0$ a $5{,}0$ Hz \cite{giaraffa_springs1}), por lo que es un punto medio en el que un monoplaza de este estilo puede vivir.
-
-
-% El FF1600 queda donde corresponde un monoplaza sin carga aerodinámica, más duro que un vehículo de calle pero no tanto como un auto de competición con apoyo aerodinámico. En ambos casos el ensayo muestra que el comportamiento vertical coincide con el vehículo real.
-
-El Civic también queda por encima del rango que le correspondería y es el que más se aparta de su predicción teórica. Esto se debe a que la predicción supone que el resorte se comprime lo mismo que la rueda, pero este está montado sobre los brazos de la suspensión, por lo que el cociente entre ambos recorridos (relación de instalación) depende de donde se fijen sus extremos. Calculando ese cociente en el modelo resulta en que el resorte recorre un $24\%$ más que la rueda, cuando en un vehículo real recorre menos de lo que recorre la rueda. Corregir los puntos de anclaje del conjunto resorte-amortiguador, llevándolos a una posición correspondiente al vehículo real ayudaría a que el modelo tenga valores más cercanos a la realidad, sin necesidad de tocar las rigideces declaradas.
-
-% El Civic, con $1{,}67$ Hz, es el único que queda por encima del rango que le correspondería, y también el que más se aparta de su predicción teórica. Ambas desviaciones tienen la misma causa. La predicción supone que el resorte se comprime lo mismo que sube la rueda, pero el resorte no está montado sobre la rueda sino sobre los brazos de la suspensión, de modo que el cociente entre ambos recorridos —la \textit{relación de instalación}— depende de dónde se fijen sus extremos. En el Civic ese cociente vale $1{,}24$: el resorte recorre un $24\,\%$ más que la rueda, cuando en un automóvil real recorre \emph{menos}, entre un $50$ y un $70\,\%$ de lo que recorre la rueda. Como la rigidez percibida en la rueda escala con el cuadrado de esa relación, el vehículo resulta alrededor de un $50\,\%$ más rígido de lo que sus resortes declaran, y su frecuencia sube en consecuencia. Corregir los puntos de anclaje del conjunto muelle-amortiguador, llevándolos a una posición representativa de un vehículo real, situaría al Civic dentro del rango de calle sin necesidad de retocar las rigideces declaradas, que son valores realistas. Los otros dos vehículos no presentan el problema: el eje delantero del E36 tiene una relación de instalación de $1$ por construcción, su eje trasero de $0{,}92$ y el monoplaza de $0{,}97$.
-
-El amortiguamiento relativo supera en los tres casos el rango habitual de $0{,}2$ a $0{,}4$ de un vehículo de calle \cite{giaraffa_springs3}, lo que se traduciría en una respuesta vertical algo más apagada que la real. Queda pendiente hacer una investigación más profunda para ver que puede llegar a causar esta diferencia.
-
-
-\subsection{Cargas estáticas por rueda}
-
-En equilibro, la velocidad vertical del contacto es nula, por lo que la ley de fuerza del suelo se reduce a $N = c \cdot (h + R_\text{wheel} - y)$ y la carga de cada rueda se obtiene de la altura de su centro, sin necesidad de exponer variables protegidas del modelo de contacto. La suma de las cuatro cargas debe igualar el peso total del vehículo, por lo que se va a realizar este ensayo para verificar la distribución de masas de el ensamblaje.
-
-
-\begin{table}[H]
-\centering
-\begin{tabular}{lccccc}
-\hline
-Modelo & $N$ por rueda (N) & Total (N) & Masa implícita (kg) & Esperada (kg) & Reparto \\
-\hline
-FF1600 & $1343$ (las cuatro) & $5370$ & $547{,}4$ & $540$ & $50{,}0$ / $50{,}0$ \\
-E36    & $2780$ / $2821$ & $11\,202$ & $1141{,}9$ & $1140$ & $49{,}6$ / $50{,}4$ \\
-Civic  & $2789$ (las cuatro) & $11\,156$ & $1137{,}2$ & $1130$ & $50{,}0$ / $50{,}0$ \\
-\hline
-\end{tabular}
-\caption[Cargas estáticas por rueda]{Cargas normales en equilibrio. En el E36 se indican las cargas delantera y trasera, que difieren; en los otros dos las cuatro coinciden. La masa esperada es la suma del chasis, los cuatro neumáticos de $20$ kg y los cuatro bujes de $15$ kg. El reparto es delantero/trasero en porcentaje.}
-\label{tab:cargas}
-\end{table}
-
-El resultado tiene errores de entre el $0{,}6$ y el $1{,}4\%$, atribuible a la masa de componentes como brazos de suspensión, bujes, etc. que no se incluyen en la estimación. Esto valida la ley de contacto, la propagación del radio del neumático y el ensamblaje completo del vehículo. 
-
-El reparto de cargas revela una limitación del modelo: los tres vehículos resultan equilibrados entre ejes, mientras que en la vida real esto no sucede siempre. Esto se debe a como está modelado el chasis, el hecho de que esté construido como un paralelepípedo de masa uniforme logra una abstracción que captura razonablemente las inercias pero no representa la posición longitudinal del centro de masa.
-
-% El estado asentado muestra además una segunda limitación: la vía (distancia entre ruedas del mismo eje) es mayor de lo que debería en los tres vehículos. El E36 mide $2{,}02$ m de vía delantera y $1{,}96$ m trasera frente a los $1{,}42$ y $1{,}44$ m del vehículo real, el Civic $2{,}00$ m contra $1{,}47$ m y el FF1600 $2{,}46$ m. La causa es que no se pudieron obtener los valores del largo de brazos de suspensión el semiancho al que se fijan los anclajes ni la extensión lateral de los brazos se ajustaron a la geometría del vehículo que cada modelo representa. La consecuencia no es estética: una vía un $40\,\%$ mayor que la real aumenta en esa misma proporción el brazo de palanca con que las cargas verticales resisten el momento de vuelco, de modo que el modelo sobreestima la rigidez al balanceo y los límites laterales de la sección siguiente deben leerse como optimistas por ese motivo.
-
-
-
-\subsection{Viraje y características laterales}
-
-Para caracterizar el comportamiento lateral se realiza un ensayo de viraje con dirección constante. Se aprovecha el hecho de que con la resistencia aerodinámica incorporada cada valor de acelerador tiene su propia velocidad de equilibrio. El ensayo se realiza por valor de acelerador y se mide sobre los últimos cinco segundos, donde la velocidad casi no varía (menos del $6\%$ en todos los casos).
-
-% Para caracterizar el comportamiento lateral se recurre al ensayo de viraje con dirección constante. Un ensayo a velocidad constante requeriría un regulador de velocidad, del que el modelo no dispone; en su lugar se aprovecha que, con la resistencia aerodinámica incorporada, cada valor de acelerador tiene su propia velocidad de equilibrio. Se realiza entonces un ensayo por valor de acelerador y se mide sobre los últimos cinco segundos, cuando la velocidad ya casi no varía —la deriva relativa en la ventana se mantiene por debajo del $6\,\%$ en todos los casos—, de modo que cada ensayo aporta un punto con el mismo ángulo de dirección.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{img/fidelidad.pdf}
-\caption[Ensayos de fidelidad vertical y lateral]{Izquierda: respuesta libre del modo vertical tras perturbar en $5$ mm el estado asentado, con la frecuencia natural y el amortiguamiento identificados. Derecha: radio de giro en función de la aceleración lateral con dirección constante, un punto por valor de acelerador. Las líneas punteadas marcan el radio de Ackermann de cada vehículo, referencia de viraje neutro.}
-\label{fig:fidelidad}
-\end{figure}
-
-La característica obtenida es la correcta, a baja aceleración lateral el radio se mantiene casi constante y a partir de cierto punto crece abruptamente sin que la aceleración lateral aumente, esto se debe a que el vehículo comienza a subvirar porque el neumático alcanzó su límite de adherencia.
-
-% La característica obtenida es la correcta en su forma. A baja aceleración lateral el radio se mantiene aproximadamente constante y algo por encima del radio de Ackermann, y a partir de cierto punto crece abruptamente sin que la aceleración lateral siga aumentando: el neumático ha alcanzado su límite de adherencia y el vehículo se abre, esto es, subvira en el límite. Es el comportamiento que corresponde y el deseable desde el punto de vista de la seguridad.
-
-El límite lateral alcanzado es de  $0{,}85$ g para el FF1600, $0{,}77$ g para el E36 y $0{,}85$ g para el Civic. Cabe aclarar que es un límite combinado y no puramente lateral, ya que al aplicar acelerador parte del presupuesto de agarre va también a la aceleración. Para un vehículo de calle sobre asfalto seco estos valores son válidos, sin embargo, para el monoplaza resultan bajos \cite{hyperphysics_tires}. Esto se debe a que el modelo de neumático utilizado fue el mismo para los tres vehículos, si se quisiera obtener un valor más preciso, habría que obtener y aplicar los parámetros de un neumático de competición.
-
-% El ángulo de balanceo resulta remarcable. Los dos vehículos de calle se inclinan alrededor de $9$ grados por cada g de aceleración lateral (el E36 $6{,}8$ grados a $0{,}76$ g y el Civic $7{,}7$ a $0{,}82$ g) aproximadamente el doble de los $4$ a $5$ de un automóvil real. El monoplaza, con $3{,}3$ grados por g, queda donde corresponde.
-
-% La causa es que no se implementó un modelo de barra estabilizadora, elemento del que un automóvil de calles obtiene buena parte de su resistencia al balanceo, lo que le permite montar resortes más blandos sin inclinarse demasiado al girar. El monoplaza no presenta esta falla debido a que un vehículo de competición si obtiene esa rigidez de resortes duros.  Agregarla es la corrección de fidelidad lateral más directa después de solucionar el reparto de pesos.
-
-
-% El límite lateral alcanzado es de $0{,}74$ g para el FF1600, $0{,}70$ g para el E36 y $0{,}87$ g para el Civic. Conviene precisar que se trata de un límite combinado y no puramente lateral, puesto que el acelerador está aplicado y consume parte del presupuesto del círculo de fricción. Para un vehículo de calle sobre asfalto seco estos valores son verosímiles; para el monoplaza, en cambio, resultan bajos, ya que un vehículo de competición con neumáticos de compuesto blando supera holgadamente $1$ g.
-
-% No fue posible extraer el gradiente de subviraje en el rango lineal. La resolución de acelerador disponible sitúa al vehículo por encima de $0{,}25$ g ya con el segundo valor ensayado, de modo que no se reúnen suficientes puntos por debajo del límite para ajustar una recta con sentido. Obtenerlo requeriría un regulador de velocidad que permitiera fijar pares (velocidad, radio) arbitrarios, lo que queda como trabajo pendiente.
-
-\subsection{Distancia de frenado}
-
-La prueba para verificar el comportamiento longitudinal consiste en acelerar y frenar a fondo luego de un tiempo determinado. Dado que este modelo no modela el downforce, la resistencia aerodinámica es menor, y tampoco tiene en cuenta la deformación del neumático, la frenada debe tener una desaceleración cercana al $1$ g, debido a que la carga normal del vehículo es solo su peso.
-
-\begin{table}[H]
-\centering
-\begin{tabular}{lccccc}
-\hline
-Modelo & $v_0$ (km/h) & Distancia (m) & $a$ media (m/s$^2$) & $a$ media (g) & $a$ pico (m/s$^2$) \\
-\hline
-FF1600 & $93$  & $32{,}5$ & $10{,}18$ & $1{,}04$ & $10{,}92$ \\
-E36    & $116$ & $51{,}4$ & $10{,}06$ & $1{,}03$ & $10{,}54$ \\
-Civic  & $119$ & $54{,}6$ & $10{,}09$ & $1{,}03$ & $10{,}65$ \\
-\hline
-\end{tabular}
-\caption[Distancia de frenado]{Frenada a fondo desde la velocidad indicada hasta la detención. La desaceleración media se calcula como $v_0^2 / 2d$.}
-\label{tab:frenada}
-\end{table}
-
-Los resultados son consistentes con la cota mencionada anteriormente. Las desaceleraciones  medias del E36, Civic y FF1600 se sitúan justo sobre el límite de adherencia, superando el $1$ g debido al pico del inicio de la frenada. Las distancias resultantes coinciden con lo esperable.
-
-% El monoplaza se detiene con una aceleración media menor, a pesa de que tiene el mismo coeficiente de fricción. Esto se debe a que la frenada no llega a alcanzar el agarre máximo de los neumáticos con el par que se le aplica, probablemente debido al menor peso del chasis. Si se quiere alcanzar una mejor frenada, se puede simplemente aumentar el parámetro de par máximo en el modelo para poder alcanzar el límite de adherencia.
-
-Los valores pico superan la cota mencionada anteriormente porque corresponden a momentos transitorios en el momento de aplicar el freno, cuando la transferencia de pesos por el cabeceo del chasis incrementa la carga normal en el eje delantero, además de que la resistencia aerodinámica y de rodadura están más presentas a altas velocidades.
-
-
-
-\subsection{Síntesis}
-
-Tres de los cuatro ensayos dan resultados satisfactorios y el cuarto identifica una limitación concreta.
-
-La contabilidad de las masas cierra con un error menor al $1{,}5\%$ con respecto a la suma de las masas declaradas, lo que valida la ley de contacto, la propagación del radio del neumático y el ensamblaje completo del vehículo. El comportamiento en frenada se corresponde a la cota del coeficiente de fricción y tiene valores coherentes con vehículos reales. El ensayo vertical sitúa tanto al E36 como al FF1600 dentro del rango esperado para la clase de vehículos que son.
-
-La principal limitación es el reparto de cargas entre ejes, que es uniforme cuando no necesariamente debería serlo, esto es una consecuencia directa de modelar el chasis como un paralelepípedo con distribución de masa uniforme. Esta simplificación es la que más afecta al balance del vehículo y limita la fidelidad del comportamiento lateral. Una modificación en esta representación mejoraría la fidelidad significativamente.
-
-% A esta limitación también se suma la ausencia de barras estabilizadoras: los dos vehículos de calle presentan un balanceo equivalente aproximadamente al doble del de un vehículo real. Agregar este componente es la segunda corrección en orden de importancia para mejorar la fidelidad, particularmente del viraje lateral.
-
-% A ella se suma, en el mismo plano lateral, la ausencia de barra estabilizadora: con la vía en su valor correcto, los dos vehículos de calle acusan un gradiente de balanceo cercano a los $9$ grados por g, aproximadamente el doble del de un automóvil real, y en el límite su suspensión exterior alcanza los topes de compresión. Es la segunda corrección en orden de importancia, y no añade estados al sistema, ya que una barra estabilizadora es un resorte torsional entre las dos ruedas de un eje.
-
-% A esto se suma una
-
-% La limitación es el reparto de cargas entre ejes, uniforme cuando debería no serlo, consecuencia directa de modelar el chasis como un cuerpo de masa homogénea. Dado que ese reparto gobierna el balance del vehículo, es la simplificación que más acota la fidelidad lateral del modelo. A ella se suma, en el mismo plano lateral, una vía del orden de un $40\,\%$ mayor que la real en los tres vehículos, que sobreestima la rigidez al balanceo y obliga a leer los límites laterales medidos como optimistas. Son las dos magnitudes cuyo ajuste rendiría la mayor mejora de fidelidad, y ninguna de las dos exige cambios estructurales: la primera pide un chasis con centro de masa desplazado, la segunda un juego de anclajes y longitudes de brazo tomados del vehículo real.
-
-Además quedan dos observaciones menos importantes: El Civic presenta una relación de instalación de $1{,}24$ cuando un automóvil real tiene alrededor de $0{,}5$ a $0{,}7$, lo que explica que la frecuencia vertical quede algo por fuera del rango de su tipo de vehículo. Revisar los puntos de anclaje del conjunto resorte-amortiguador, utilizando valores correspondientes a los reales debería corregir el problema sin modificar las rigideces declaradas. La otra observación es que en los tres modelos el amortiguamiento relativo excede el rango habitual.
-
-Ninguna de estas limitaciones afecta a las conclusiones sobre desempeño de las secciones anteriores, pero si reducen la efectividad de su uso como simulador realista de conducción.
-
-% Ninguna de estas limitaciones afecta a las conclusiones sobre desempeño de las secciones anteriores, que se refieren al costo y la exactitud de la integración y no al realismo del vehículo. Sí acotan, en cambio, el uso del simulador como herramienta de evaluación de comportamiento dinámico, y señalan con precisión qué habría que corregir para levantar esa restricción.
-
-% Otra limitación, respecto al modelo de neumático, es que la fuerza lateral se modela como viscosa, proporcional a la velocidad lateral de deslizamiento, esto no tiene en cuenta, entre otras cosas la deformación del parche de contacto del neumático, ni el contacto de este en más de un punto del suelo. Esto se hizo para simplificar el sistema, debido a la complejidad que requiere desarrollar un modelo de neumáticos realista.
-
-% Cabe añadir una limitación de fondo que estos ensayos ponen de manifiesto indirectamente. La fuerza lateral del neumático se modela como viscosa, proporcional a la velocidad lateral de deslizamiento, mientras que la de un neumático real es proporcional al ángulo de deriva, esto es, al cociente entre esa velocidad y la velocidad de avance. La consecuencia es que la rigidez de deriva efectiva del modelo crece de forma lineal con la velocidad en lugar de permanecer aproximadamente constante, lo que altera el balance del vehículo con la velocidad de un modo que no tiene contrapartida física. Sustituir la ley viscosa por un modelo basado en ángulo de deriva es, de todas las mejoras identificadas, la que más incidiría en la fidelidad del comportamiento lateral.

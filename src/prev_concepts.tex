@@ -1,7 +1,7 @@
 \section{Simulación y modelado}
 Antes de comenzar, se va a definir rápidamente los conceptos de simulación y modelado, ya que son la base de este proyecto. \\
 El proceso de modelado se refiere a la extracción de conocimiento 
-del sistema físico que se desea simular, organizándolo de manera adecuada y representándolo de forma clara y sin ambigüedades. 
+de un sistema físico que se desea simular, organizándolo de manera adecuada y representándolo de forma clara y sin ambigüedades. 
 Por otro lado, el proceso de simulación hace referencia a el desarrollo de experimentos sobre el modelo para hacer predicciones
 sobre como se comportaría el sistema real si se fuesen a realizar los mismos experimentos sobre él  \cite{cellier2006}. \\
 
@@ -51,7 +51,7 @@ Sin embargo, no todo sistema DAE puede ordenarse por completo. Pueden aparecer d
 \begin{itemize}
 
 	
-	\item \textbf{Lazos algebraicos:} Subconjuntos de ecuaciones en los que cada ecuación y cada incógnita resultante dependen de al menos otras dos, por lo que no es posible despejarlas individualmente y deben resolverse al mismo tiempo, ya sea simbólicamente o mediante iteración numérica..
+	\item \textbf{Lazos algebraicos:} Subconjuntos de ecuaciones en los que cada ecuación y cada incógnita resultante dependen de al menos otras dos, por lo que no es posible despejarlas individualmente y deben resolverse al mismo tiempo, ya sea simbólicamente o mediante iteración numérica.
 	
 	\item \textbf{Singularidades estructurales:} Situaciones en las que existen restricciones algebraicas entre variables de estado, por lo que no son independientes entre sí y el sistema tiene menos grados de libertad que los integradores.
 \end{itemize}
@@ -66,11 +66,53 @@ Esto resulta relevante para los sistemas mecánicos multicuerpo. Formular un mod
 
 %Esta distinción resulta particularmente relevante para los sistemas mecánicos multicuerpo. Formular un modelo ODE de un sistema multicuerpo complejo no es práctico, mientras que un modelo DAE es relativamente sencillo de obtener: basta con describir la dinámica de cada cuerpo por separado y agregar las interacciones entre ellos como ecuaciones de restricción. No obstante, este procedimiento suele dar lugar a modelos de índice~3 con restricciones fuertemente no lineales, en especial en topologías con lazos cinemáticos cerrados \cite{cellier2006}. Además, la cantidad de ecuaciones resultante depende fuertemente de la elección de las variables de estado: una elección descuidada puede hacer que crezca con la cuarta potencia de la cantidad de articulaciones, mientras que una elección adecuada logra que crezca solo linealmente. Por este motivo, la biblioteca multicuerpo desarrollada por Martin Otter no recurre al algoritmo de Pantelides, sino que formula sus ecuaciones de modo que las singularidades estructurales queden resueltas desde la propia formulación del modelo \cite{cellier2006}. \\
 
+\subsection{Solvers}
+
+Como se mencionó anteriormente, una vez traducido y compilado, el conjunto de componentes del sistema de simulación pasa a un sistema de ecuaciones algebráico-diferenciales (DAE). La integración de este sistema en el tiempo no puede realizarse de forma analítica, por lo que se recurre a métodos de integración numérica (\textit{solvers}). En el marco de OpenModelica se evaluaron dos solvers de referencia para la ejecución de la simulación: DASSL y CVODE. Ambos comparten la característica de ser especialmente adecuados para sistemas \textit{rígidos} (\textit{stiff}), condición que presenta el modelo del vehículo debido a la coexistencia de dinámicas de muy distinta escala temporal. A continuación se va a explicar el funcionamiento de ambos, lo cual va a resultar necesario para comprender esta tesina.
+
+\subsubsection*{DASSL}
+
+DASSL (\textit{Differential/Algebraic System Solver}) es el solver por defecto de OpenModelica, desarrollado por Petzold en Sandia National Laboratories \cite{petzold1982}. La principal ventaja es que opera directamente sobre la forma implícita  $F(t, y, \dot{y}) = 0$, más general que la forma explícita estándar $\dot{y} = f(t, y)$, lo que lo hace más apto ante sistema DAE como los que surgen del análisis dinámico de sistemas mecánicos multicuerpo. En particular, DASSL es aplicable incluso  cuando la matriz jacobiana $\partial F / \partial \dot{y}$ es singular, situación habitual en presencia de restricciones algebraicas.
+
+
+El algoritmo se basa en la idea de Gear de reemplazar la derivada $\dot{y}$ en la ecuación implícita por una aproximación en diferencias, y resolver la ecuación no lineal resultante en el instante actual $t_n$ mediante el método de Newton. Para ello, emplea la fórmula de diferenciación regresiva (\textit{Backward Differentiation Formula}, BDF) de orden $k$, con $k$ variable entre $1$ y $5$. En su forma más simple, de primer orden, la aproximación es:
+
+\begin{equation}
+	F\!\left(t_n,\, y_n,\, \frac{y_n - y_{n-1}}{\Delta t_n}\right) = 0
+\end{equation}
+
+En cada paso, DASSL selecciona automáticamente tanto el orden $k$ como el tamaño de paso $\Delta t_n$ en función del comportamiento de la solución y de una estimación del error local de truncamiento, empleando además una formulación BDF de coeficiente líder fijo (\textit{fixed-leading-coefficient}) que mejora la estabilidad numérica. La ecuación no lineal se resuelve con una variante del método de Newton cuya matriz de iteración,
+
+\begin{equation}
+	G = \frac{\partial F}{\partial \dot{y}} + \alpha\, \frac{\partial F}{\partial y}
+\end{equation}
+
+donde $\alpha$ es un escalar que depende del paso y el orden. se factoriza y se reutiliza durante tantos pasos como sea posible para reducir el coste computacional. Su robustez frente a la forma DAE completa lo convierte en la opción de referencia para la validación del modelo.
+
+\subsubsection*{CVODE}
+
+CVODE (\textit{C-language Variable-coefficient ODE solver}) fue desarrollado por Cohen y Hindmarsh en Lawrence Livermore National Laboratory como una reescritura en C de los paquetes VODE y VODPK, y forma parte de la suite SUNDIALS \cite{cohen1995}. A diferencia de DASSL, CVODE resuelve el problema de valor incial de forma explícita $\dot{y} = f(t, y)$, por lo tanto, para su uso, el compilador de OpenModelica debe reducir previamente el sistema DAE a una forma de estado equivalente (índice 1 o forma ODE), operación que se apoya en la reducción de índice que aportan los ensamblajes analíticos de las suspensiones.
+
+CVODE resuelve tanto sistemas rígidos como no rígidos mediante dos familias de métodos lineales multipaso de coeficiente, orden y paso variable: las fórmulas de Adams-Moulton (para problemas no rígidos, con orden entre $1$ y $12$) y las fórmulas BDF (para problemas rígidos, con orden entre $1$ y $5$). Ambas familias se expresan en la forma general:
+
+\begin{equation}
+	\sum_{i=0}^{K_1} \alpha_{n,i}\, y_{n-i} + h_n \sum_{i=0}^{K_2} \beta_{n,i}\, \dot{y}_{n-i} = 0
+\end{equation}
+
+donde para el caso BDF se tiene $K_1 = q$ y $K_2 = 0$, siendo $q$ el orden. En cada paso debe resolverse un sistema no lineal, que CVODE aborda mediante iteración funcional (para el caso no rígido, sin resolución de sistemas lineales) o mediante iteración de Newton (para el caso rígido). En este último caso, la iteración de Newton requiere resolver sistemas lineales con la matriz:
+
+\begin{equation}
+	M \approx I - \gamma\, J, \qquad J = \frac{\partial f}{\partial y}, \qquad \gamma = h_n\, \beta_{n,0}
+\end{equation}
+
+Para el tratamiento del jacobiano $J$ en el caso rígido, CVODE ofrece varias opciones: tratamiento denso, en banda, diagonal aproximado, o un método iterativo de Krylov (GMRES precondicionado), lo que le confiere gran flexibilidad y eficiencia. Su arquitectura modular, en la que el integrador principal es independiente del solver lineal empleado, junto con su condición de código moderno y activamente mantenido, lo convierten en una alternativa atractiva a DASSL para la búsqueda de un rendimiento adecuado en la ejecución en tiempo real.\\
+
 
 \subsection{Manejo del reloj}
 
 En una simulación, el tiempo no pasa por sí solo, el usuario tiene que especificar cuando y como sucede. Dependiendo de como se controla este reloj pueden haber efectos en la eficiencia y fidelidad de la simulación \cite{cellier2006}.\\
-Una computadora digital no tiene forma de calcular cualquier valor de una función real en un valor de tiempo real. Lo que se hace para evitar esto es discretizar el eje que representa el tiempo en la simulación, de forma que la cantidad de puntos discretos es finita y la simulación procede saltando entre estos puntos que representan al tiempo\cite{cellier2006}. A mayor cantidad de puntos generados, la fidelidad de la simulación aumenta, a cambio de tiempo de procesamiento que se gasta calculando esos valores extra.\\
+
+Una computadora digital no tiene forma de calcular cualquier valor de una función real en un valor de tiempo real. Lo que se hace para evitar esto es discretizar el eje que representa el tiempo en la simulación, de forma que la cantidad de puntos discretos es finita y la simulación procede saltando entre estos puntos que representan al tiempo \cite{cellier2006}. A mayor cantidad de puntos generados, la fidelidad de la simulación aumenta, a cambio de tiempo de procesamiento que se gasta calculando esos valores extra.\\
 
 Dentro de la simulación, el modelo se vuelve a convertir reduciendo las ecuaciones diferenciales a ecuaciones en diferencias ($\Delta E$), convirtiendo modelos ODE explícitos a modelos  $\Delta E$ y modelos DAE implícitos a modelos $\Delta AE$ \cite{cellier2006}.\\
 
@@ -91,7 +133,7 @@ Dentro de la simulación, el modelo se vuelve a convertir reduciendo las ecuacio
 %Cabe destacar que, si bien el modelo teórico es de naturaleza continua, su resolución en un entorno de hardware digital requiere la aplicación de métodos de integración numérica (solvers). Estos métodos calculan el estado continuo del sistema aproximándolo en intervalos o pasos de tiempo computacionales (time steps) lo suficientemente pequeños como para garantizar tanto la fidelidad física como la ejecución del sistema en tiempo real.
 
 \section{Lenguaje Modelica}
-Para la implementación del modelo continuo se adoptará Modelica, un lenguaje de modelado orientado a objetos específicamente diseñado para la representación de sistemas físicos dinámicos complejos. Este lenguaje proporciona herramientas nativas que permiten definir tanto las ecuaciones intrínsecas de cada componente como las relaciones estructurales (topología) que rigen la interacción y el acoplamiento entre dichos componentes.\\
+Para la implementación del modelo continuo se adoptará Modelica, un lenguaje de modelado orientado a objetos diseñado para la representación de sistemas físicos dinámicos complejos. Este lenguaje proporciona herramientas nativas que permiten definir tanto las ecuaciones intrínsecas de cada componente como las relaciones estructurales (topología) que rigen la interacción y el acoplamiento entre dichos componentes.\\
 
 Si bien Modelica comparte similitudes sintácticas y de encapsulamiento con lenguajes de programación orientados a objetos tradicionales, como C++ o Python, difiere de estos en dos aspectos computacionales fundamentales. En primer lugar, es estrictamente un lenguaje de modelado: sus clases no generan secuencias de instrucciones ejecutables de manera directa, sino que se traducen en sistemas de ecuaciones que posteriormente son resueltos por un motor de simulación. En segundo lugar, Modelica emplea un paradigma declarativo, en lugar de asignar valores a variables mediante algoritmos paso a paso, el desarrollador plantea igualdades matemáticas donde la dirección del flujo de datos no está predefinida, siendo el compilador el encargado de analizar y determinar la causalidad algorítmica necesaria para su resolución.\\
 
@@ -128,9 +170,9 @@ equation
 end Example;
 \end{lstlisting}
 
-En la figura~\ref{fig:example} se muestra un modelo de ejemplo desarrollado en OpenModelica, representa a una masa de $1$ kg conectada a un sistema resorte-amortiguador de una dimensión. El modelo está compuesto de otros modelos que se usan como base, particularmente, se están utilizando los modelos \textit{mass}, \textit{damper}, \textit{spring} y \textit{fixed}. Cada uno de estos modelos tiene sus ecuaciones constitutivas, y se conectan entre ellos mediante conectores denominados \textit{flange} (en el caso de un sistema de una dimensión translacional). \\
+En la figura~\ref{fig:example} se muestra un modelo de ejemplo desarrollado en OpenModelica, representa a una masa de $1$ kg conectada a un sistema resorte-amortiguador de una dimensión. El modelo está compuesto de otros modelos que se usan como base, particularmente, se están utilizando los modelos \textit{Mass}, \textit{Damper}, \textit{Spring} y \textit{Fixed}. Cada uno de estos modelos tiene sus ecuaciones constitutivas, y se conectan entre ellos mediante conectores denominados \textit{flange} (en el caso de un sistema de una dimensión translacional). \\
 
-El gráfico representa la \textit{Diagram View} o vista de diagrama, que es una herramienta visual para crear modelos en la cual los objetos simplemente se arrastran al diagrama y se conectan de forma visual, sin embargo, esto es solamente una interfaz gráfica que funciona como frente ante el código en Modelica. El código~\ref{lst:example} es la traducción de la figura~\ref{fig:example} a lenguaje Modelica, esto se hace automáticamente y ambas representaciones son equivalentes y válidas por sí mismas. Este lenguaje tiene un paradigma orientado a objetos, lo que hace sencillo importar y utilizar los elementos de la librería mencionados anteriormente. \\
+El gráfico representa la \textit{Diagram View} o vista de diagrama, que es una herramienta visual para crear modelos en la cual los objetos simplemente se arrastran al diagrama y se conectan de forma interactiva, sin embargo, esto es solamente una interfaz gráfica que funciona como frente ante el código en Modelica. El código~\ref{lst:example} es la traducción de la figura~\ref{fig:example} a lenguaje Modelica, esto se hace automáticamente y ambas representaciones son equivalentes y válidas por sí mismas. Este lenguaje utiliza un paradigma orientado a objetos, lo que hace sencillo importar y utilizar los elementos de la librería mencionados anteriormente. \\
 
 Tanto el gráfico como el código orientado a objetos son una forma de facilitar el modelado para el usuario, luego, el compilador se encarga de procesar el modelo para obtener código ejecutable, el cual corre la simulación. En el caso de OpenModelica, el compilador OMC se organiza en cuatro etapas: un \textit{frontend}, un \textit{backend} de optimización simbólica, una etapa de generación de código y los entornos de ejecución (\textit{runtimes}) \cite{om_compiler}. \\
 
@@ -199,7 +241,7 @@ El \textit{backend} transforma ese sistema en una forma apta para la integració
 	%\item \textbf{Postoptimización:} aplica \textit{tearing} sobre los lazos algebraicos remanentes y calcula los jacobianos \cite{om_compiler}. El \textit{tearing} selecciona un subconjunto de variables de iteración (variables de corte) tal que el resto de las ecuaciones del lazo pueda resolverse explícitamente a partir de ellas, dejando un sistema reducido de ecuaciones residuales. De esta forma disminuye el tamaño de los sistemas lineales y no lineales que deben resolverse, el tamaño de sus jacobianos y la cantidad de valores iniciales requeridos por el método de Newton \cite{om_solving, cellier2006}.
 \end{itemize}
 
-El resultado de ejecutar estos pasos sobre el modelo DAE descrito anteriormente es un sistema DAE explícito el bloque de la ecuación~\ref{eq:example_ode_sorted} permite calcular las derivadas de los estados y los de la ecuación~\ref{eq:example_alg_sorted} las salidas.
+El resultado de ejecutar estos pasos sobre el modelo DAE descrito anteriormente es un sistema DAE explícito el bloque de la ecuación~\ref{eq:example_ode_sorted} permite calcular las derivadas de los estados y la ecuación~\ref{eq:example_alg_sorted} las salidas.
 
 % Ecuaciones evaluadas por el integrador en cada paso (ordenadas)
 \begin{subequations}
