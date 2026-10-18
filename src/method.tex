@@ -6,7 +6,7 @@
 
 \section{Biblioteca de dinámica vehicular}
 
-En esta sección se explicará el desarrollo y arquitectura de la biblioteca de dinámica vehicular implementada en Modelica. Para garantizar la modularidad y facilitar el mantenimiento y evolución del código, la bilbioteca se organizó en tres paquetes principales:
+En esta sección se explicará el desarrollo y arquitectura de la biblioteca de dinámica vehicular implementada en Modelica. Para garantizar la modularidad y facilitar el mantenimiento y evolución del código, la biblioteca se organizó en tres paquetes principales:
 
 
 \begin{itemize}
@@ -17,11 +17,11 @@ En esta sección se explicará el desarrollo y arquitectura de la biblioteca de 
 
 \subsection{Interfaces}
 
-El paquete \verb|Interfaces| actúa como capa de compatibilidad entre el dominio mecánico de la bibliotecta \textit{MultiBody} y los dominios de las señales de entrada del piloto y de la comunicación de red. Su función es tanto extraer información de estado del modelo físico y ponerla a disposición de otros subsistemas, ya sea como señales continuas internas o como datagramas transmitidos en tiempo real hacia un cliente externo mediante UDP, como permitir la recepción de señales pertenecientes a los inputs del vehículo, también mediantes datagramas UDP. Este paquete contiene dos familias de modelos: los que transmiten únicamente la posición (\verb|FrameToReal| y \verb|FrameToUDP|) y los que además transmiten la orientación del marco de referencia (\verb|FrameToRealOrientation| y \verb|FrameToUDPOrientation|), necesarios para reproducir en el visualizador la dirección del vehículo y el giro de las ruedas. A estos transmisores se suma un modelo de recepción, \verb|UDPInput|, que implementa el canal inverso: la lectura de los comandos del conductor enviados por la interfaz de hardware.\\
+El paquete \verb|Interfaces| actúa como capa de compatibilidad entre el dominio mecánico de la biblioteca \textit{MultiBody} y los dominios de las señales de entrada del piloto y de la comunicación de red. Su función es tanto extraer información de estado del modelo físico y ponerla a disposición de otros subsistemas, ya sea como señales continuas internas o como datagramas transmitidos en tiempo real hacia un cliente externo mediante UDP, como permitir la recepción de señales pertenecientes a los inputs del vehículo, también mediante datagramas UDP. Este paquete contiene dos familias de modelos: los que transmiten únicamente la posición (\verb|FrameToReal| y \verb|FrameToUDP|) y los que además transmiten la orientación del marco de referencia (\verb|FrameToRealOrientation| y \verb|FrameToUDPOrientation|), necesarios para reproducir en el visualizador la dirección del vehículo y el giro de las ruedas. A estos transmisores se suma un modelo de recepción, \verb|UDPInput|, que implementa el canal inverso: la lectura de los comandos del conductor enviados por la interfaz de hardware.\\
 
 \subsubsection{FrameToReal}
 
-El modelo \verb|FrameToReal| cumple con la función de sensor de posición sobre un conector \verb|Frame_a| de la biblioteca \textit{MultiBody}. Este marco transporta, entre sus componentes, el vector de posición en el sistema de referencia global $\mathbf{r}_0 \in \mathbb{R}^3$, así como las fuerzas y torques aplicados sobre este. Dado que el modelo tiene carácter observacional, las ecuaciones extraen las componentes cartesianas del vector de posición y las asignan a tres salidas de señal continua, de tipo \verb|Real|, sin aplicar ni fuerza ni torque sobre el frame, para garantizar que no se introducen variaciones inesperadas en el sistema::
+El modelo \verb|FrameToReal| cumple con la función de sensor de posición sobre un conector \verb|Frame_a| de la biblioteca \textit{MultiBody}. Este marco transporta, entre sus componentes, el vector de posición en el sistema de referencia global $\mathbf{r}_0 \in \mathbb{R}^3$, así como las fuerzas y torques aplicados sobre este. Dado que el modelo tiene carácter observacional, las ecuaciones extraen las componentes cartesianas del vector de posición y las asignan a tres salidas de señal continua, de tipo \verb|Real|, sin aplicar ni fuerza ni torque sobre el frame, para garantizar que no se introducen variaciones inesperadas en el sistema:
 
 \begin{align}
     x_{\text{out}} &= r_{0,1} \\
@@ -36,7 +36,7 @@ Las tres salidas son de tipo \verb|RealOutput| (pertenecientes a \verb|Modelica.
 
 \subsubsection{FrameToUDP}
 
-El modelo \verb|FrameToUDP| construye sobre la funcionalidad de \verb|FrameToReal|, agregando una cadena de serialización y transmisión de datos por red basada en la biblioteca \verb|Modelica_DeviceDrivers|. Su objetivo es enviar la posición del vehículo a un cliente externo, en este caso, a el motor gráfico Unity, mediante el protocolo UDP, permitiendo la visualización en tiempo real del estado del sistema/vehículo. \\
+El modelo \verb|FrameToUDP| construye sobre la funcionalidad de \verb|FrameToReal|, agregando una cadena de serialización y transmisión de datos por red basada en la biblioteca \verb|Modelica_DeviceDrivers|. Su objetivo es enviar la posición del vehículo a un cliente externo, en este caso, al motor gráfico Unity, mediante el protocolo UDP, permitiendo la visualización en tiempo real del estado del sistema/vehículo. \\
 
 Por dentro, el modelo encadena los siguientes componentes: \verb|FrameToReal| que extrae las tres coordenadas del marco de referencia como variables \verb|Real|, un bloque \verb|Packager| que inicializa el buffer del datagrama, tres instancias de \verb|AddFloat| que agregan cada coordenada como un número de punto flotante de 32 bits en formato IEEE 754 little-endian \cite{mdd}, finalmente, \verb|UDPSend| transmite el paquete resultante al puerto 12345 (configurable) con un período de muestreo de 
 0{,}01 s, es decir a una frecuencia de 100Hz, esta frecuencia puede ser aumentada para mejorar la fidelidad de la simulación a cambio de necesitar más poder de procesamiento.
@@ -75,8 +75,8 @@ Cabe destacar que $\text{to\_Q}(R)$, devuelve la rotación del cuerpo respecto d
 
 \subsubsection{FrameToUDPOrientation}
 
-El modelo \verb|FrameToUDPOrientation| es el equivalente a \verb|FrameToUDP| pero para la transmisión de la localización completa. Reemplaza el objeto \verb|FrameToReal| por \verb|FrameToRealOrientation| y amplía la cadena de serialización para incluír siete números en total de punto flotante en $32$ bits:
- las tres coordenadas de posición y las cuatro componentes del cuaternión. El puerto de destino (\verb|port_send|) y el período de muestreo (\verb|sampleTime|) se declaran como parámetros, lo que permite, además de intercambiar fidelidad por performace, instanciar varias transmisores al mismo tiempo, por ejemplo, incluyendo uno para el chasis y otros cuatro, uno para cada rueda, todos dirigidos a puertos distintos.\\
+El modelo \verb|FrameToUDPOrientation| es el equivalente a \verb|FrameToUDP| pero para la transmisión de la localización completa. Reemplaza el objeto \verb|FrameToReal| por \verb|FrameToRealOrientation| y amplía la cadena de serialización para incluir siete números en total de punto flotante en $32$ bits:
+ las tres coordenadas de posición y las cuatro componentes del cuaternión. El puerto de destino (\verb|port_send|) y el período de muestreo (\verb|sampleTime|) se declaran como parámetros, lo que permite, además de intercambiar fidelidad por performance, instanciar varios transmisores al mismo tiempo, por ejemplo, incluyendo uno para el chasis y otros cuatro, uno para cada rueda, todos dirigidos a puertos distintos.\\
 
 Cada valor se serializa mediante un bloque \verb|AddFloat| independiente encadenado en secuencia, en lugar de un único bloque configurado para siete valores. Esta decisión se tomó debido a una limitación observada en el compilador OpenModelica~1.25.5, en el que la modificación del parámetro de tamaño del bloque \verb|AddFloat| provoca un error interno de instanciación, el encadenamiento de bloques con el tamaño por defecto evita dicho comportamiento.\\
 
@@ -97,7 +97,7 @@ Dado que en la topología del vehículo los frames de las ruedas se ubican sobre
 
 El modelo \verb|UDPInput| implementa el canal de comunicación de recepción del sistema, permitiendo obtener los comandos del conductor. Constituye la contraparte en Modelica de la aplicación de adquisición de datos desde el hardware descrita en la sección \textit{Interfaz para el hardware}, y cierra el lazo \textit{Man-in-the-Loop} al incluir en el modelo las acciones ejercidas por el piloto capturadas desde los periféricos.\\
 
-Su estructura interna es simétrica a la de \verb|FrameToUDP|, pero orientada a la lectura: un bloque \verb|UDPReceive| escucha en el puerto configurable \verb|udpPort| (por defecto, 12347) y entrega el datagrama UDP recibido, para que luego, cuatro bloques \verb|GetFloat| desempaqueten la información y la codifiquen en cuatro números de punto flotante de $32$ bits, convirtiéndolos luego a variables \verb|Real| de doble precisión. Estas son expuestas como cuatro salidas \verb|RealOutput|: \verb|steer|, \verb|throttle|, \verb|brake| y \verb|clutch|, que se conectan respectivamente a las entradas \verb|steerInput|, \verb|throttleInput| y \verb|brakeInput| del modelo del vehículo (la señal de embrague queda disponible para usos futuros si se considerase necesaria). El formato de 16 bytes y el puerto 12347 coinciden exactamente con los que emite la aplicación \verb|FFBReceiver|, garantizando la conexión fluída entre ambos extremos. Al igual que los transmisores, incorpora un bloque \verb|RealtimeSynchronize| para sincronizar la recepción en tiempo real.\\
+Su estructura interna es simétrica a la de \verb|FrameToUDP|, pero orientada a la lectura: un bloque \verb|UDPReceive| escucha en el puerto configurable \verb|udpPort| (por defecto, 12347) y entrega el datagrama UDP recibido, para que luego, cuatro bloques \verb|GetFloat| desempaqueten la información y la codifiquen en cuatro números de punto flotante de $32$ bits, convirtiéndolos luego a variables \verb|Real| de doble precisión. Estas son expuestas como cuatro salidas \verb|RealOutput|: \verb|steer|, \verb|throttle|, \verb|brake| y \verb|clutch|, que se conectan respectivamente a las entradas \verb|steerInput|, \verb|throttleInput| y \verb|brakeInput| del modelo del vehículo (la señal de embrague queda disponible para usos futuros si se considerase necesaria). El formato de 16 bytes y el puerto 12347 coinciden exactamente con los que emite la aplicación \verb|FFBReceiver|, garantizando la conexión fluida entre ambos extremos. Al igual que los transmisores, incorpora un bloque \verb|RealtimeSynchronize| para sincronizar la recepción en tiempo real.\\
 
 \subsection{Roads}
 
@@ -106,7 +106,7 @@ El paquete \verb|Roads| encapsula el entorno y el mundo de la simulación sobre 
 
 \subsubsection{Road}
 
-El modelo \verb|Road| es el componente de más alto nivel del paquete y actúa como punto de ensemble para el entorno completo. Instancia, primero, un objeto \verb|World| de la biblioteca \textit{MultiBody}, necesario para definir un sistema de referencia global y el vector de gravedad, junto con un \verb|TerrainMap| y un \verb|Floor4Corners|. Tanto \verb|World| como \verb|TerrrainMap| se declaran como objetos \texttt{inner}, lo que permite que cualquier submodelo del sistema los referencia mediante la palabra reservada \texttt{outer} sin necesidad de pasarlos como argumentos. \\
+El modelo \verb|Road| es el componente de más alto nivel del paquete y actúa como punto de ensemble para el entorno completo. Instancia, primero, un objeto \verb|World| de la biblioteca \textit{MultiBody}, necesario para definir un sistema de referencia global y el vector de gravedad, junto con un \verb|TerrainMap| y un \verb|Floor4Corners|. Tanto \verb|World| como \verb|TerrainMap| se declaran como objetos \texttt{inner}, lo que permite que cualquier submodelo del sistema los referencia mediante la palabra reservada \texttt{outer} sin necesidad de pasarlos como argumentos. \\
 
 Hacia el resto del modelo, \verb|Road| expone cuatro conectores de tipo \verb|Frame_a|, uno perteneciente a cada esquina del vehículo: delantera izquierda (\verb|FL|), delantera derecha (\verb|FR|), trasera izquierda (\verb|RL|) y trasera derecha (\verb|RR|). Estos frames se conectan directamente con los de los centros de rueda del modelo del vehículo, constituyendo la conexión mecánica entre el entorno/mundo de simulación y el chasis.\\
 
@@ -148,7 +148,7 @@ El modelo \verb|Floor| es un modelo compuesto que instancia dos subcomponentes, 
 	
 	\vspace{1em} % Adds spacing between image and quote
 	
-	\caption[Diagrama de Floor4Corners en OpenModelica]{Diagrama de bloques del modelo Floor4Corners generado en OpenModelica. Cuatro instancias de \textit{Floor} se conecta a los marcos que funcionan como contacto con las ruedas.}
+	\caption[Diagrama de Floor4Corners en OpenModelica]{Diagrama de bloques del modelo Floor4Corners generado en OpenModelica. Cuatro instancias de \textit{Floor} se conectan a los marcos que funcionan como contacto con las ruedas.}
 	\label{fig:floor4corners}
 \end{figure}
 \newpage
@@ -225,12 +225,12 @@ Este torque es el responsable de transmitir la fuerza de tracción como par rota
 El subpaquete \verb|Terrains| gestiona la definición de la geometría del terreno que va a actuar como pista y su representación visual. El bloque \verb|TerrainMap| expone la función \verb|getZ(x, y)| que devuelve la altura de la superficie en cualquier coordenada horizontal del mundo. Esta función es llamada en cada paso de la integración, tanto por \verb|GroundSpring| como por \verb|GroundFriction| a través del objeto \texttt{outer terrain}. Las implementaciones actuales pueden devolver, o un plano horizontal constante a $y = 1$ m, u otro definido por una función $y = sen(x)$. Sin embargo, es sencillo agregar nuevas expresiones analíticas o tablas de datos para representar diferentes tipos de terrenos.\\
 
 La función \verb|terrainSurface|, perteneciente al subpaquete \verb|Components|, implementa la interfaz 
-\verb|partialSurfaceCharacteristic| de \textit{MultiBody} y genera la malla de vértices que \verb|TerrainVisualizer| renderiza en la animación 3D incluída dentro del propio visualizador de OpenModelica. Es necesario mantener su comportamiento sincronizado con \verb|TerrainMap.getZ| para que la representación visual sea consistente con la geometría utilizada en el cálculo de fuerzas. Por otro lado, \verb|TerrainVisualizer| extiende \verb|PartialVisualizer| y representa el suelo como un plano sólido en la animación del entorno de OpenModelica, conectándose al marco de referencia del \verb|World|. Sin embargo, por limitaciones del compilador OpenModelica a la hora de renderizar curvas, esta función no se utiliza y se deja como placeholder. Este visualizador se utiliza solo como herramienta de debugging, ya que la visualización del sistema se realiza en un motor externo, en este caso en Unity.\\
+\verb|partialSurfaceCharacteristic| de \textit{MultiBody} y genera la malla de vértices que \verb|TerrainVisualizer| renderiza en la animación 3D incluida dentro del propio visualizador de OpenModelica. Es necesario mantener su comportamiento sincronizado con \verb|TerrainMap.getZ| para que la representación visual sea consistente con la geometría utilizada en el cálculo de fuerzas. Por otro lado, \verb|TerrainVisualizer| extiende \verb|PartialVisualizer| y representa el suelo como un plano sólido en la animación del entorno de OpenModelica, conectándose al marco de referencia del \verb|World|. Sin embargo, por limitaciones del compilador OpenModelica a la hora de renderizar curvas, esta función no se utiliza y se deja como placeholder. Este visualizador se utiliza solo como herramienta de debugging, ya que la visualización del sistema se realiza en un motor externo, en este caso en Unity.\\
 
 
 \subsubsection{Aerodynamics}
 
-El subpaquete \verb|Aerodynamics| incorpora la interacción del vehículo con el aire del entorno, este paquete es una simplificación de un modelo aerodinámico realista, ya que implementar algo de ese calibre requeriría conocimiento, poder de cómputo y tiempo fuera del alcance de esta tesina. Sin esta resistencia, el vehículo aceleraría de forma indefinida bajo un comando de acelerador constante, la componente aerodinámica es la dominante de las resistencia a altas velocidades, y es la que limita la velocidad máxima del vehículo.\\
+El subpaquete \verb|Aerodynamics| incorpora la interacción del vehículo con el aire del entorno, este paquete es una simplificación de un modelo aerodinámico realista, ya que implementar algo de ese calibre requeriría conocimiento, poder de cómputo y tiempo fuera del alcance de esta tesina. Sin esta resistencia, el vehículo aceleraría de forma indefinida bajo un comando de acelerador constante, la componente aerodinámica es la dominante de las resistencias a altas velocidades, y es la que limita la velocidad máxima del vehículo.\\
 
 \subsubsection{AeroDrag} Este componente aplica una fuerza de arrastre cuadrática sobre el marco de referencia al que se conecta. La ley de fuerza es la expresión clásica del arrastre aerodinámico \cite{gillespie1992}:
 
@@ -276,7 +276,7 @@ Quedan fuera del alcance del modelo actual la sustentación y la carga aerodiná
 
 \subsection{Cars}
 
-El paquete \verb|Cars| contiene los modelos del vehículo y todos los subsistemas que lo componen. Está organizado de la siguiente forma: en el nivel superior, se encuentran los modelos de vehículo completos, mientras que el subpaquete \verb|Parts| contiene los partes necesarias para construir dichos modelos: chasis, suspensiones, neumáticos, diferencial y frenos. Todos estos subcomponentes siguen un patrón de diseño orientado a objetos, con clases parciales que definen una interfaz y parámetros comunes, sobre las cuales se implementan las clases concretas.\\
+El paquete \verb|Cars| contiene los modelos del vehículo y todos los subsistemas que lo componen. Está organizado de la siguiente forma: en el nivel superior, se encuentran los modelos de vehículo completos, mientras que el subpaquete \verb|Parts| contiene las partes necesarias para construir dichos modelos: chasis, suspensiones, neumáticos, diferencial y frenos. Todos estos subcomponentes siguen un patrón de diseño orientado a objetos, con clases parciales que definen una interfaz y parámetros comunes, sobre las cuales se implementan las clases concretas.\\
 
 \subsubsection*{Modelos de vehículo completos}
 
@@ -330,9 +330,9 @@ La biblioteca incluye tres modelos de vehículo parametrizados:
 
 El subpaquete \verb|Chassis| define la estructura del chasis del vehículo. La clase parcial \verb|BaseChassis| establece la interfaz mínima: un parámetro para fijar la masa $m$ y un único conector \verb|Frame_a| que actúa como marco de referencia central del chasis, al cual se conectan los montajes de la suspensión, la articulación \verb|FreeMotion| y el conector \verb|chassis_pos|.\\
 
-La clase concreta \verb|RectangularChassis| extiende \verb|BaseChassis| e instancia un \verb|BodyBox| de la biblioteca \textit{MultiBody}. El \verb|BodyBox| es un cuerpo rígido con forma de paralelepípedo, que al darle sus dimensiones y densidad, calcula automáticamente el tensor de inercia completo respecto al centro de masa. La densisdad se calcula a partir de la masa total y el volumen del paralelepípedo  ($\rho = m / (l \cdot w \cdot h)$), de modo que el único dato de entrada necesario es la masa $m$. El origen del \verb|Frame_a| se sitúa en el centro geométrico del chasis mediante una traslación fija de $l/2$ hacia la parte trasera del vehículo, lo que garantiza que el centro de masa coincida con el origen del marco de referencia. \\
+La clase concreta \verb|RectangularChassis| extiende \verb|BaseChassis| e instancia un \verb|BodyBox| de la biblioteca \textit{MultiBody}. El \verb|BodyBox| es un cuerpo rígido con forma de paralelepípedo, que al darle sus dimensiones y densidad, calcula automáticamente el tensor de inercia completo respecto al centro de masa. La densidad se calcula a partir de la masa total y el volumen del paralelepípedo  ($\rho = m / (l \cdot w \cdot h)$), de modo que el único dato de entrada necesario es la masa $m$. El origen del \verb|Frame_a| se sitúa en el centro geométrico del chasis mediante una traslación fija de $l/2$ hacia la parte trasera del vehículo, lo que garantiza que el centro de masa coincida con el origen del marco de referencia. \\
 
-La elección del componente \verb|BodyBox| como representación del chasis corresponde a una decisión de modelado, pensando en la dinámica general del sistema. En un vehículo real, la masa resulta distribuída por la disposición de decenas de componentes (motor, caja de cambios, deposito de combustible, personas, etc.) que se decidió no parametrizar individualmente por cuestiones de simplicidad y desempeño, claves para un simulador de conducción en tiempo real. El paralelepípedo actúa como una abstracción de esa distribución, siendo un cuerpo de masa uniforme con las proporciones del vehículo que produce un tensor de inercia cuyas componentes principales son \cite{meriam2012}: 
+La elección del componente \verb|BodyBox| como representación del chasis corresponde a una decisión de modelado, pensando en la dinámica general del sistema. En un vehículo real, la masa resulta distribuida por la disposición de decenas de componentes (motor, caja de cambios, depósito de combustible, personas, etc.) que se decidió no parametrizar individualmente por cuestiones de simplicidad y desempeño, claves para un simulador de conducción en tiempo real. El paralelepípedo actúa como una abstracción de esa distribución, siendo un cuerpo de masa uniforme con las proporciones del vehículo que produce un tensor de inercia cuyas componentes principales son \cite{meriam2012}: 
 
 \begin{align}
     I_{xx} &= \frac{m}{12}\,(h^2 + w^2) \quad \text{(inercia de balanceo, \textit{roll})} \\
@@ -340,7 +340,7 @@ La elección del componente \verb|BodyBox| como representación del chasis corre
     I_{zz} &= \frac{m}{12}\,(l^2 + h^2) \quad \text{(inercia de cabeceo, \textit{pitch})}
 \end{align}
 
-Estas tres inercias gobiernan los tres modos de movimiento angular del chasis relevantes para la dinámica vehicular.  $I_{xx}$ determina la resistencia del vehículo al balanceo lateral durante el paso por curvas y la velocidad del cambio de pesos entre las ruedas del mismo eje, un vehículo más bajo y estrecho tendrá menor $I_{xx}$ y responderá más rápido, a cambio de ser menos estable. $I_{zz}$ se encarga del cabeceo bajo frenada y aceleración. $I_{yy}$ controla la velocidad de respuesta en guiñada ante el input de dirección. Al parametrizar el chasis únicamente con longitud, ancho, altura y masa, el modelo captura de forma implícita estas tres inercias de forma consistente con la geometría del vehículo, sin necesidad de medir o estimar el tensor de inercia directamente. Para un simulación de conducción, donde el objetivo es reproducir la sensación dinámica del vehículo (transferencia de pesos, balanceo, frenada, etc.) esta aproximación se consideró suficiente, siendo la posición vertical del centro de masa (determinada por la altura del chasis y los offsets de montaje de la suspensión) el parámetro más sensible para el comportamiento en curva.\\
+Estas tres inercias gobiernan los tres modos de movimiento angular del chasis relevantes para la dinámica vehicular.  $I_{xx}$ determina la resistencia del vehículo al balanceo lateral durante el paso por curvas y la velocidad del cambio de pesos entre las ruedas del mismo eje, un vehículo más bajo y estrecho tendrá menor $I_{xx}$ y responderá más rápido, a cambio de ser menos estable. $I_{zz}$ se encarga del cabeceo bajo frenada y aceleración. $I_{yy}$ controla la velocidad de respuesta en guiñada ante el input de dirección. Al parametrizar el chasis únicamente con longitud, ancho, altura y masa, el modelo captura de forma implícita estas tres inercias de forma consistente con la geometría del vehículo, sin necesidad de medir o estimar el tensor de inercia directamente. Para una simulación de conducción, donde el objetivo es reproducir la sensación dinámica del vehículo (transferencia de pesos, balanceo, frenada, etc.) esta aproximación se consideró suficiente, siendo la posición vertical del centro de masa (determinada por la altura del chasis y los offsets de montaje de la suspensión) el parámetro más sensible para el comportamiento en curva.\\
 
 \newpage
 
@@ -451,7 +451,7 @@ La dirección se implementa mediante un \verb|Revolute| adicional con eje vertic
     \vspace{1em} % Adds spacing between image and quote
     
 
-\caption[Esquema del mecanismo de doble triángulo]{Esquema cinemático de la suspensión de doble triángulo (\texttt{DoubleWishbone}) en el frontal del vehículo. El mecanismo de cuatro barras esta formado por el chasis, el brazo superior, el mangueto y el brazo inferior. El centro de la rueda se encuentra en el punto medio del mangueto. La intersección de las prolongaciones de los brazos define el centro instantáneo de rotación (IC), cuya posición controla la variación de caída durante el recorrido vertical \cite{doublewishbone}}
+\caption[Esquema del mecanismo de doble triángulo]{Esquema cinemático de la suspensión de doble triángulo (\texttt{DoubleWishbone}) en el frontal del vehículo. El mecanismo de cuatro barras está formado por el chasis, el brazo superior, el mangueto y el brazo inferior. El centro de la rueda se encuentra en el punto medio del mangueto. La intersección de las prolongaciones de los brazos define el centro instantáneo de rotación (IC), cuya posición controla la variación de caída durante el recorrido vertical \cite{doublewishbone}}
 \label{fig:double-wishbone}
 \end{figure}
 
@@ -468,7 +468,7 @@ La dirección se implementa mediante un \verb|Revolute| adicional con eje vertic
 \newpage
 \subsubsection*{McPherson (puntal telescópico).}
 
-El puntal McPherson (\verb|McPherson Strut|) es la topología de suspensión mas utilizada en la industria automotriz de gran escala debido a su bajo coste, simplicidad constructiva y peso reducido. En un diseño real, el puntal es un elemento estructural que integra el amortiguador telescópico y la guía superior de la rueda: su extremo superior se fija a la carrocería mediante un rodamiento de apoyo que permite la rotación para la dirección, y su extremo inferior se une al mangueto (\verb|knuckle|). Un brazo inferior de triángulo (a veces conocido como parrilla) aporta la única restricción cinemática lateral, haciendo que el conjunto tenga un único grado de libertad de desplazamiento vertical. A diferencia del \verb|double wishbone|, el mangueto no tiene un punto de rótula superior independiente: el propio puntal actúa como guía rígida del mangueto, de modo que el eje de este cambia de orientación con el ángulo de dirección.\\
+El puntal McPherson (\verb|McPherson Strut|) es la topología de suspensión más utilizada en la industria automotriz de gran escala debido a su bajo coste, simplicidad constructiva y peso reducido. En un diseño real, el puntal es un elemento estructural que integra el amortiguador telescópico y la guía superior de la rueda: su extremo superior se fija a la carrocería mediante un rodamiento de apoyo que permite la rotación para la dirección, y su extremo inferior se une al mangueto (\verb|knuckle|). Un brazo inferior de triángulo (a veces conocido como parrilla) aporta la única restricción cinemática lateral, haciendo que el conjunto tenga un único grado de libertad de desplazamiento vertical. A diferencia del \verb|double wishbone|, el mangueto no tiene un punto de rótula superior independiente: el propio puntal actúa como guía rígida del mangueto, de modo que el eje de este cambia de orientación con el ángulo de dirección.\\
 
 \begin{figure}[htbp]
 	\centering
@@ -481,9 +481,9 @@ El puntal McPherson (\verb|McPherson Strut|) es la topología de suspensión mas
 	\label{fig:mcpherson_diag}
 \end{figure}
 
-El modelo de esta librería, \verb|McPherson| adopta una simplificación deliberada: reemplaza el mecanismo de cinco eslabones (chasis, puntal, mangueto, brazo inferior, subchasis) por una única articulación \verb|Prismatic| de eje $\{0,-1,0\}$, que controla el desplazamiento vertical de la rueda. Esta decisión de implementación elimina el brazo inferior como restricción cinemática activa, y con ello también se pierde la variacíon de anchura de vía y de caída que aparecería en un modelo más detallado, a cambio de una mejor performance y simplicidad del modelo. Para reemplazar al brazo inferior se introduce una traslación fija \verb|knuckleOffset| que desplaza el centro de rueda respecto al extremo del puntal: \verb|wheelOffsetY| eleva el centro de rueda sobre la base del puntal (equivalente a la altura del mangueto) y \verb|wheelOffsetZ| lo desplaza lateralmente hacia el exterior (equivalente a la longitud efectiva del brazo inferior). Estos dos parámetros deben ajustarse en cada modelo de vehículo concreto para que la anchura de vía y la altura de rodaje del eje delantero sean coherentes con la geometría real del vehículo.\\
+El modelo de esta librería, \verb|McPherson| adopta una simplificación deliberada: reemplaza el mecanismo de cinco eslabones (chasis, puntal, mangueto, brazo inferior, subchasis) por una única articulación \verb|Prismatic| de eje $\{0,-1,0\}$, que controla el desplazamiento vertical de la rueda. Esta decisión de implementación elimina el brazo inferior como restricción cinemática activa, y con ello también se pierde la variación de anchura de vía y de caída que aparecería en un modelo más detallado, a cambio de una mejor performance y simplicidad del modelo. Para reemplazar al brazo inferior se introduce una traslación fija \verb|knuckleOffset| que desplaza el centro de rueda respecto al extremo del puntal: \verb|wheelOffsetY| eleva el centro de rueda sobre la base del puntal (equivalente a la altura del mangueto) y \verb|wheelOffsetZ| lo desplaza lateralmente hacia el exterior (equivalente a la longitud efectiva del brazo inferior). Estos dos parámetros deben ajustarse en cada modelo de vehículo concreto para que la anchura de vía y la altura de rodaje del eje delantero sean coherentes con la geometría real del vehículo.\\
 
-El resorte-amortiguador conecta el montaje superior fijo al chasis (\verb|shockTopMount|, elevado 0{,}28 m sobre el punto de anclaje del puntal con las configuraciones estándar) con la base del puntal (\verb|strutTravel.frame_b|). Por defecto, la longitud libre del conjunto es de 0{,}41 m, calculada geométricamente como $\sqrt{(0{,}28)^2 + (0{,}30)^2}$ para que el resorte este sin carga con el puntal a 0{,}30 m de compresión inicial. La dirección se implementa con el mismo \verb|Revolute| de eje vertical y la misma lógica condicional que en \verb|DoubleWishbone|.\\
+El resorte-amortiguador conecta el montaje superior fijo al chasis (\verb|shockTopMount|, elevado 0{,}28 m sobre el punto de anclaje del puntal con las configuraciones estándar) con la base del puntal (\verb|strutTravel.frame_b|). Por defecto, la longitud libre del conjunto es de 0{,}41 m, calculada geométricamente como $\sqrt{(0{,}28)^2 + (0{,}30)^2}$ para que el resorte esté sin carga con el puntal a 0{,}30 m de compresión inicial. La dirección se implementa con el mismo \verb|Revolute| de eje vertical y la misma lógica condicional que en \verb|DoubleWishbone|.\\
 
 La simplificación introducida es aceptable en el contexto de la dinámica vehicular a escala global: para la predicción del balanceo y transferencia de pesos laterales, las contribuciones de la cinemática de suspensión de primer orden son pequeñas frente a las de rigidez del resorte y la masa de la carrocería. Esta topología se emplea en el modelo \verb|E36Car| para el eje delantero, donde la limitación de espacio y la tracción trasera hacen que la variación de caída durante el giro no sea el factor limitante del comportamiento dinámico.\\
 
@@ -563,7 +563,7 @@ La simplificación introducida es aceptable en el contexto de la dinámica vehic
 
 \subsubsection*{MultiLink (eje de vínculos múltiples).}
 
-La suspensión multibrazo (más conocida como \textit{Multilink}) es la arquitectura de mayor complejidad cinemática de las implementadas. En un eje trasero Multilink (como el eje \textit{Z} (o \textit{Z-Axle} utilizada en el BMW E36) cada rueda está guida por cinco eslabones independientes: uno o dos brazos transversales, uno o dos brazos longitudinales y un tirante adicional \cite{reimpell2001}.  La separación de las funciones de guiado longitudinal, lateral y angular en eslabones distintos ofrece una mayor libertad de diseño comparada con otros tipos de geometría, el diseñador puede utilizar de forma casi independiente la convergencia (\textit{toe}), la caída (\textit{camber}), el avance (\textit{caster}) y la inclinación del pivote (\textit{kingpin inclination}) resultantes de cualquier combinación de desplazamiento vertical y fuerza de neumático.\\
+La suspensión multibrazo (más conocida como \textit{Multilink}) es la arquitectura de mayor complejidad cinemática de las implementadas. En un eje trasero Multilink (como el eje \textit{Z} (o \textit{Z-Axle} utilizada en el BMW E36) cada rueda está guiada por cinco eslabones independientes: uno o dos brazos transversales, uno o dos brazos longitudinales y un tirante adicional \cite{reimpell2001}.  La separación de las funciones de guiado longitudinal, lateral y angular en eslabones distintos ofrece una mayor libertad de diseño comparada con otros tipos de geometría, el diseñador puede utilizar de forma casi independiente la convergencia (\textit{toe}), la caída (\textit{camber}), el avance (\textit{caster}) y la inclinación del pivote (\textit{kingpin inclination}) resultantes de cualquier combinación de desplazamiento vertical y fuerza de neumático.\\
 
 
 \begin{figure}[htbp]
@@ -625,7 +625,7 @@ La dirección del resorte-amortiguador es análoga a la del \verb|DoubleWishbone
 \vspace{1em} % Adds spacing between image and quote
     
 
-\caption[Esquema del eje MultiLink]{Esquema de la geometría \texttt{Semi-trailing-arm}, que es más cercana a la abstracción aplicada del modelo \textit{Multilink}. Se pueden apreciar como tanto la caída como la convergencia están enlazados por el mismo movimiento del recorrido de la suspensión.\cite{trailing}}
+\caption[Esquema del eje MultiLink]{Esquema de la geometría \texttt{Semi-trailing-arm}, que es más cercana a la abstracción aplicada del modelo \textit{Multilink}. Se pueden apreciar cómo tanto la caída como la convergencia están enlazados por el mismo movimiento del recorrido de la suspensión.\cite{trailing}}
 \label{fig:trailing}
 \end{figure}
 \newpage
@@ -637,7 +637,7 @@ Una barra estabilizadora es una barra de torsión que vincula las dos ruedas de 
 
 % \paragraph{Fundamento.} Una barra estabilizadora es una barra de torsión que vincula las dos ruedas de un mismo eje a través del chasis. Cuando ambas ruedas recorren lo mismo —al pasar sobre un badén, por ejemplo— la barra gira como un cuerpo rígido, no se retuerce y no aporta rigidez alguna. Cuando en cambio una rueda sube y la otra baja, como ocurre al virar, la barra se retuerce y opone un par al movimiento diferencial. Esa selectividad es lo que la hace útil: permite montar resortes blandos, que dan una respuesta vertical cómoda, sin que el vehículo se incline en exceso en curva. Un automóvil de calle obtiene de ella una parte sustancial de su rigidez al balanceo \cite{gillespie1992}.\\
 
-El modelo expone cuatro conectores \verb|Frame_a|: el anclaje al chasis y el montaje de rueda de cada lado. Dos sensores \verb|RelativePosition| miden la altura del centro de rueda respecto de su anclaje y el se aplica una fuerza que responde a la diferencia entre ambas alturas:
+El modelo expone cuatro conectores \verb|Frame_a|: el anclaje al chasis y el montaje de rueda de cada lado. Dos sensores \verb|RelativePosition| miden la altura del centro de rueda respecto de su anclaje y se aplica una fuerza que responde a la diferencia entre ambas alturas:
 
 % \paragraph{Implementación.} El modelo expone cuatro conectores \verb|Frame_a|: el anclaje al chasis y el montaje de rueda de cada lado. Dos sensores \verb|RelativePosition| miden la altura de cada centro de rueda respecto de su propio anclaje, resuelta en ejes del chasis para que la referencia siga a la carrocería cuando esta balancea, y el elemento responde a la diferencia entre ambas:
 
@@ -709,38 +709,9 @@ El subcomponente \verb|TireVisualizer| renderiza cada neumático, copiando el ob
     
     \vspace{1em} % Adds spacing between image and quote
     
-\caption[Representación de Tire en Modelica]{Representación de una rueda utilizando el objeto \textit{Tire} dentro del visualizador de OpenModelica, la geometría es generada por el componente \textit{TireVisualizer}. Esta imágen fue capturada del ejemplo \textit{CivicEKExample}, la rueda está conectada al chasis mediante una geometría de suspensión Double Wishbone}
+\caption[Representación de Tire en Modelica]{Representación de una rueda utilizando el objeto \textit{Tire} dentro del visualizador de OpenModelica, la geometría es generada por el componente \textit{TireVisualizer}. Esta imagen fue capturada del ejemplo \textit{CivicEKExample}, la rueda está conectada al chasis mediante una geometría de suspensión Double Wishbone}
 \label{fig:tire}
 \end{figure}
-
-\subsubsection*{Parts.Differentials}
-
-El subpaquete \verb|Differentials| modela el componente que se encarga de transmitir el par proveniente de la transmisión a las ruedas. La clase parcial \verb|Differential| define únicamente la interfaz mecánica común: una brida rotacional de entrada de par \verb|pedalInput| (\verb|Flange_a|), alimentada por la transmisión, y dos bridas rotacionales de salida hacia las ruedas (\verb|left_out| y \verb|right_out|). No contiene ecuaciones, ya que es cada subclase concreta la que decide cómo el par se distribuye en las dos ruedas.\\
-
-\subsubsection*{SolidAxle}
-
-Un eje rígido (\textit{solid axle} o \textit{live axle}) conecta mecánicamente ambas ruedas del mismo eje mediante semiejes que giran necesariamente a la misma velocidad angular. Esta arquitectura es la más sencilla posible desde el punto de vista constructivo, tiene consecuencias directas en el comportamiento en la curva, al doblar, la rueda exterior debe recorrer un arco de mayor radio que la interior y, por lo tanto debería girar más rápido, pero, al estar ambas ruedas girando a la misma velocidad, esta diferencia de velocidad se absorbe mediante deslizamiento lateral de los neumáticos (\textit{tire scrub}), lo que genera calor, desgaste y una tendencia al sobreviraje en curvas cerradas. En lo que respecta a la dinámica del vehículo, el eje rígido introduce un acoplamiento entre el movimiento de guiñada (\textit{yaw}) del chasis y el estado de tracción de ambas ruedas: en una curva cerrada con aceleración, la rueda interior tiende a patinar antes que la exterior, ya que recibe el mismo par pero con menor carga, comportamiento característico del vehículo de tracción trasera con eje sólido. Este tipo de eje es muy común en kartings debido a su simplicidad de mantenimiento. \\
-
-A diferencia de un enfoque basado en una restricción cinemática de velocidad, que forzaría ambas ruedas a igual velocidad, pero que introduciría un lazo algebraico de índice elevado e impediría que el par de frenado modificara la velocidad de las ruedas motrices, \verb|SolidAxle| se implementa como un simple nodo mecánico: conecta la brida de entrada \verb|pedalInput| directamente a ambas salidas \verb|left_out| y \verb|right_out|, de modo que la transmisión y las dos ruedas comparten un único nodo rotacional:
-
-\begin{equation}
-    \varphi_\text{ped} = \varphi_\text{izq} = \varphi_\text{der}
-\end{equation}
-
-Ambas ruedas traseras giran a la misma velocidad angular, sin acción diferencial de velocidad, como corresponde a un eje bloqueado, y el par entregado por la transmisión se distribuye mecanicamente a través de ese nodo hacia las ruedas, en vez de ser forzado por una fuente interna. El modelo no tiene parámetros propios: el esfuerzo motor se fija en la transmisión (parámetro \verb|torqueValue| de \verb|MockTransmission|).\\
-
- \begin{figure}[htbp]
-	\centering
-	% Replace 'example-image' with your file name
-	\includegraphics[width=0.5\textwidth]{img/SolidAxle.png} 
-	
-	\vspace{1em} % Adds spacing between image and quote
-	
-	\caption[Diagrama de SolidAxle en OpenModelica]{Diagrama de bloques del modelo SolidAxle generado en OpenModelica.}
-	\label{fig:solid_axle}
-\end{figure}
-
-La ventaja de modelar el diferencial mediante intercambio de par radica en la interacción entre este y el freno. Como todos los conectores son bridas rotacionales (\verb|Flange|), cualquier par aplicado sobre las bridas de las ruedas se suma sobre el nodo compartido, de manera que el par aplicado por un objeto \verb|DiscBrake| sobre una rueda se resta directamente del par motor y desacelera el eje, como lo haría un freno real, sin necesidad de vencer ninguna restricción cinemática. La velocidad resultante de las ruedas no se impone, si no que emerge naturalmente del par motor, el de frenado, la inerciad e las ruedas y las fuerzas de contacto con el suelo. Esta clase se podría extender agregando un diferencial abierto o uno autoblocante encaminando el par de entrada a través de un \verb|IdealPlanetary| o de ecuaciones de reparto de par que permitan una diferencia de velocidad entre las dos ruedas.\\
 
 \subsubsection*{Parts.Brakes}
 
@@ -751,20 +722,20 @@ El modelo \verb|DiscBrake| modela el comportamiento de un freno de disco, aplica
 En un freno a disco real, una pinza hidráulica aprieta dos pastillas de fricción contra ambas caras de un disco conectado al eje de la rueda. La fuerza de contacto normal $N$ es proporcional a la presión hidráulica del circuito de frenos, que a su vez es función de la fuerza ejercida por el conductor sobre el pedal. El par de frenado resultante sigue el modelo de fricción de Coulomb es proporcional a la fuerza normal y al coeficiente de fricción de las pastillas $\mu_p$, y actúa siempre en sentido opuesto a la rotación de la rueda \cite{rajamani2012}:
 
 \begin{equation}
-    \tau_\text{Coulomb} = -\mu_p \cdot N_{max} \cdot r_\text{eff} \cdot \text{sign}(\omega)
+	\tau_\text{Coulomb} = -\mu_p \cdot N_{max} \cdot r_\text{eff} \cdot \text{sign}(\omega)
 \end{equation}
 
 donde $r_\text{eff}$ es el radio efectivo medio del disco. En el modelo \verb|DiscBrake|, el producto $\mu_p \cdot N_\text{max} \cdot r_\text{eff}$ queda parametrizado directamente como \verb|maxBrakeTorque| $= \tau_\text{max}$, y la demanda normalizada $u \in [0, 1]$ escala la fuerza normal, reproduciendo la relación entre la posición del pedal y el par generado:
 
 \begin{equation}
-    \tau_\text{ideal} = -u \cdot \tau_\text{max} \cdot \text{sign}(\omega)
+	\tau_\text{ideal} = -u \cdot \tau_\text{max} \cdot \text{sign}(\omega)
 \end{equation}
 
 Los valores de \verb|maxBrakeTorque| asignados a los distintos vehículos de la biblioteca —2000 N$\cdot$m para el modelo genérico, 2500 N$\cdot$m en el eje delantero del E36 y 3000 N$\cdot$m en el trasero, son coherentes con los rangos de par de frenado de vehículos de turismo de producción \cite{rajamani2012}.\\
 
 % \paragraph{El problema de la discontinuidad y la regularización \textit{tanh}.}
 
- \begin{figure}[htbp]
+\begin{figure}[htbp]
 	\centering
 	% Replace 'example-image' with your file name
 	\includegraphics[width=0.5\textwidth]{img/DiscBrake.png} 
@@ -781,17 +752,125 @@ La función $\text{sign}(\omega)$  presenta una discontinuidad en $\omega = 0$ q
 Para resolver este problema, el modelo reemplaza la función signo por una tangente hiperbólica regularizada:
 
 \begin{equation}
-    \tau_\text{freno} = -u \cdot \tau_\text{max} \cdot \tanh\!\left(k_s \cdot \omega\right)
+	\tau_\text{freno} = -u \cdot \tau_\text{max} \cdot \tanh\!\left(k_s \cdot \omega\right)
 \end{equation}
 
 La función $\tanh(k_s \cdot \omega)$ es $C^\infty$ en todo $\mathbb{R}$ y reproduce el comportamiento de Coulomb fuera de la zona de transición. Para analizarla, se distinguen dos regímenes según el valor de $k_s \cdot |\omega|$:
 
 \begin{itemize}
-    \item \textbf{Régimen lineal} ($k_s \cdot |\omega| \ll 1$): $\tanh(k_s\omega) \approx k_s\omega$, de modo que el freno se comporta como un amortiguador viscoso de coeficiente efectivo $u \cdot \tau_\text{max} \cdot k_s$. En este régimen, el par es proporcional a la velocidad y el sistema no tiene discontinuidades.
-    \item \textbf{Régimen de Coulomb} ($k_s \cdot |\omega| \gg 1$): $\tanh(k_s\omega) \approx \pm 1$, y el freno se aproxima al modelo ideal de Coulomb con par constante $\pm u \cdot \tau_\text{max}$.
+	\item \textbf{Régimen lineal} ($k_s \cdot |\omega| \ll 1$): $\tanh(k_s\omega) \approx k_s\omega$, de modo que el freno se comporta como un amortiguador viscoso de coeficiente efectivo $u \cdot \tau_\text{max} \cdot k_s$. En este régimen, el par es proporcional a la velocidad y el sistema no tiene discontinuidades.
+	\item \textbf{Régimen de Coulomb} ($k_s \cdot |\omega| \gg 1$): $\tanh(k_s\omega) \approx \pm 1$, y el freno se aproxima al modelo ideal de Coulomb con par constante $\pm u \cdot \tau_\text{max}$.
 \end{itemize}
 
 La transición entre ambos regímenes ocurre en la zona $|\omega| \approx 1/k_s$. Con $k_s = 10$ rad$^{-1}{\cdot}$s, esta zona tiene un ancho de $\pm 0{,}1$ rad/s, equivalente a aproximadamente $\pm 1$ rpm para una rueda típica. A velocidades superiores a este umbral, el freno se comporta esencialmente como el modelo de Coulomb ideal, por debajo de él, la transición suave evita cualquier evento de cruce por cero y garantiza la continuidad diferenciable del sistema \cite{armstrong1994}. Este compromiso es adecuado para la simulación de dinámica vehicular, donde el bloqueo total de una rueda es un fenómeno de interés pero la oscilación subsecuente en torno a $\omega = 0$ no lo es.\\
+
+
+\subsubsection*{Parts.Differentials}
+
+El subpaquete \verb|Differentials| modela el componente que se encarga de transmitir el par proveniente de la transmisión a las ruedas. La clase parcial \verb|Differential| define únicamente la interfaz mecánica común: una brida rotacional de entrada de par \verb|pedalInput| (\verb|Flange_a|), alimentada por la transmisión, y dos bridas rotacionales de salida hacia las ruedas (\verb|left_out| y \verb|right_out|). No contiene ecuaciones, ya que es cada subclase concreta la que decide cómo el par se distribuye en las dos ruedas.\\
+
+\subsubsection*{SpoolDifferential}
+
+Un diferencial \textit{Spool} conecta mecánicamente ambas ruedas del mismo eje haciendo que giren necesariamente a la misma velocidad angular. Esta arquitectura es la más sencilla posible desde el punto de vista constructivo, tiene consecuencias directas en el comportamiento en la curva, al doblar, la rueda exterior debe recorrer un arco de mayor radio que la interior y, por lo tanto debería girar más rápido, pero, al estar ambas ruedas girando a la misma velocidad, esta diferencia de velocidad se absorbe mediante deslizamiento lateral de los neumáticos (\textit{tire scrub}), lo que genera calor, desgaste y una tendencia al sobreviraje en curvas cerradas. En lo que respecta a la dinámica del vehículo, el diferencial bloqueado introduce un acoplamiento entre el movimiento de guiñada (\textit{yaw}) del chasis y el estado de tracción de ambas ruedas: en una curva cerrada con aceleración, la rueda interior tiende a patinar antes que la exterior, ya que recibe el mismo par pero con menor carga, comportamiento característico del vehículo de tracción trasera con eje sólido. Este tipo de eje es muy común en kartings debido a su simplicidad de mantenimiento. \\
+
+A diferencia de un enfoque basado en una restricción cinemática de velocidad, que forzaría ambas ruedas a igual velocidad, pero que introduciría un lazo algebraico de índice elevado e impediría que el par de frenado modificara la velocidad de las ruedas motrices, \verb|SolidAxle| se implementa como un simple nodo mecánico: conecta la brida de entrada \verb|pedalInput| directamente a ambas salidas \verb|left_out| y \verb|right_out|, de modo que la transmisión y las dos ruedas comparten un único nodo rotacional:
+
+\begin{equation}
+    \varphi_\text{ped} = \varphi_\text{izq} = \varphi_\text{der}
+\end{equation}
+
+Ambas ruedas traseras giran a la misma velocidad angular, sin acción diferencial de velocidad, como corresponde a un eje bloqueado, y el par entregado por la transmisión se distribuye mecánicamente a través de ese nodo hacia las ruedas, en vez de ser forzado por una fuente interna. El modelo no tiene parámetros propios: el esfuerzo motor se fija en la transmisión (parámetro \verb|torqueValue| de \verb|MockTransmission|).\\
+
+ \begin{figure}[htbp]
+	\centering
+	% Replace 'example-image' with your file name
+	\includegraphics[width=0.5\textwidth]{img/SolidAxle.png} 
+	
+	\vspace{1em} % Adds spacing between image and quote
+	
+	\caption[Diagrama de SolidAxle en OpenModelica]{Diagrama de bloques del modelo SolidAxle generado en OpenModelica.}
+	\label{fig:solid_axle}
+\end{figure}
+
+La ventaja de modelar el diferencial mediante intercambio de par radica en la interacción entre este y el freno. Como todos los conectores son bridas rotacionales (\verb|Flange|), cualquier par aplicado sobre las bridas de las ruedas se suma sobre el nodo compartido, de manera que el par aplicado por un objeto \verb|DiscBrake| sobre una rueda se resta directamente del par motor y desacelera el eje, como lo haría un freno real, sin necesidad de vencer ninguna restricción cinemática. La velocidad resultante de las ruedas no se impone, sino que emerge naturalmente del par motor, el de frenado, la inercia de las ruedas y las fuerzas de contacto con el suelo.\\
+
+\subsubsection*{OpenDifferential}
+
+El diferencial abierto es el tipo de diferencial más utilizado en vehículos de calle en la actualidad, funciona desacoplando las velocidades angulares de las ruedas y eliminando el arrastre lateral presente en el diferencial \textit{Spool} \cite{gadola2021}. El reparto de par se calcula de la siguiente forma \cite{gadola2021}: 
+
+\begin{equation}
+	\omega_\text{ped} = \frac{\omega_\text{izq} + \omega_\text{der}}{2}
+	\qquad\text{y}\qquad
+	\tau_\text{izq} = \tau_\text{der} = \frac{\tau_\text{ped}}{2}
+	\label{eq:diferencial-abierto}
+\end{equation}
+
+La característica dinámica principal de un diferencial abierto viene de este reparto. Como ambas ruedas reciben el mismo par, si hay alguna de las dos que tiene menos agarre, como por ejemplo, en un arranque sobre terreno asimétrico, donde una rueda apoya en una superficie más abrasiva que la otra, el estado resultante es \cite{gadola2021}:
+
+\begin{equation}
+	\tau_\text{izq} = \tau_\text{der} \approx 0
+	\qquad
+	\omega_\text{izq} \approx 0
+	\qquad
+	\omega_\text{der} \approx 2\,\omega_\text{ped}
+	\label{eq:mu-split}
+\end{equation}
+
+La rueda con más agarre queda detenida y la que patina gira al doble de la velocidad de entrada. Se puede decir que la potencia recorre el camino de menor resistencia, haciendo que su transmisión al suelo sea menos efectiva. Este defecto es el que un diferencial autoblocante puede corregir, ya sea para vehículos de competición o para situaciones de \textit{off-road}.\\
+
+El modelo en Modelica traduce directamente la ecuación \eqref{eq:diferencial-abierto}, escribiendo la restricción cinemática a nivel de posición:
+
+\begin{equation}
+	\varphi_\text{ped} = \frac{\varphi_\text{izq} + \varphi_\text{der}}{2}
+	\qquad
+	\tau_\text{izq} = \tau_\text{der} = -\frac{\tau_\text{ped}}{2}
+\end{equation}
+
+El cambio de signo respecto de \eqref{eq:diferencial-abierto} es debido a la convención de las bridas rotacionales de Modelica, en las que \verb|tau| es el par que entra al componente desde el exterior.
+
+%El cambio de signo respecto de \eqref{eq:diferencial-abierto} responde a la convención de las bridas rotacionales de Modelica, en las que \verb|tau| es el par que entra al componente desde el exterior. Estas tres ecuaciones equivalen al componente \verb|IdealPlanetary| de la biblioteca estándar evaluado en \verb|ratio = 1|, tomando el portasatélites como entrada \cite{msl_rotational}; se escriben de forma explícita para que \verb|LimitedSlipDifferential| pueda extender el mismo balance de par con un término adicional. El modelo no tiene parámetros y no agrega estados continuos: la única restricción cinemática elimina un grado de libertad de los tres ejes y deja dos.\\
+
+\subsubsection{LimitedSlipDifferential}
+
+Un diferencial autoblocante (\textit{limited-slip differential}, LSD) conserva las leyes del diferencial abierto y agrega un dispositivo de fricción que transfiere par desde la rueda más rápida hacia la mas lenta. Si $\omega_\text{izq} > \omega_\text{der}$, el reparto pasa a ser \cite{gadola2021}:
+
+\begin{equation}
+	\tau_\text{izq} = \frac{\tau_\text{ped}}{2} - \Delta\tau
+	\qquad
+	\tau_\text{der} = \frac{\tau_\text{ped}}{2} + \Delta\tau
+	\label{eq:lsd-reparto}
+\end{equation} 
+
+donde $\Delta\tau$ es el par de bloqueo. Como se utiliza el mismo valor con signos opuestos en ambas salidas, se modifica el reparto sin alterar el total $\tau_\text{izq} + \tau_\text{der} = \tau_\text{ped}$. El par se quita de la rueda que patina y se entrega a la que tiene agarre. \\
+
+Según el tipo,  $\Delta\tau$ depende de la diferencia de velocidad entre las salidas (acoplamiento viscoso), del par de entrada (diferencial de rampas o Salisbury) o de una precarga estática independiente de ambos \cite{gadola2021}. El modelo \verb|LimitedSlipDifferential| reúne los tres efectos en una sola expresión:
+
+\begin{equation}
+	\Delta\tau = \underbrace{\left(\tau_\text{pre} + k_b \cdot |\tau_\text{ped}|\right)}_{\tau_\text{cap}} \cdot \tanh\!\left(\frac{\Delta\omega}{\omega_\text{ref}}\right) + d_v \cdot \Delta\omega
+	\label{eq:lsd-bloqueo}
+\end{equation}
+
+con $\tau_\text{pre}$ la precarga, $k_b$ la fracción del par de entrada que aportan las rampas y $d_v$ la tasa viscosa.\\
+
+El coeficiente $k_b$ resume toda la geometría interna del dispositivo en un único número, lo que permite ajustar el modelo a partir del dato que los fabricantes publican: el \textit{torque bias ratio} (TBR), cociente entre el par de la rueda lenta y el de la rápida en el límite de bloqueo. Sustituyendo $\Delta\tau = k_b \cdot \tau_\text{ped}$ en \eqref{eq:lsd-reparto} \cite{gadola2021}:
+
+\begin{equation}
+	\text{TBR} = \frac{1 + 2k_b}{1 - 2k_b}
+	\qquad\Longrightarrow\qquad
+	k_b = \frac{\text{TBR} - 1}{2\,(\text{TBR} + 1)}
+	\label{eq:tbr}
+\end{equation}
+
+Un paquete de embrague real alterna entre adherencia y deslizamiento, la misma no linealidad de conmutación que la fricción del freno de disco.  Escrito como $\tau_\text{cap} \cdot \text{sign}(\Delta\omega)$, el par de bloqueo introduciría eventos de cruce por cero en la transmisión, con el costo sobre la integración en tiempo real ya analizado para \verb|DiscBrake| \cite{armstrong1994}. Por eso la ecuación \eqref{eq:lsd-bloqueo} emplea la misma regularización por tangente y el valor absoluto $|\tau_\text{ped}|$ se evalúa bajo \verb|noEvent| para que su punto anguloso tampoco genere un indicador de evento.\\
+
+Ninguno de los diferenciales agregan estados continuos ni indicadores de eventos. Fijando $\text{TBR} = 1$, $\tau_\text{pre} = 0$ y $d_v = 0$ se obtiene $\Delta\tau = 0$ y \verb|LimitedSlipDifferential| se reduce a \verb|OpenDifferential|.\\
+
+
+\subsubsection{Limitaciones del modelo}
+
+El modelo emplea un único valor de $k_b$, mientras que un diferencial de rampas real monta pares de rampas distintos para tracción y retención, lo que produce bloqueos diferentes en ambos sentidos  \cite{gadola2021}. Esto se deja como trabajo futuro para no seguir complejizando el sistema.
+
+
 
 \subsubsection*{Parts.Transmission}
 
@@ -818,11 +897,11 @@ La implementación \verb|MockSteering| aplica un mapeo lineal entre ambos:
     \delta = \delta_\text{max} \cdot u_\text{steer}
 \end{equation}
 
-donde $\delta_\text{max}$ (representado por el parámetro \verb|maxSteerAngle|, con valor por defecto $0{,}53$ rad $\approx 30°$) es el ángulo de rueda cuando el volante esta al máximo de su giro y $u_\text{steer} = 0$ corresponde a la marcha recta. La salida \verb|steerAngle| se conecta a los actuadores de posición (\verb|Rotational.Sources.Position|) de las dos ruedas delanteras que reciben el mismo ángulo, ya que no se está modelando la dinámica de la columna de dirección, la relación de dirección variable ni la geometría de Ackermann. Como en el caso de la transmisión, la separación de la interfaz permite sustituir \verb|MockSteering| por un modelo más detallado sin alterar el resto del vehículo.\\
+donde $\delta_\text{max}$ (representado por el parámetro \verb|maxSteerAngle|, con valor por defecto $0{,}53$ rad $\approx 30°$) es el ángulo de rueda cuando el volante está al máximo de su giro y $u_\text{steer} = 0$ corresponde a la marcha recta. La salida \verb|steerAngle| se conecta a los actuadores de posición (\verb|Rotational.Sources.Position|) de las dos ruedas delanteras que reciben el mismo ángulo, ya que no se está modelando la dinámica de la columna de dirección, la relación de dirección variable ni la geometría de Ackermann. Como en el caso de la transmisión, la separación de la interfaz permite sustituir \verb|MockSteering| por un modelo más detallado sin alterar el resto del vehículo.\\
 
 \subsection{Examples}
 
-El paquete\verb|Examples| compila los modelos ejecutables de alto nivel: los puntos de entrada de la simulación que ensamblan un vehículo completo, el entorno y los comandos del conductor en un sistema autocontenido y simulable. Cumplen una doble función, como escenarios de validación del comportamiento dinámico y como plantillas a partir de las cuales construir nuevas simulaciones.\\
+El paquete \verb|Examples| compila los modelos ejecutables de alto nivel: los puntos de entrada de la simulación que ensamblan un vehículo completo, el entorno y los comandos del conductor en un sistema autocontenido y simulable. Cumplen una doble función, como escenarios de validación del comportamiento dinámico y como plantillas a partir de las cuales construir nuevas simulaciones.\\
 
 
 Todos los ejemplos comparten la misma estructura de ensamblaje. En primer lugar, declaran el radio de rueda como un parámetro global \\ \verb|inner parameter Real R_wheel|, que se propaga por el mecanismo \texttt{inner}/\texttt{outer} a los neumáticos y a los modelos de contacto con el suelo. A continuación instancian tres bloques principales: un vehículo (\verb|Car|, \verb|CivicEKCar| o \verb|E36Car|), el entorno \verb|Roads.Road|, que a su vez posee el \verb|World|, el terreno y los cuatro contactos de rueda, y un conjunto de fuentes de señal que emulan las acciones del conductor. Estas fuentes se conectan a las entradas normalizadas \verb|throttleInput|, \verb|steerInput| y \verb|brakeInput| del vehículo, mientras que los cuatro conectores \verb|frame_FL/FR/RL/RR| del vehículo se acoplan a los del entorno, cerrando el contacto rueda-suelo.\\
@@ -870,7 +949,7 @@ Los tres primeros (\verb|CarExample|, \verb|CivicEKExample| y \verb|E36Example|)
 
 \begin{itemize}
     
-    \item \verb|CarExample| simula el modelo \verb|Car|, inspirado levemente en un monoplaza ligero tipo Formula Ford 1600. Es el más liviano y de geometría más simétrica: chasis de 400 kg con dimensiones $3{,}0 \times 1{,}8 \times 0{,}5$ m, batalla de 3{,}0 m y vía de 1{,}8 m. Utiliza suspensión \verb|DoubleWishbone| en las cuatro puntas, con la rigidez y amortiguamiento por defecto de \verb|BaseSuspension| ($k = 30$ kN/m, $d = 2500$ N$\cdot$s/m). Es un vehículo de tracción trasera, con neumáticos \verb|DrivingTire| detrás y \verb|Tire| pasivos delante, de radio $R = 0{,}25$ m. El chasis arranca suspendido a 1{,}2 m sobre el terreno y cae hasta el equilibrio estático.
+    \item \verb|CarExample| simula el modelo \verb|Car|, inspirado levemente en un monoplaza ligero tipo Formula Ford 1600. Es el más liviano y de geometría más simétrica: chasis de 400 kg con dimensiones $3{,}0 \times 1{,}8 \times 0{,}5$ m, batalla de 3{,}0 m y vía de 1{,}8 m. Utiliza suspensión \verb|DoubleWishbone| en las cuatro puntas, con la rigidez y amortiguamiento por defecto de \verb|BaseSuspension| ($k = 30$ kN/m, $d = 2500$ N$\cdot$s/m). Es un vehículo de tracción trasera, con neumáticos \verb|DrivingTire| detrás y \verb|Tire| pasivos delante, de radio $R = 0{,}25$ m. El chasis arranca suspendido a 1{,}2 m sobre el terreno y cae hasta el equilibrio estático. Emplea un diferencial abierto \verb|OpenDifferential| a pesar de ser un vehículo de competición con el objetivo de reducir costes de operación.
     \newpage
 \begin{figure}[htbp]
     \centering
@@ -879,11 +958,11 @@ Los tres primeros (\verb|CarExample|, \verb|CivicEKExample| y \verb|E36Example|)
     
     \vspace{1em} % Adds spacing between image and quote
     
-\caption[Formula Ford 1600]{Imágen de un vehículo Formula Ford 1600. Se puede observar las geometría de suspensión \textit{Double Wishbone}. Fuente: https://racecarsdirect.com/Advert/Details/91965/o5-ray-formula-ford-1600.}
+\caption[Formula Ford 1600]{Imagen de un vehículo Formula Ford 1600. Se puede observar la geometría de suspensión \textit{Double Wishbone}. Fuente: https://racecarsdirect.com/Advert/Details/91965/o5-ray-formula-ford-1600.}
 \label{fig:ff1600}
 \end{figure}
 
-    \item \verb|CivicEKExample| simula el \verb|CivicEKCar|, basado en un Honda Civic EK hatchback de tracción delantera. Chasis de 990 kg de peso y dimensiones $4{,}178 \times 1{,}704 \times 0{,}4$ m, con batalla de 2{,}62 m y vía de 1{,}47 m. Emplea \verb|DoubleWishbone| en las cuatro esquinas, con rigidez diferenciada por eje, 16 kN/m delante y 14 kN/m detrás, y amortiguamiento de 1800 N$\cdot$s/m en las cuatro ruedas. La tracción es delantera (\verb|DrivingTire| en el eje delantero, \verb|Tire| pasivos detrás) y los neumáticos son 185/65R14 ($R = 0{,}30$ m).
+    \item \verb|CivicEKExample| simula el \verb|CivicEKCar|, basado en un Honda Civic EK hatchback de tracción delantera. Chasis de 990 kg de peso y dimensiones $4{,}178 \times 1{,}704 \times 0{,}4$ m, con batalla de 2{,}62 m y vía de 1{,}47 m. Emplea \verb|DoubleWishbone| en las cuatro esquinas, con rigidez diferenciada por eje, 16 kN/m delante y 14 kN/m detrás, y amortiguamiento de 1800 N$\cdot$s/m en las cuatro ruedas. La tracción es delantera (\verb|DrivingTire| en el eje delantero, \verb|Tire| pasivos detrás) y los neumáticos son 185/65R14 ($R = 0{,}30$ m). Emplea un diferencial abierto \verb|OpenDifferential|, como la mayoría de vehículos de calle tracción delantera.
 \newpage
 \begin{figure}[htbp]
     \centering
@@ -892,11 +971,11 @@ Los tres primeros (\verb|CarExample|, \verb|CivicEKExample| y \verb|E36Example|)
     
     \vspace{1em} % Adds spacing between image and quote
     
-\caption[Honda Civic EK]{Imágen de un vehículo Honda Civic de la generación EK. Fuente: https://es.wikipedia.org/wiki/Honda\_Civic\_(sexta\_generación).}
+\caption[Honda Civic EK]{Imagen de un vehículo Honda Civic de la generación EK. Fuente: https://es.wikipedia.org/wiki/Honda\_Civic\_(sexta\_generación).}
 \label{fig:civicek}
 \end{figure}
     
-    \item \verb|E36Example| simula el \verb|E36Car|, basado en un BMW E36 de tracción trasera. Chasis de 1000 kg de masa suspendida y dimensiones $4{,}433 \times 1{,}710 \times 0{,}4$ m, con batalla de 2{,}70 m y vía de 1{,}42 m. Es el vehículo de geometría de suspensión más elaborada: puntal \verb|McPherson| en el eje delantero (20 kN/m, 2200 N$\cdot$s/m, con desplazamientos de mangueto \verb|wheelOffsetY| $= 0{,}25$ m y \verb|wheelOffsetZ| $= 0{,}30$ m para restituir la vía y la altura del centro de rueda) y eje trasero \verb|MultiLink| de tipo Z (16 kN/m, 2200 N$\cdot$s/m), con \verb|DrivingTire| en el eje trasero. Los neumáticos son 195/65R15 ($R = 0{,}31$ m).
+    \item \verb|E36Example| simula el \verb|E36Car|, basado en un BMW E36 de tracción trasera. Chasis de 1000 kg de masa suspendida y dimensiones $4{,}433 \times 1{,}710 \times 0{,}4$ m, con batalla de 2{,}70 m y vía de 1{,}42 m. Es el vehículo de geometría de suspensión más elaborada: puntal \verb|McPherson| en el eje delantero (20 kN/m, 2200 N$\cdot$s/m, con desplazamientos de mangueto \verb|wheelOffsetY| $= 0{,}25$ m y \verb|wheelOffsetZ| $= 0{,}30$ m para restituir la vía y la altura del centro de rueda) y eje trasero \verb|MultiLink| de tipo Z (16 kN/m, 2200 N$\cdot$s/m), con \verb|DrivingTire| en el eje trasero. Los neumáticos son 195/65R15 ($R = 0{,}31$ m). Utiliza un diferencial autoblocante \verb|LimitedSlipDifferential| lo que le da una dinámica más deportiva al vehículo.
 \newpage
 \begin{figure}[htbp]
     \centering
@@ -905,20 +984,20 @@ Los tres primeros (\verb|CarExample|, \verb|CivicEKExample| y \verb|E36Example|)
     
     \vspace{1em} % Adds spacing between image and quote
     
-\caption[BMW Serie 3 E36]{Imágen de un vehículo BMW Serie 3 de la generación E36. Fuente: https://en.wikipedia.org/wiki/BMW\_3\_Series\_(E36).}
+\caption[BMW Serie 3 E36]{Imagen de un vehículo BMW Serie 3 de la generación E36. Fuente: https://en.wikipedia.org/wiki/BMW\_3\_Series\_(E36).}
 \label{fig:e36}
 \end{figure}
     
 \end{itemize}
 
-Esta correspondencia (un mismo escenario de conducción aplicado a tres vehículos de masa, batalla y arquitectura de suspensión marcadamente distintas) es una demostración directa de la capacidad de reutilización que habilita el diseño modular de la biblioteca: simular un monoplaza de tracción trasera, a un hatchback de tracción delantera, o un sedan con puntal McPherson y eje multibrazo requiere solamente reemplazar el modelo del vehículo instanciado, sin alterar el entorno ni la estructura de la simulación.\\
+Esta correspondencia (un mismo escenario de conducción aplicado a tres vehículos de masa, batalla y arquitectura de suspensión marcadamente distintas) es una demostración directa de la capacidad de reutilización que habilita el diseño modular de la biblioteca: simular un monoplaza de tracción trasera, a un hatchback de tracción delantera, o un sedán con puntal McPherson y eje multibrazo requiere solamente reemplazar el modelo del vehículo instanciado, sin alterar el entorno ni la estructura de la simulación.\\
 
 El cuarto ejemplo, \verb|CarExampleUDP| está orientado a demostrar la visualización en tiempo real, utilizando un motor externo. Reutiliza el mismo \verb|Car| que \verb|CarExample|, pero añade cinco transmisores \verb|FrameToUDPOrientation|, uno para el chasis y uno por cada rueda, que emiten la pose completa (posición y orientación) a puertos UDP consecutivos del 12345 al 12349, de modo que un cliente en Unity (o cualquier otro visualizador) pueda renderizar elementos gráficos utilizando esta información en tiempo real. La señal de dirección es sinusoidal, para que el barrido de las ruedas pueda verificarse visualmente en el entorno gráfico. Debido a que los transmisores son sensores puros (no imponen fuerza y/o torque sobre los frames que leen), no alteran la dinámica del vehículo, y como los marcos de las ruedas se ubican sobre la salida de la junta de rotación, la orientación transmitida captura tanto el ángulo de dirección como el giro propio de cada rueda.\\
 
 
 \subsection{CarExport}
 
-El subpaquete \verb|Examples.CarExport| contiene los modelos de los tres vehículos listos para ser exportados y ejecutados desde un aplicación externa. Se diferencian de los otros ejemplos en el hecho de que no incorporan fuentes de señal, si no que exponen los comandos de entrada como inputs del modelo, para que un programa externo que gobierne la simulación los provea. Estos modelos son los que se exportan como FMU y los que usa la arquitectura de co-simulación descrita en la sección~\ref{sec:cosim}.\\
+El subpaquete \verb|Examples.CarExport| contiene los modelos de los tres vehículos listos para ser exportados y ejecutados desde una aplicación externa. Se diferencian de los otros ejemplos en el hecho de que no incorporan fuentes de señal, sino queexponen los comandos de entrada como inputs del modelo, para que un programa externo que gobierne la simulación los provea. Estos modelos son los que se exportan como FMU y los que usa la arquitectura de co-simulación descrita en la sección~\ref{sec:cosim}.\\
 
 Los tres usan la clase parcial \verb|ExportInterface|, que declara la interfaz y no contiene ecuación alguna. Las entradas son los tres comandos normalizados del conductor y las salidas describen la pose de los cinco cuerpos que el visualizador necesita representar:
 
@@ -969,10 +1048,10 @@ La elección de utilizar una aplicación externa dedicada, en lugar de leer los 
 
 \subsection{Adquisición mediante DirectInput}
 
-En esta aplicación, la captura de señales de los periféricos se realiza mediante la API \textit{DirectInput8}, desarrollada por Windows \cite{di}. Aunque se trata de una interfaz heredada dentro del ecosistema de Microsoft, sigue siendo el estándar para los volantes y pedaleras de simulación de conducción de gama comercial y permite ser utilizada en Linux mediante capas de compatibilidad como Wine o Proton, por lo que garantiza la compatibilidad con la mayor parte del hardware disponible en el mercado \cite{di,sdl}. DirectInput también establece una interfaz para interactuar con los servo-motores normalmente utilizados como dispositivos de entrada para los volantes de gama comercial, permitiendo así implementar un sistema para dar feedback proveniente del modelo si se quiere.\\
+En esta aplicación, la captura de señales de los periféricos se realiza mediante la API \textit{DirectInput8}, desarrollada por Windows \cite{di}. Aunque se trata de una interfaz heredada dentro del ecosistema de Microsoft, sigue siendo el estándar para los volantes y pedaleras de simulación de conducción de gama comercial y permite ser utilizada en Linux mediante capas de compatibilidad como Wine o Proton, por lo que garantiza la compatibilidad con la mayor parte del hardware disponible en el mercado \cite{di,sdl}. DirectInput también establece una interfaz para interactuar con los servomotores normalmente utilizados como dispositivos de entrada para los volantes de gama comercial, permitiendo así implementar un sistema para dar feedback proveniente del modelo si se quiere.\\
 
 
-La lectura de cada dispositivo se realiza mediante \textit{polling}: en cada ciclo se invoca \verb|Poll|, seguido de \verb|GetDeviceState|, con la capacidad de reintentar la readquisición (\verb|Acquire|) del dispositivo ante alguna perdida inesperada (\verb|DIERR_INPUTLOST|), lo que provee robustez frente a desconexiones transitorias.
+La lectura de cada dispositivo se realiza mediante \textit{polling}: en cada ciclo se invoca \verb|Poll|, seguido de \verb|GetDeviceState|, con la capacidad de reintentar la readquisición (\verb|Acquire|) del dispositivo ante alguna pérdida inesperada (\verb|DIERR_INPUTLOST|), lo que provee robustez frente a desconexiones transitorias.
 
 \begin{figure}[htbp]
     \centering
@@ -992,7 +1071,7 @@ Cada uno de los cuatro canales lógicos: dirección (\textit{steering}), acelera
 
 
 \begin{enumerate}
-    \item \textbf{Detección automática del eje.} Se solicita al usuario que accione el control a lo largo de todo su recorrido mientras el programa monitoriza el rango de los ocho ejes simultáneamente. El eje cuyo recorrido acumulado domina claramente sobre el resto se identifica como el eje asociado al canal. Este criterio de auto-escalado es robusto frente a diferencias de rango entre dispositivos y ante el ruido de los ejes en reposo.
+    \item \textbf{Detección automática del eje.} Se solicita al usuario que accione el control a lo largo de todo su recorrido mientras el programa monitoriza el rango de los ocho ejes simultáneamente. El eje cuyo recorrido acumulado domina claramente sobre el resto se identifica como el eje asociado al canal. Este criterio de autoescalado es robusto frente a diferencias de rango entre dispositivos y ante el ruido de los ejes en reposo.
     \item \textbf{Captura del rango.} Se registra el valor mínimo y máximo ($r_\text{min}$, $r_\text{max}$) alcanzado durante un barrido completo del control (de tope a tope en el volante, o de reposo a fondo en los pedales).
     \item \textbf{Confirmación de inversión.} Con una previsualización en vivo del valor normalizado, el usuario puede invertir el sentido del eje para que la convención de signo sea la correcta.
 \end{enumerate}
@@ -1047,7 +1126,7 @@ Los cuatro valores normalizados se transmiten mediante el protocolo UDP, en el c
 \end{tabular}
 \end{center}
 
-La elección del protocolo UDP frente a TCP responde a los requisitos de una aplicación de control en tiempo real. TCP garantiza la entrega ordenada y sin pérdidas mediante confirmaciones y retransmisiones, pero a costa de una latencia variable e impredecible, un paquete perdido bloquea la entregas de los siguientes hasta su retransmisión. En un flujo de telemetría que corresponde a los inputs de un vehículo, un datagrama perdido pierde su significacncia una vez transcurrido su instante de muestreo, ya que el siguiente paquete lo reemplaza con información más reciente. UDP, al no tener confirmaciones de control ni de flujo, ofrece latencia mínima y determinista que exige la naturaleza de tener una simulación donde se tiene que poder reaccionar rápido a diferentes situaciones y que tiene que devolver feedback al conductor siendo la pérdida ocasional de un paquete un compromiso plenamente aceptable en este contexto, además de el hecho de que estos sistemas normalmente van a ejecutarse, o bien, en un mismo ordenador, o en una red local de alta velocidad, por lo que la perdida de paquetes sería mínima. \\
+La elección del protocolo UDP frente a TCP responde a los requisitos de una aplicación de control en tiempo real. TCP garantiza la entrega ordenada y sin pérdidas mediante confirmaciones y retransmisiones, pero a costa de una latencia variable e impredecible, un paquete perdido bloquea la entrega de los siguientes hasta su retransmisión. En un flujo de telemetría que corresponde a los inputs de un vehículo, un datagrama perdido pierde su significancia una vez transcurrido su instante de muestreo, ya que el siguiente paquete lo reemplaza con información más reciente. UDP, al no tener confirmaciones de control ni de flujo, ofrece latencia mínima y determinista que exige la naturaleza de tener una simulación donde se tiene que poder reaccionar rápido a diferentes situaciones y que tiene que devolver feedback al conductor siendo la pérdida ocasional de un paquete un compromiso plenamente aceptable en este contexto, además del hecho de que estos sistemas normalmente van a ejecutarse, o bien, en un mismo ordenador, o en una red local de alta velocidad, por lo que la pérdida de paquetes sería mínima. \\
 
 
 En el lado del receptor, el modelo Modelica lee el datagrama de $16$ bytes, desempaqueta los cuatro números de punto flotante en el mismo orden y los inyecta como las entradas \verb|steerInput|, \verb|speedInput| y \verb|brakeInput| del modelo del vehículo, cerrando así el lazo entre la acción física del conductor y la respuesta dinámica del vehículo simulado. Este canal de entrada opera de forma complementaria y en sentido inverso al flujo de salida descrito en la sección de interfaces (\verb|FrameToUDP|), que transmite la posición del vehículo hacia el visualizador.\\
@@ -1083,7 +1162,7 @@ Cada datagrama recibido se interpreta según el formato descrito en la sección 
 
 \subsubsection*{Conversión de sistemas de coordenadas}
 
-El núcleo de la interfaz es la conversión entre el sistema con sentido horario de Modelica y el de sentido anti-horario de Unity. Para la posición, la transformación consiste en negar la componente $Z$, conservando $X$ e $Y$:
+El núcleo de la interfaz es la conversión entre el sistema con sentido horario de Modelica y el de sentido antihorario de Unity. Para la posición, la transformación consiste en negar la componente $Z$, conservando $X$ e $Y$:
 
 \begin{equation}
     (x, y, z)_\text{Unity} = (x, y, -z)_\text{Modelica}
@@ -1117,7 +1196,7 @@ Finalmente, en el método \verb|FixedUpdate|, sincronizado con el bucle de físi
 \section{Arquitectura de co-simulación}
 \label{sec:cosim}
 
-Las tres componentes explicadas hasta ahora deben ejecutarse simuláneamente e intercambiar información al ritmo configurado para el lazo/simulación. La forma aparentemente más directa, y que se tomó como primer acercamiento, fue usar las herramientas presentadas para que envíen y reciban paquetes UDP mediante los bloques del paquete \verb|Interfaces|. Esta sección explica por qué esa vía resultó inviable con el compilador empleado y describe la arquitectura que finalmente se adoptó.
+Las tres componentes explicadas hasta ahora deben ejecutarse simultáneamente e intercambiar información al ritmo configurado para el lazo/simulación. La forma aparentemente más directa, y que se tomó como primer acercamiento, fue usar las herramientas presentadas para que envíen y reciban paquetes UDP mediante los bloques del paquete \verb|Interfaces|. Esta sección explica por qué esa vía resultó inviable con el compilador empleado y describe la arquitectura que finalmente se adoptó.
 
 \subsection{Por qué el modelo no puede cerrar el lazo por sí mismo}
 
@@ -1140,7 +1219,7 @@ Dado que muestrear dentro del modelo es la causa del problema, la solución cons
 
 La solución implementada consiste en exportar el modelo del vehículo como una \textit{Functional Mock-up Unit} (FMU) siguiendo el estándar FMI~2.0, y trasladar el muestreo, la integración y la sincronización a una aplicación externa. El modelo se convierte en una biblioteca que contiene una función de avance explícita, es decir, nada sucede en él hasta que el programa que lo instancia se lo pida.
 
-Se emplea la variante de intercambio de modelos (\textit{Model Exchange}) y no la de co-simulación. Un FMU de co-simulación incluye a su propio integrador, lo que resulta más cómodo, pero los generados por  OpenModelica~1.25.5 terminan abruptamente durante el avance de la integración. Por lo que para agilizar el desarrollo, se utilizó este tipo de FMU que no contiene integrador, si no que expone las derivadas del estado y es la aplicación externa la que integra, lo que permite utilizar una implementación independiente que no presenta problemas.
+Se emplea la variante de intercambio de modelos (\textit{Model Exchange}) y no la de co-simulación. Un FMU de co-simulación incluye a su propio integrador, lo que resulta más cómodo, pero los generados por  OpenModelica~1.25.5 terminan abruptamente durante el avance de la integración. Por lo que para agilizar el desarrollo, se utilizó este tipo de FMU que no contiene integrador, sino queexpone las derivadas del estado y es la aplicación externa la que integra, lo que permite utilizar una implementación independiente que no presenta problemas.
 
 El modelo exportado (\verb|Examples.CarExport|) es un wrapper del vehículo y del entorno en el que se encuentra, y expone hacia afuera tres entradas \verb|steer|, \verb|throttle| y \verb|brake|, además de que por cada uno de los cinco cuerpos (cuatro ruedas y el chasis) expone su posición en el sistema de referencia global, con su orientación. Esto resulta en un modelo que expone lo mismo que se recibía/enviaba por UDP pero sin contener bloques de comunicación, ni de muestreo y con la animación deshabilitada para obtener un mejor desempeño.
 
@@ -1194,7 +1273,7 @@ La aplicación se estructura en tres hilos: uno para recibir los comandos del co
 
 \subsection{Bibliotecas empleadas en la aplicación de control}
 
-La aplicación de control se implementó en Python. La estructura de comunicación y concurrencia se resuelve utilizando la biblioteca estándar del lenguaje, sin incluir dependencias externas. La única dependencia de tercero es la que permite el acceso al modelo.
+La aplicación de control se implementó en Python. La estructura de comunicación y concurrencia se resuelve utilizando la biblioteca estándar del lenguaje, sin incluir dependencias externas. La única dependencia de terceros es la que permite el acceso al modelo.
 
 \subsubsection{FMPy}
 

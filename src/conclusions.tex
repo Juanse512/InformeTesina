@@ -32,7 +32,7 @@ Los tres programas mencionados anteriormente son tres procesos independientes qu
 
 A la hora de elegir integradores hay una clara elección, CVODE es a la vez el más rápido y el más robusto de todos los ensayados. Es entre $1{,}1$ y $1{,}3$ veces más rápido que DASSL y $3$ a $22$ veces más rápido que \verb|gbode|.
 
-Con esa elección el márgen con respecto al tiempo real es más que suficiente. Ejecutando el modelo en lazo abierto, el desempeño se encuentra entre $2{,}4$ y $16{,}1$ veces más rápido que el tiempo real. Al cerrar el lazo el margen en menor, lo que es esperado debido a que la entrada deja de ser constante y el sistema debe coordinar la comunicación, pero sigue siendo suficiente, la latencia total se mantiene en el orden de la decena de milisegundos, lo que deja espacio para agregar modelos de suspensión o neumáticos más complejos por ejemplo.
+Con esa elección el margen con respecto al tiempo real es más que suficiente. Ejecutando el modelo en lazo abierto, el desempeño se encuentra entre $2{,}4$ y $16{,}1$ veces más rápido que el tiempo real. Al cerrar el lazo el margen es menor, lo que es esperado debido a que la entrada deja de ser constante y el sistema debe coordinar la comunicación, pero sigue siendo suficiente, la latencia total se mantiene en el orden de la decena de milisegundos, lo que deja espacio para agregar modelos de suspensión o neumáticos más complejos por ejemplo.
 
 
 
@@ -40,7 +40,7 @@ Con esa elección el márgen con respecto al tiempo real es más que suficiente.
 
 Los ensayos de fidelidad muestran que el techo del simulador no está en la parte numérica. Con la tolerancia elegida el apartamiento de la trayectoria respecto a una solución de referencia es de entre $47$ y $275$ micrómetros al cabo de diez segundos de conducción, incluso con la tolerancia más permisiva ensayada el error máximo es de $2{,}3$ cm. Son cifras con órdenes de magnitud menores que la incertidumbre con la que se conocen las masas, rigideces y geometría de las suspensiones.
 
-Las limitaciones encontradas fueron de el último tipo mencionado. El reparto de cargas resulta uniforme porque el chasis se modela como un cuerpo de masa homogénea, lo que afecta a algunos modelos y la relación del conjunto resorte-amortiguador del Civic queda fuera del rango real porque no se tienen sus puntos de anclaje reales. Estos problemas se pueden solucionar agregando otra forma de modelar el chasis en el primer caso, y con datos en el segundo, en ambos casos es sencillo adaptar la solución al sistema ya existente.
+Las limitaciones encontradas fueron del último tipo mencionado. El reparto de cargas resulta uniforme porque el chasis se modela como un cuerpo de masa homogénea, lo que afecta a algunos modelos y la relación del conjunto resorte-amortiguador del Civic queda fuera del rango real porque no se tienen sus puntos de anclaje reales. Estos problemas se pueden solucionar agregando otra forma de modelar el chasis en el primer caso, y con datos en el segundo, en ambos casos es sencillo adaptar la solución al sistema ya existente.
 
 
 % La conclusión práctica es directa. Disponer de medidas precisas de las dimensiones y de los puntos de anclaje de un vehículo real rendiría, en fidelidad, mucho más que cualquier refinamiento adicional del integrador o de la ley de contacto. El trabajo lo comprobó en sentido inverso más de una vez: corregir la ubicación de un anclaje cambió la frecuencia propia de una suspensión, su curva de caída y su vía, sin tocar una sola ecuación.
@@ -55,7 +55,7 @@ Por lo tanto, es más rentable invertir esfuerzo en suavizar las conmutaciones q
 
 \subsection*{OpenModelica como herramienta}
 
-El balance sobre la herramienta tiene altos y bajos. Como entorno de modelado y de ejecución en lazo abierto, OpenModelica funcionó sin problemas, permite compilar los modelos multicuerpo con múltiples integradores, modificar sus parámetros de forma sencilla y expone herramientas de diagnóstico y visualización que permiten comprender como funciona el sistema.
+El balance sobre la herramienta tiene altos y bajos. Como entorno de modelado y de ejecución en lazo abierto, OpenModelica funcionó sin problemas, permite compilar los modelos multicuerpo con múltiples integradores, modificar sus parámetros de forma sencilla y expone herramientas de diagnóstico y visualización que permiten comprender cómo funciona el sistema.
 
 % El balance sobre la herramienta es de dos caras. Como entorno de modelado y de ensayo en lazo abierto, OpenModelica cumplió sin reservas: compila modelos multicuerpo de varios miles de ecuaciones, ofrece tres integradores con los que contrastar resultados, expone las herramientas de diagnóstico necesarias para entender por qué un sistema es difícil de integrar, y permitió construir y validar la totalidad de la biblioteca.
 
@@ -63,12 +63,12 @@ Como entorno de ejecución en tiempo real mostró un problema que llevó a tener
 
 % Como entorno de ejecución en tiempo real, en cambio, mostró límites concretos. Se identificaron y documentaron cuatro defectos, cada uno con su caso mínimo de reproducción, y dos de ellos afectan de lleno al lazo cerrado: un reloj periódico de muestreo impide integrar con CVODE, y los FMU de co-simulación terminan durante el avance. El primero es el que obligó a trasladar el muestreo fuera del modelo; el segundo, a exportar como FMU de intercambio de modelos y proveer el integrador desde la aplicación externa.
 
-Esta limitación no tiene que ver con el lenguaje Modelica, si no, viene de su implementación concreta del integrador CVODE específicamente. Aquí el carácter de software libre de OpenModelica permite la modificación de esta implementación, lo que hace que si se quisiese solucionar esta dificultad, se puede hacer sin problemas, en cambio una herramienta propietaria haría que se tenga que buscar una alternativa de forma obligatoria.
+Esta limitación no tiene que ver con el lenguaje Modelica, sino que viene de su implementación concreta del integrador CVODE específicamente. Aquí el carácter de software libre de OpenModelica permite la modificación de esta implementación, lo que hace que si se quisiese solucionar esta dificultad, se puede hacer sin problemas, en cambio una herramienta propietaria haría que se tenga que buscar una alternativa de forma obligatoria.
 
 % Corresponde señalar que ninguna de esas limitaciones es del lenguaje Modelica, sino de una implementación concreta y de una versión concreta. Y aquí el carácter de software libre de OpenModelica deja de ser un detalle de licencia para convertirse en una propiedad técnica del proyecto: los cuatro defectos están documentados de forma reproducible, el código que los origina es público, y nada impide —a este trabajo o a otro— corregirlos en el propio compilador en lugar de rodearlos. Una herramienta cerrada con los mismos defectos habría dejado como único camino el que aquí se siguió, que es evitarlos.
 \section{Trabajo futuro}
 
-El simulador desarrollado es funcional y posee una arquitectura que permite su crecimiento sin rehacer lo construido. A continuación hay algunos puntos en los que el simulador se podría mejorar, las cuales podrían ser desarrolladas a partir de la base establecida en esta tesina.
+El simulador desarrollado es funcional y posee una arquitectura que permite su crecimiento sin rehacer lo construido. A continuación se presentan algunos puntos en los que el simulador se podría mejorar, los cuales podrían ser desarrollados a partir de la base establecida en esta tesina.
 
 % El simulador desarrollado es funcional y su arquitectura admite crecer en varias direcciones sin rehacer lo construido. Las líneas que siguen se ordenan de menor a mayor alcance: primero las que consisten en agregar componentes sobre las interfaces ya definidas, luego las que exigen revisar un modelo físico, y por último las que involucran al entorno de ejecución.
 
@@ -76,7 +76,7 @@ El simulador desarrollado es funcional y posee una arquitectura que permite su c
 
 La extensión más directa es agregar modelos nuevos sobre las interfaces definidas. Cada paquete de componentes de la biblioteca se define a partir de una clase base que fija su interfaz, por lo que un modelo nuevo se puede crear a partir de escribir la física correspondiente y adhiriéndose a la interfaz ya escrita, lo que permite que sea agregado a un vehículo sin modificar el resto de elementos.
 
-Por ejemplo, un diferencial autoblocante sería una buena adición al sistema. El diferencial actual reparte el par por partes iguales en las dos ruedas, en cambio, un autoblocante transfiere par hacia la rueda con más agarre entre ambas salidas. Implementarlo simplemente consiste en crear un modelo a partir de la interfaz de diferencial y escribir la ley sobre los elementos de esta. De esta misma forma se pueden agregar geometrías de suspensión adicionales, frenos con distribución regulable entre ejes, entre otros.
+%Por ejemplo, un diferencial autoblocante sería una buena adición al sistema. El diferencial actual reparte el par por partes iguales en las dos ruedas, en cambio, un autoblocante transfiere par hacia la rueda con más agarre entre ambas salidas. Implementarlo simplemente consiste en crear un modelo a partir de la interfaz de diferencial y escribir la ley sobre los elementos de esta. De esta misma forma se pueden agregar geometrías de suspensión adicionales, frenos con distribución regulable entre ejes, entre otros.
 
 
 \subsection{Modelo de transmisión y motor}
@@ -115,9 +115,9 @@ La corrección se podría hacer creando un nuevo modelo de chasis, que modele co
 
 \subsection{Retorno de fuerza al dispositivo de entrada}
 
-El sistema de entrada actual es unidireccional, los comandos entran al simulador, pero el conductor no recibe feedback táctil de lo que esta sucediendo dentro del entorno. Agregar un retorno de fuerza agregaría esa funcionalidad y le daría al conductor información que ahora mismo solo se puede inferir de forma visual, como perdidas de agarre o cambios de elevación bruscos.
+El sistema de entrada actual es unidireccional, los comandos entran al simulador, pero el conductor no recibe feedback táctil de lo que está sucediendo dentro del entorno. Agregar un retorno de fuerza agregaría esa funcionalidad y le daría al conductor información que ahora mismo solo se puede inferir de forma visual, como pérdidas de agarre o cambios de elevación bruscos.
 
-El sistema ya tiene lo necesario para hacerlo. Las fuerzan que tienen que enviarse ya se calculan dentro del modelo y el canal de comunicación no necesita grandes cambios, solamente hay que definir un mensaje más en el protocolo y reservar un puerto extra para eso.
+El sistema ya tiene lo necesario para hacerlo. Las fuerzas que tienen que enviarse ya se calculan dentro del modelo y el canal de comunicación no necesita grandes cambios, solamente hay que definir un mensaje más en el protocolo y reservar un puerto extra para eso.
 
 
 
@@ -125,7 +125,7 @@ El sistema ya tiene lo necesario para hacerlo. Las fuerzan que tienen que enviar
 
 \subsection{Suavizado de la reconstrucción del comando}
 
-Entre las mejoras de rendimiento, una mejora potencial no está en el modelo si no en la entrada que le llega. Los comandos del conductor se reciben en intervalos discretos y se mantienen constantes entre actualizaciones, por lo que cada actualización genera un escalón que el integrador debe procesar, reduciendo el paso. Reconstruir el comando de forma continua (interpolando entre muestras por ejemplo) eliminaría estas discontinuidades sin alterar la física.
+Entre las mejoras de rendimiento, una mejora potencial no está en el modelo sino en la entrada que le llega. Los comandos del conductor se reciben en intervalos discretos y se mantienen constantes entre actualizaciones, por lo que cada actualización genera un escalón que el integrador debe procesar, reduciendo el paso. Reconstruir el comando de forma continua (interpolando entre muestras por ejemplo) eliminaría estas discontinuidades sin alterar la física.
 
 % Entre las mejoras de rendimiento, la de mayor efecto potencial no está en el modelo sino en su entrada. Los comandos del conductor llegan a intervalos discretos y se mantienen constantes entre actualizaciones, de modo que cada actualización introduce un escalón que el integrador debe absorber reduciendo el paso. Reconstruir el comando de forma continua —interpolando entre muestras, o filtrando la señal con una constante de tiempo pequeña frente a la respuesta del vehículo pero grande frente al paso de comunicación— eliminaría esas discontinuidades sin alterar la física.
 

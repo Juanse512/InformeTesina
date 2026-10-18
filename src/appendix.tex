@@ -22,13 +22,13 @@ equation
   end when;
 \end{verbatim}
 
-La variable \verb|ticks| no está conectada a ningún componente y no interviene en otra ecuación. Con estar tres líneas el caso del modelo evaluado no supera nunca los  $19$ s, sin ellas completa $50$ s en $0{,}6$ s de cómputo. Tres bloques \verb|Modelica.Blocks.Discrete.Sampler| transmitiendo valores constantes producen el mismo efecto.
+La variable \verb|ticks| no está conectada a ningún componente y no interviene en otra ecuación. Con estas tres líneas el caso del modelo evaluado no supera nunca los  $19$ s, sin ellas completa $50$ s en $0{,}6$ s de cómputo. Tres bloques \verb|Modelica.Blocks.Discrete.Sampler| transmitiendo valores constantes producen el mismo efecto.
 
 % La variable \verb|ticks| no está conectada a nada y no interviene en ninguna otra ecuación. Con estas tres líneas el modelo no supera los $19$ s; sin ellas completa $50$ s en $0{,}6$ s de cómputo. Tres bloques \verb|Modelica.Blocks.Discrete.Sampler| transmitiendo valores constantes producen el mismo efecto, al igual que una variante en la que el reloj alimenta un estado continuo aislado mediante \verb|der(x) = 1e-30*held|.
 
 
 
-\paragraph{Descartado por medición.} El comportamiento es independiente de cualquier comando ingresado y del estado del vehículo, de la velocidad y distancia recorridas, de la vía de entrada de datos, del bloque\verb|RealtimeSynchronize|, de la representación de la orientación y de la frecuencia del reloj.
+\paragraph{Descartado por medición.} El comportamiento es independiente de cualquier comando ingresado y del estado del vehículo, de la velocidad y distancia recorridas, de la vía de entrada de datos, del bloque \verb|RealtimeSynchronize|, de la representación de la orientación y de la frecuencia del reloj.
 
 
 

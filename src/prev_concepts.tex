@@ -2,8 +2,8 @@
 Antes de comenzar, se va a definir rápidamente los conceptos de simulación y modelado, ya que son la base de este proyecto. \\
 El proceso de modelado se refiere a la extracción de conocimiento 
 de un sistema físico que se desea simular, organizándolo de manera adecuada y representándolo de forma clara y sin ambigüedades. 
-Por otro lado, el proceso de simulación hace referencia a el desarrollo de experimentos sobre el modelo para hacer predicciones
-sobre como se comportaría el sistema real si se fuesen a realizar los mismos experimentos sobre él  \cite{cellier2006}. \\
+Por otro lado, el proceso de simulación hace referencia al desarrollo de experimentos sobre el modelo para hacer predicciones
+sobre cómo se comportaría el sistema real si se fuesen a realizar los mismos experimentos sobre él  \cite{cellier2006}. \\
 
 
 \section{Simulación de Sistemas Continuos}
@@ -39,12 +39,12 @@ Para muchos sistemas físicos no resulta sencillo ni natural formular el modelo 
 	\label{eq:implicit_dae}
 \end{equation}
 
-El modelado orientado a objetos de sistemas físicos conduce a descripciones DAE implícitas. Cada componente aporta sus propias ecuaciones constitutivas y las conexiones entre componentes agregan más ecuaciones de acoplamiento. El resultado es un sistema en el cual ninguna ecuación indica que variable debe calcularse a partir de ella \cite{cellier2006}. En este estado las ecuaciones son acausales, es decir, el signo igual expresa una igualdad y no una asignación. \\
+El modelado orientado a objetos de sistemas físicos conduce a descripciones DAE implícitas. Cada componente aporta sus propias ecuaciones constitutivas y las conexiones entre componentes agregan más ecuaciones de acoplamiento. El resultado es un sistema en el cual ninguna ecuación indica qué variable debe calcularse a partir de ella \cite{cellier2006}. En este estado las ecuaciones son acausales, es decir, el signo igual expresa una igualdad y no una asignación. \\
 
 %El modelado orientado a objetos de sistemas físicos conduce invariablemente a descripciones DAE implícitas. Cada componente aporta sus propias ecuaciones constitutivas, y las conexiones entre componentes aportan ecuaciones adicionales de acoplamiento; el resultado es un sistema extenso en el que ninguna ecuación indica qué variable debe calcularse a partir de ella \cite{cellier2006}. En este estado las ecuaciones son \textit{acausales}: el signo igual expresa una igualdad y no una asignación. Esto refleja una propiedad de la física misma, en la que la causalidad computacional de una ley no está predeterminada. En una resistencia, por ejemplo, no puede afirmarse que la corriente provoque la caída de tensión ni que la diferencia de potencial provoque la corriente; ambas son aspectos simultáneos de un mismo fenómeno, y según el contexto el cálculo deberá adoptar una u otra dirección \cite{cellier2006}. \\
 
 
-Un modelo DAE implícito puede convertirse en uno explícito decidiendo que variable se despeja de cada ecuación (ordenamiento horizontal) y ordenando las ecuaciones de modo que ninguna variable se utilice antes de ser calculada (ordenamiento vertical). Después de aplicar este proceso, cada incógnita aparece exactamente una vez, a la izquierda del signo igual y estos pasan a funcionar como asignaciones. Si después se sustituyen las ecuaciones explícitas hasta que las derivadas de los estados dependan únicamente de los estados y las entradas, se obtiene el modelo ODE de la Ecuación (2.1) \cite{cellier2006}. Existen algoritmos que realizan este ordenamiento de forma automática, como las variantes del algoritmo de Tarjan \cite{cellier2006}. \\
+Un modelo DAE implícito puede convertirse en uno explícito decidiendo qué variable se despeja de cada ecuación (ordenamiento horizontal) y ordenando las ecuaciones de modo que ninguna variable se utilice antes de ser calculada (ordenamiento vertical). Después de aplicar este proceso, cada incógnita aparece exactamente una vez, a la izquierda del signo igual y estos pasan a funcionar como asignaciones. Si después se sustituyen las ecuaciones explícitas hasta que las derivadas de los estados dependan únicamente de los estados y las entradas, se obtiene el modelo ODE de la Ecuación (2.1) \cite{cellier2006}. Existen algoritmos que realizan este ordenamiento de forma automática, como las variantes del algoritmo de Tarjan \cite{cellier2006}. \\
 
 Sin embargo, no todo sistema DAE puede ordenarse por completo. Pueden aparecer dos tipos de dificultades estructurales \cite{cellier2006}:
 
@@ -58,7 +58,7 @@ Sin embargo, no todo sistema DAE puede ordenarse por completo. Pueden aparecer d
 
 Estas dificultades se miden usando el índice de perturbación del sistema. Un DAE de índice $0$ no contiene lazos algebraicos ni singularidades estructurales, uno de índice $1$ tiene lazos algebraicos pero no singularidades y uno de índice mayor a $1$ (también conocido como DAE de índice superior) contiene singularidades estructurales  \cite{cellier2006}. Existen algoritmos de reducción de índice, como el de Pantelides que diferencian simbólicamente las ecuaciones de restricción para disminuir el índice del sistema en una unidad por aplicación del algoritmo. \\
 
-Una vez formulado un modelo DAE, existen dos caminos para simularlo: convertirlo en un modelo ODE explícito que luego se integra con los métodos numéricos tradicionales o resolverlo directamente con un solver de DAE. En este último caso, al aplicar una fórmula de integración implícita al a ecuación (2.3), las derivadas $\dot{\mathbf{x}}_{k+1}$ se expresan en función de los estados, y el paso de integración se reduce a un sistema de ecuaciones no lineales $\mathbf{F}(\mathbf{x}_{k+1}) = \mathbf{0}$ \cite{cellier2006}. \\
+Una vez formulado un modelo DAE, existen dos caminos para simularlo: convertirlo en un modelo ODE explícito que luego se integra con los métodos numéricos tradicionales o resolverlo directamente con un solver de DAE. En este último caso, al aplicar una fórmula de integración implícita a la ecuación (2.3), las derivadas $\dot{\mathbf{x}}_{k+1}$ se expresan en función de los estados, y el paso de integración se reduce a un sistema de ecuaciones no lineales $\mathbf{F}(\mathbf{x}_{k+1}) = \mathbf{0}$ \cite{cellier2006}. \\
 
 %Una vez formulado un modelo DAE, existen dos caminos para simularlo: convertirlo simbólicamente en un modelo ODE explícito que luego se integra con los métodos numéricos tradicionales, o resolverlo directamente con un \textit{solver} de DAE. En este último caso, al aplicar una fórmula de integración implícita a la Ecuación~\eqref{eq:implicit_dae}, las derivadas $\dot{\mathbf{x}}_{k+1}$ se expresan en función de los estados, y el paso de integración se reduce a un sistema de ecuaciones no lineales $\mathbf{F}(\mathbf{x}_{k+1}) = \mathbf{0}$ que se resuelve por iteración de Newton \cite{cellier2006}. \\
 
@@ -68,7 +68,7 @@ Esto resulta relevante para los sistemas mecánicos multicuerpo. Formular un mod
 
 \subsection{Solvers}
 
-Como se mencionó anteriormente, una vez traducido y compilado, el conjunto de componentes del sistema de simulación pasa a un sistema de ecuaciones algebráico-diferenciales (DAE). La integración de este sistema en el tiempo no puede realizarse de forma analítica, por lo que se recurre a métodos de integración numérica (\textit{solvers}). En el marco de OpenModelica se evaluaron dos solvers de referencia para la ejecución de la simulación: DASSL y CVODE. Ambos comparten la característica de ser especialmente adecuados para sistemas \textit{rígidos} (\textit{stiff}), condición que presenta el modelo del vehículo debido a la coexistencia de dinámicas de muy distinta escala temporal. A continuación se va a explicar el funcionamiento de ambos, lo cual va a resultar necesario para comprender esta tesina.
+Como se mencionó anteriormente, una vez traducido y compilado, el conjunto de componentes del sistema de simulación pasa a un sistema de ecuaciones algebraico-diferenciales (DAE). La integración de este sistema en el tiempo no puede realizarse de forma analítica, por lo que se recurre a métodos de integración numérica (\textit{solvers}). En el marco de OpenModelica se evaluaron dos solvers de referencia para la ejecución de la simulación: DASSL y CVODE. Ambos comparten la característica de ser especialmente adecuados para sistemas \textit{rígidos} (\textit{stiff}), condición que presenta el modelo del vehículo debido a la coexistencia de dinámicas de muy distinta escala temporal. A continuación se va a explicar el funcionamiento de ambos, lo cual va a resultar necesario para comprender esta tesina.
 
 \subsubsection*{DASSL}
 
@@ -91,7 +91,7 @@ donde $\alpha$ es un escalar que depende del paso y el orden. se factoriza y se 
 
 \subsubsection*{CVODE}
 
-CVODE (\textit{C-language Variable-coefficient ODE solver}) fue desarrollado por Cohen y Hindmarsh en Lawrence Livermore National Laboratory como una reescritura en C de los paquetes VODE y VODPK, y forma parte de la suite SUNDIALS \cite{cohen1995}. A diferencia de DASSL, CVODE resuelve el problema de valor incial de forma explícita $\dot{y} = f(t, y)$, por lo tanto, para su uso, el compilador de OpenModelica debe reducir previamente el sistema DAE a una forma de estado equivalente (índice 1 o forma ODE), operación que se apoya en la reducción de índice que aportan los ensamblajes analíticos de las suspensiones.
+CVODE (\textit{C-language Variable-coefficient ODE solver}) fue desarrollado por Cohen y Hindmarsh en Lawrence Livermore National Laboratory como una reescritura en C de los paquetes VODE y VODPK, y forma parte de la suite SUNDIALS \cite{cohen1995}. A diferencia de DASSL, CVODE resuelve el problema de valor inicial de forma explícita $\dot{y} = f(t, y)$, por lo tanto, para su uso, el compilador de OpenModelica debe reducir previamente el sistema DAE a una forma de estado equivalente (índice 1 o forma ODE), operación que se apoya en la reducción de índice que aportan los ensamblajes analíticos de las suspensiones.
 
 CVODE resuelve tanto sistemas rígidos como no rígidos mediante dos familias de métodos lineales multipaso de coeficiente, orden y paso variable: las fórmulas de Adams-Moulton (para problemas no rígidos, con orden entre $1$ y $12$) y las fórmulas BDF (para problemas rígidos, con orden entre $1$ y $5$). Ambas familias se expresan en la forma general:
 
@@ -110,7 +110,7 @@ Para el tratamiento del jacobiano $J$ en el caso rígido, CVODE ofrece varias op
 
 \subsection{Manejo del reloj}
 
-En una simulación, el tiempo no pasa por sí solo, el usuario tiene que especificar cuando y como sucede. Dependiendo de como se controla este reloj pueden haber efectos en la eficiencia y fidelidad de la simulación \cite{cellier2006}.\\
+En una simulación, el tiempo no pasa por sí solo, el usuario tiene que especificar cuándo y cómo sucede. Dependiendo de cómo se controla este reloj pueden haber efectos en la eficiencia y fidelidad de la simulación \cite{cellier2006}.\\
 
 Una computadora digital no tiene forma de calcular cualquier valor de una función real en un valor de tiempo real. Lo que se hace para evitar esto es discretizar el eje que representa el tiempo en la simulación, de forma que la cantidad de puntos discretos es finita y la simulación procede saltando entre estos puntos que representan al tiempo \cite{cellier2006}. A mayor cantidad de puntos generados, la fidelidad de la simulación aumenta, a cambio de tiempo de procesamiento que se gasta calculando esos valores extra.\\
 
@@ -138,7 +138,7 @@ Para la implementación del modelo continuo se adoptará Modelica, un lenguaje d
 Si bien Modelica comparte similitudes sintácticas y de encapsulamiento con lenguajes de programación orientados a objetos tradicionales, como C++ o Python, difiere de estos en dos aspectos computacionales fundamentales. En primer lugar, es estrictamente un lenguaje de modelado: sus clases no generan secuencias de instrucciones ejecutables de manera directa, sino que se traducen en sistemas de ecuaciones que posteriormente son resueltos por un motor de simulación. En segundo lugar, Modelica emplea un paradigma declarativo, en lugar de asignar valores a variables mediante algoritmos paso a paso, el desarrollador plantea igualdades matemáticas donde la dirección del flujo de datos no está predefinida, siendo el compilador el encargado de analizar y determinar la causalidad algorítmica necesaria para su resolución.\\
 
 \subsection{Desarrollo de un modelo en Modelica}
-En esta sección se va a explicar como se desarrolla un modelo en Modelica. Para este ejemplo, se van a utilizar elementos de la Modelica Standard Library, una librería abierta y gratuita desarrolla por la Modelica Association, que incluye, entre otras cosas, elementos para construir sistemas mecánicos, eléctricos, magnéticos, térmicos, de fluidos y de control \cite{msl}.
+En esta sección se va a explicar cómo se desarrolla un modelo en Modelica. Para este ejemplo, se van a utilizar elementos de la Modelica Standard Library, una librería abierta y gratuita desarrollada por la Modelica Association, que incluye, entre otras cosas, elementos para construir sistemas mecánicos, eléctricos, magnéticos, térmicos, de fluidos y de control \cite{msl}.
 
 \begin{figure}[htbp]
 	\centering
@@ -298,12 +298,12 @@ A continuación se van a detallar los componentes de la librería \textit{MultiB
 
 
 \subsubsection{Frame\_a / Frame\_b} 
-El conector \verb|Frame| es el elemento sobre el cual se contruyen los modelos mutlticuerpos. Representa un marco de referencia unido a un punto de un cuerpo, y transporta cuatro variables  \cite{msl_multibody}: el vector de posición \verb|r_0| que contiene las coordenadas \textit{x}, \textit{y} y \textit{z}, con respecto al origen del marco global (\textit{world}), resuelto con respecto a este, el objeto de orientación \verb|R|, que describe la rotación y dirección del conector, también con respecto al marco global y la fuerza \verb|f| y el torque \verb|t| resueltos en el marco del conector. Las dos primeras variables son de esfuerzo (\textit{potential}) y las dos últimas son variables de flujo (\textit{flow}), esta estructura es la que permite la conexión física: al conectar dos marcos, se igualan las posiciones y orientaciones, mientras que las fuerzas y torques se igualan a cero, respetando la tercera ley de Newton.  Las variantes \verb|Frame_a| (icono relleno) y \verb|Frame_b| (icono sin rellenar) son idénticas en contenido y solo se distinguen gráficamente para indicar la convención de conexión \cite{msl_multibody}.
+El conector \verb|Frame| es el elemento sobre el cual se construyen los modelos multicuerpos. Representa un marco de referencia unido a un punto de un cuerpo, y transporta cuatro variables  \cite{msl_multibody}: el vector de posición \verb|r_0| que contiene las coordenadas \textit{x}, \textit{y} y \textit{z}, con respecto al origen del marco global (\textit{world}), resuelto con respecto a este, el objeto de orientación \verb|R|, que describe la rotación y dirección del conector, también con respecto al marco global y la fuerza \verb|f| y el torque \verb|t| resueltos en el marco del conector. Las dos primeras variables son de esfuerzo (\textit{potential}) y las dos últimas son variables de flujo (\textit{flow}), esta estructura es la que permite la conexión física: al conectar dos marcos, se igualan las posiciones y orientaciones, mientras que las fuerzas y torques se igualan a cero, respetando la tercera ley de Newton.  Las variantes \verb|Frame_a| (icono relleno) y \verb|Frame_b| (icono sin rellenar) son idénticas en contenido y solo se distinguen gráficamente para indicar la convención de conexión \cite{msl_multibody}.
 
 
 
 \subsubsection{World}
-El modelo \verb|World| define el marco de referencia global y el campo de gravedad uniforme del entorno de la simulación, además de los ajustes de animación por defecto. Todo modelo multicuerpo debe contener exactamente una instancia de \verb|World| para que todos los componentes estén sincronizados. Esta instancia debe ser declarada como objeto \texttt{inner}, para que el resto de los componentes puedan acceder a la gravedad y parametros de visualización compartidos mediante la referencia \texttt{outer}.
+El modelo \verb|World| define el marco de referencia global y el campo de gravedad uniforme del entorno de la simulación, además de los ajustes de animación por defecto. Todo modelo multicuerpo debe contener exactamente una instancia de \verb|World| para que todos los componentes estén sincronizados. Esta instancia debe ser declarada como objeto \texttt{inner}, para que el resto de los componentes puedan acceder a la gravedad y parámetros de visualización compartidos mediante la referencia \texttt{outer}.
 
 \subsection*{Cuerpos e inercias}
 
@@ -315,12 +315,12 @@ Modela un cuerpo rígido usando un único marco de referencia \verb|frame_a|. Se
 
 
 \subsubsection{BodyBox / BodyCylinder} 
-Son cuerpos rígidos que poseen una forma geométrica dada, la de un paralelepípedo y un cilindro (opcionalmente hueco) respectivamente. Estos componentes calculan automáticamente la masa y el tensor de inercia completo a partir de las dimensiones geométricas y la densidad del material \cite{msl_multibody}. A diferencia de \verb|Body|, estos exponen dos marcos de referencia  (\verb|frame_a| y \verb|frame_b|) en sus extremos, permitiendo que se puedan insertan como eslabones en una cadena. La geometría de \verb|BodyBox| resulta útil para abstraer la distribución del peso de un chasis, mientras que \verb|BodyCilinder| se utiliza por la misma razón en los brazos de suspensión.
+Son cuerpos rígidos que poseen una forma geométrica dada, la de un paralelepípedo y un cilindro (opcionalmente hueco) respectivamente. Estos componentes calculan automáticamente la masa y el tensor de inercia completo a partir de las dimensiones geométricas y la densidad del material \cite{msl_multibody}. A diferencia de \verb|Body|, estos exponen dos marcos de referencia  (\verb|frame_a| y \verb|frame_b|) en sus extremos, permitiendo que se puedan insertar como eslabones en una cadena. La geometría de \verb|BodyBox| resulta útil para abstraer la distribución del peso de un chasis, mientras que \verb|BodyCylinder| se utiliza por la misma razón en los brazos de suspensión.
 
 
 
 \subsubsection{FixedTranslation}
-Representa una traslación rígida y sin masa que posiciona el vector de posición $r$ entre \verb|frame_a| y \verb|frame_b|, manteniendo ambos marcos con la misma orientación. Se utuliza para definir los puntos de montaje, por ejemplo: anclajes de suspensión, \textit{offsets} de rueda sin añadir inercia al sistema.
+Representa una traslación rígida y sin masa que posiciona el vector de posición $r$ entre \verb|frame_a| y \verb|frame_b|, manteniendo ambos marcos con la misma orientación. Se utiliza para definir los puntos de montaje, por ejemplo: anclajes de suspensión, \textit{offsets} de rueda sin añadir inercia al sistema.
 
 
 \subsection*{Articulaciones (\textit{Joints})}
@@ -331,7 +331,7 @@ Representa una traslación rígida y sin masa que posiciona el vector de posici�
 Articulación de rotación sobre un único grado de libertad: el ángulo de giro $\varphi$ alrededor de un eje $n$ fijo en \verb|frame_a|. Cuando se activa la opción \verb|useAxisFlange|, expone una brida rotacional unidimensional (\verb|axis|) que permite alterar el giro (por ejemplo, iniciando, frenando o bloqueando), acoplando de esa forma el dominio mecánico tridimensional con el rotacional de una dimensión. Se utiliza como la base de los giros de las ruedas y de los pivotes de dirección.
 
 \subsubsection{Prismatic} 
-Articulación de traslación con un solo grado de libertad: el desplazamiento relativo $s$ a los largo de un eje $n$. Al igual que \verb|Revolute|, admite una brida opcional. Se utiliza para modelar el recorrido vertical de la suspensión \verb|McPherson|.
+Articulación de traslación con un solo grado de libertad: el desplazamiento relativo $s$ a lo largo de un eje $n$. Al igual que \verb|Revolute|, admite una brida opcional. Se utiliza para modelar el recorrido vertical de la suspensión \verb|McPherson|.
 
 
 
@@ -341,7 +341,7 @@ Articulación con los seis grados de libertad (tres traslacionales y tres rotaci
 
 
 \subsubsection{JointRRR} 
-Pertenece al subpaquete \verb|Joints.Assemblies| y agrega tres articulaciones de revolución con ejes de rotación paralelos, conectadas entre si por dos barras rígidas, formando así, un bucle cinemático plano \cite{msl_multibody}. Su característica principal es que no introduce restricciones ni variables de estado, si no, que resuelve analíticamente la cinemática no lineal del bucle a partir de la posición y orientación de \verb|frame_a| y \verb|frame_b|. La documentación oficial recomienda su uso en los bucles cinemáticos siempre que sea posible, para evitar sistemas de ecuaciones no lineales \cite{msl_multibody}. Además de \verb|frame_a| y \verb|frame_b|, disponibiliza los marcos interiores \verb|frame_ia|, \verb|frame_im| y \verb|frame_ib|, y su geometría se define mediante los vectores de barra \verb|rRod1_ia| y \verb|rRod2_ib|. Este componente es el que hace posible modelar las suspensiones \verb|DoubleWishbone| y \verb|MultiLink| sin degradar la eficiencia numérica y evitando fallos a la hora de ejecutar la simulación.
+Pertenece al subpaquete \verb|Joints.Assemblies| y agrega tres articulaciones de revolución con ejes de rotación paralelos, conectadas entre sí por dos barras rígidas, formando así, un bucle cinemático plano \cite{msl_multibody}. Su característica principal es que no introduce restricciones ni variables de estado, sino que resuelve analíticamente la cinemática no lineal del bucle a partir de la posición y orientación de \verb|frame_a| y \verb|frame_b|. La documentación oficial recomienda su uso en los bucles cinemáticos siempre que sea posible, para evitar sistemas de ecuaciones no lineales \cite{msl_multibody}. Además de \verb|frame_a| y \verb|frame_b|, disponibiliza los marcos interiores \verb|frame_ia|, \verb|frame_im| y \verb|frame_ib|, y su geometría se define mediante los vectores de barra \verb|rRod1_ia| y \verb|rRod2_ib|. Este componente es el que hace posible modelar las suspensiones \verb|DoubleWishbone| y \verb|MultiLink| sin degradar la eficiencia numérica y evitando fallos a la hora de ejecutar la simulación.
 
 \subsection*{Elementos de fuerza}
 
@@ -357,7 +357,7 @@ Aplican un vector de fuerza y adicionalmente un vector de torque, respectivament
 \subsubsection{Visualizers}
 La biblioteca \textit{MultiBody} incorpora componentes exclusivamente gráficos que no aplican fuerzas ni torques. La clase base \verb|PartialVisualizer| y los modelos \verb|Advanced.Shape| y \verb|Advanced.Surface| renderizan formas geométricas (cajas, cilindros u otras superficies arbitrarias) siguiendo la posición y orientación de un marco de referencia. Se utilizan para representar visualmente el terreno, los neumáticos y demás elementos en el motor de animación 3D de OpenModelica.\\\\
 
-Vale la pena mencionar que los susbsistemas de transmisión, dirección y frenado emplean elementos de la biblioteca \textit{Modelica.Mechanics.Rotational}, que contiene elementos de mecánica rotacional unidimensionales, tales como los conectores de brida (\verb|Flange_a|, \verb|Flange_b|), las fuentes de posición y par (\verb|Sources.Position|, \verb|Sources.Torque|), el sensor de velocidad (\verb|Sensors.SpeedSensor|) y el anclaje fijo (\verb|Components.Fixed|), que se acoplan al dominio tridimensional mediante la brida de eje de las articulaciones \verb|Revolute| y \verb|Prismatic|.
+Vale la pena mencionar que los subsistemas de transmisión, dirección y frenado emplean elementos de la biblioteca \textit{Modelica.Mechanics.Rotational}, que contiene elementos de mecánica rotacional unidimensionales, tales como los conectores de brida (\verb|Flange_a|, \verb|Flange_b|), las fuentes de posición y par (\verb|Sources.Position|, \verb|Sources.Torque|), el sensor de velocidad (\verb|Sensors.SpeedSensor|) y el anclaje fijo (\verb|Components.Fixed|), que se acoplan al dominio tridimensional mediante la brida de eje de las articulaciones \verb|Revolute| y \verb|Prismatic|.
 
 \section{Biblioteca \textit{Modelica\_DeviceDrivers}}
 
@@ -365,7 +365,7 @@ Para la comunicación entre el modelo Modelica y los sistemas externos (el visua
 
 \subsection*{Empaquetado de datos (\textit{SerialPackager})}
 
-El subpaquete \verb|Packagin.SerialPackager| resuelve la serialización de datos en un formato binario transmisible para la comunicación por red. Según la documentación oficial, el objetivo del \textit{SerialPackager} es permitir agregar y recuperar datos de un paquete de manera independiente del dispositivo \cite{mdd}. Los bloques se encadenan a través de conectores (\verb|pkgIn| y \verb|pkgOut|) que representan un buffer de paquete a compartir, el cual va siendo construido o desarmado a medida que se recorre la cadena.
+El subpaquete \verb|Packaging.SerialPackager| resuelve la serialización de datos en un formato binario transmisible para la comunicación por red. Según la documentación oficial, el objetivo del \textit{SerialPackager} es permitir agregar y recuperar datos de un paquete de manera independiente del dispositivo \cite{mdd}. Los bloques se encadenan a través de conectores (\verb|pkgIn| y \verb|pkgOut|) que representan un buffer de paquete a compartir, el cual va siendo construido o desarmado a medida que se recorre la cadena.
 
 
 \subsubsection{Packager}
@@ -399,7 +399,7 @@ Bloque que permite la recepción de datagramas UDP. Escucha en el puerto definid
 
 
 \subsubsection{RealtimeSynchronize}
-Este bloque se encarga de la sincronización del tiempo de la simulación con el reloj de tiempo real del sistema operativo. Su funcionamiento consiste en comparar, mediante una función externa en C, el tiempo de simulación con el reloj del sistema, deteniendo la ejecución del hilo hasta que el primero alcanza al segundo. Es indispensable para que una simulación que podría ejecutarse más rápid que el tiempo real se ajuste al ritmo del mundo físico, condición necesaria tanto para una visualización fiel, como para cerrar el feedback del conductor. La documentación advierte de que se trata de una sincronización blanda (\textit{soft real-time}) no apta para aplicaciones de tiempo real estricto ni de seguridad crítica \cite{mdd}, pero para un simulador de conducción interactivo, esta aproximación me pareció suficiente. El bloque admite ademas un modo muestreado (\textit{sampled}) que ofrece un comportamiento más determinista y menos sensible al solver.
+Este bloque se encarga de la sincronización del tiempo de la simulación con el reloj de tiempo real del sistema operativo. Su funcionamiento consiste en comparar, mediante una función externa en C, el tiempo de simulación con el reloj del sistema, deteniendo la ejecución del hilo hasta que el primero alcanza al segundo. Es indispensable para que una simulación que podría ejecutarse más rápido que el tiempo real se ajuste al ritmo del mundo físico, condición necesaria tanto para una visualización fiel, como para cerrar el feedback del conductor. La documentación advierte de que se trata de una sincronización blanda (\textit{soft real-time}) no apta para aplicaciones de tiempo real estricto ni de seguridad crítica \cite{mdd}, pero para un simulador de conducción interactivo, esta aproximación me pareció suficiente. El bloque admite además un modo muestreado (\textit{sampled}) que ofrece un comportamiento más determinista y menos sensible al solver.
 
 En conjunto, estos bloques se utilizan en dos sentidos:  en la transmisión, \verb|Packager| $\rightarrow$ \verb|AddFloat| (uno por señal) $\rightarrow$ \verb|UDPSend|, y en la recepción, \verb|UDPReceive| $\rightarrow$ \verb|GetFloat| (uno por señal), todo ello sincronizado por \verb|RealtimeSynchronize|.
 
@@ -427,7 +427,7 @@ La arquitectura de Unity se organiza en torno a algunos conceptos fundamentales,
 	\item \textbf{Bucle de física \textit{FixedUpdate}.} A diferencia de \verb|Update|, que se ejecuta una vez por fotograma renderizado y por lo tanto su frecuencia varía dependiendo del rendimiento del computador, \verb|FixedUpdate| se invoca a intervalos fijos como parte del bucle de física del motor \cite{unity_docs}, lo que garantiza un ritmo de actualización determinista, independiente de la tasa de refresco gráfico.
 	
 	
-	\item \textbf{Sistema de coordenadas.} Unity emplea un sistema de coordenadas levógiro (sentido anti-horario) con el eje $Y$ apuntando hacia arriba, y representa las rotaciones internamente como cuaterniones. Esta convención difiere de la de Modelica, que es dextrógira (sentido horario) y también con $Y$ vertical, discrepancia que la interfaz debe resolver explícitamente.
+	\item \textbf{Sistema de coordenadas.} Unity emplea un sistema de coordenadas levógiro (sentido antihorario) con el eje $Y$ apuntando hacia arriba, y representa las rotaciones internamente como cuaterniones. Esta convención difiere de la de Modelica, que es dextrógira (sentido horario) y también con $Y$ vertical, discrepancia que la interfaz debe resolver explícitamente.
 \end{itemize}
 
 

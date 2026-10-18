@@ -61,7 +61,7 @@ La figura~\ref{fig:tiempos} representa gráficamente los tiempos de simulación 
 \label{fig:tiempos}
 \end{figure}
 
-El resultado más interesante para la tesina no es el tiempo absoluto, si no, como se compara este con el tiempo total de la simulación, ya que una relación menor a 1x limita la capacidad de ejecutar un entorno en tiempo real. La Figura~\ref{fig:tiemporeal} expresa las mediciones de CVODE (ya que fue el único integrador en completar todas las configuraciones) como factor un coeficiente entre el tiempo total de la simulación y el tiempo que tardó en ejecutarse. La línea discontinua en $1\times$ marca la frontera del tiempo real: por encima de ella la simulación avanza más rápido que el reloj y, por lo tanto, admite operación con el conductor dentro del lazo.
+El resultado más interesante para la tesina no es el tiempo absoluto, sino cómo se compara este con el tiempo total de la simulación, ya que una relación menor a 1x limita la capacidad de ejecutar un entorno en tiempo real. La Figura~\ref{fig:tiemporeal} expresa las mediciones de CVODE (ya que fue el único integrador en completar todas las configuraciones) como factor un coeficiente entre el tiempo total de la simulación y el tiempo que tardó en ejecutarse. La línea discontinua en $1\times$ marca la frontera del tiempo real: por encima de ella la simulación avanza más rápido que el reloj y, por lo tanto, admite operación con el conductor dentro del lazo.
 
 
 \begin{figure}[H]
@@ -91,12 +91,12 @@ Modelo & Ecuaciones & Triviales & Estados & Ind. de evento \\
 \label{tab:complejidad}
 \end{table}
 
-El dato más relevante de la tabla es que los tres vehículo tienen exactamente el mismo número de estados continuos, a pesar de que utilizan topologías distintas. Esto es debido al uso del componente  \verb|JointRRR| señalada en la Sección~\ref{sec:method}: al resolver analíticamente el bucle cinemático, no introduce restricciones ni variables de estado adicionales. Los treinta estados corresponden a los seis grados de libertad del chasis, los cuatro recorridos de suspensión y los cuatro giros de rueda, con sus respectivas derivadas, independientemente de que la suspensión sea de doble triángulo, McPherson o multibrazo. A notar también de que tanto el FF1600 como el CivicEKCar contienen la misma cantidad de ecuaciones, a pesar de ser vehículos completamente distintos en papel, sin embargo, su topología de suspensión es la misma (doble triángulo en las cuatro esquinas). 
+El dato más relevante de la tabla es que los tres vehículos tienen exactamente el mismo número de estados continuos, a pesar de que utilizan topologías distintas. Esto es debido al uso del componente  \verb|JointRRR| señalada en la Sección~\ref{sec:method}: al resolver analíticamente el bucle cinemático, no introduce restricciones ni variables de estado adicionales. Los treinta estados corresponden a los seis grados de libertad del chasis, los cuatro recorridos de suspensión y los cuatro giros de rueda, con sus respectivas derivadas, independientemente de que la suspensión sea de doble triángulo, McPherson o multibrazo. A notar también de que tanto el FF1600 como el CivicEKCar contienen la misma cantidad de ecuaciones, a pesar de ser vehículos completamente distintos en papel, sin embargo, su topología de suspensión es la misma (doble triángulo en las cuatro esquinas). 
 
 
 \subsection{Sensibilidad a la tolerancia}
 
-La tolerancia relativa del integrador es el parámetro que controla el compromiso entre exactitud y costo computacional. Para tener una mejor idea sobre que valor utilizar, se repitió la maniobra sobre el terreno sinusoidal (ya que es el más exigente) con CVODE y tolerancias de $10^{-4}$, $10^{-6}$ y $10^{-8}$. Los resultados se presentan en la Tabla~\ref{tab:tolerancia} y la Figura~\ref{fig:tolerancia}.
+La tolerancia relativa del integrador es el parámetro que controla el compromiso entre exactitud y costo computacional. Para tener una mejor idea sobre qué valor utilizar, se repitió la maniobra sobre el terreno sinusoidal (ya que es el más exigente) con CVODE y tolerancias de $10^{-4}$, $10^{-6}$ y $10^{-8}$. Los resultados se presentan en la Tabla~\ref{tab:tolerancia} y la Figura~\ref{fig:tolerancia}.
 
 \begin{table}[H]
 \centering
@@ -130,7 +130,7 @@ Comparando contra el tiempo real, incluso utilizando la tolerancia más estricta
 
 \subsection{Exactitud de la solución}
 
-La sección anterior se dedicó a mostrar lo que cuesta aumentar la tolerancia, todavía queda por determinar cuanto se gana con ello. Para medirlo, se comparó con cada modelo, la trayectoria obtenida con diferentes tolerancias contra la tolerancia más escrita que se pudo correr en el modelo, para tomarla como referencia. 
+La sección anterior se dedicó a mostrar lo que cuesta aumentar la tolerancia, todavía queda por determinar cuánto se gana con ello. Para medirlo, se comparó con cada modelo, la trayectoria obtenida con diferentes tolerancias contra la tolerancia más estricta que se pudo correr en el modelo, para tomarla como referencia. 
 
 El experimento se realizó de forma diferente al protocolo utilizado anteriormente, las principales diferencias fueron:
 
@@ -140,7 +140,7 @@ Los inputs de la simulación fueron reemplazados por una maniobra suave (direcci
 
 Por último, todas las corridas se interpolan sobre una grilla temporal común. Fijar el intervalo de ejecución no es suficiente, porque \verb|fmpy| agrega una muestra por cada evento y el número de estos (y por lo tanto de entradas) varía según la tolerancia especificada. Los instantes de la grilla utilizada están presentes en los datos originales, de forma que la interpolación no introduce error de remuestreo.
 
-Las medidas utilizadas para medir el error de la trayectoria son: el error de posición del chasis al final del intervalo de simulación $\lVert \mathbf{r}(T) - \mathbf{r}_\text{ref}(T) \rVert$, y el error cuadrático medio sobre toda la trayectoria normalizado por el desplazamiento total del vehículo (NRMSE), que hace comparables vehículos que recorrer distancias distintas. La Tabla~\ref{tab:exactitud} reúne los resultados y la Figura~\ref{fig:errorposicion} los representa.
+Las medidas utilizadas para medir el error de la trayectoria son: el error de posición del chasis al final del intervalo de simulación $\lVert \mathbf{r}(T) - \mathbf{r}_\text{ref}(T) \rVert$, y el error cuadrático medio sobre toda la trayectoria normalizado por el desplazamiento total del vehículo (NRMSE), que hace comparables vehículos que recorren distancias distintas. La Tabla~\ref{tab:exactitud} reúne los resultados y la Figura~\ref{fig:errorposicion} los representa.
 
 \begin{table}[H]
 \centering
@@ -177,7 +177,7 @@ Modelo & Tolerancia & Error final (m) & NRMSE (\%) & Razón de mejora \\
 
 El comportamiento es el esperado, cada dos décadas de tolerancia el error se reduce aproximadamente dos órdenes de magnitud. Esta convergencia regular es evidencia de que la integración se comporta correctamente sobre este modelo.
 
-En términos absolutos, las cifras son aceptables para el objetivo del simulador. Con la tolerancia $10^{-6}$ elegida, el error de posición al cabo de diez segundos de simulación es de $47$ a $275$ micrómetros sobre recorridos de unos cincuenta metros, equivalente un NRMSE inferior al $0{,}0002\text{\%}$. Incluso con la tolerancia más baja ensayada, $10^{-4}$, el apartamiento máximo es de $2{,}3$ cm, un valor que es imperceptible para un conductor e inferior a la incertidumbre de los propios parámetros del modelo (masas, rigideces y coeficientes de fricción) que se conocen con una precisión mucho menor. La tolerancia deja de ser el factor limitante de la fidelidad del simulador y en mi opinión pasaría a ser, por un lado, el conocimiento con mayor exactitud de las características del vehículo y por otro, una mayor fidelidad a la hora de plasmar ciertos aspectos de este, por ejemplo, eliminando la abstracción del chasis como un paralelepípedo e intercambiándola por algo más preciso.
+En términos absolutos, las cifras son aceptables para el objetivo del simulador. Con la tolerancia $10^{-6}$ elegida, el error de posición al cabo de diez segundos de simulación es de $47$ a $275$ micrómetros sobre recorridos de unos cincuenta metros, equivalente a un NRMSE inferior al $0{,}0002\text{\%}$. Incluso con la tolerancia más baja ensayada, $10^{-4}$, el apartamiento máximo es de $2{,}3$ cm, un valor que es imperceptible para un conductor e inferior a la incertidumbre de los propios parámetros del modelo (masas, rigideces y coeficientes de fricción) que se conocen con una precisión mucho menor. La tolerancia deja de ser el factor limitante de la fidelidad del simulador y en mi opinión pasaría a ser, por un lado, el conocimiento con mayor exactitud de las características del vehículo y por otro, una mayor fidelidad a la hora de plasmar ciertos aspectos de este, por ejemplo, eliminando la abstracción del chasis como un paralelepípedo e intercambiándola por algo más preciso.
 
 Vale la pena mencionar que en casi todos los casos el error máximo sobre la trayectoria coincide con el error del final, lo que indica que este crece de forma monótona a lo largo de la maniobra, mostrando de que es un error acumulativo por truncamiento.
 
@@ -194,7 +194,7 @@ Los integradores utilizados fueron: CVODE y DASSL, ambos de la familia de (BDF) 
 Las ejecuciones se vuelven a correr como al principio de esta sección, utilizando el ejecutable de OpenModelica y no sobre el FMU. Esto es debido a dos razones, la primera es que \verb|fmpy| no ofrece ni DASSL ni \verb|gbode|, y la segunda es metodológica: comparar el CVODE de \verb|fmpy| contra el DASSL de OpenModelica agrega una segunda variable, el entorno de simulación, por lo que se decidió volver a realizar todo sobre un mismo entorno.
 
 
-Se emplea la misma maniobra suave utilizada en la pureba de exactitud, por la misma razón que fue explicada en ese estudio. Las tolerancias son $10^{-4}$ y $10^{-6}$. Como OpenModelica escribe una grilla equidistante y el indicador \verb|-noEventEmit| suprime las muestras de evento, las mediciones caen exactamente sobre los mismos instantes, y por lo tanto no se requiere interpolación alguna. Cada configuración se repite tres veces para el tiempo de cómputo.
+Se emplea la misma maniobra suave utilizada en la prueba de exactitud, por la misma razón que fue explicada en ese estudio. Las tolerancias son $10^{-4}$ y $10^{-6}$. Como OpenModelica escribe una grilla equidistante y el indicador \verb|-noEventEmit| suprime las muestras de evento, las mediciones caen exactamente sobre los mismos instantes, y por lo tanto no se requiere interpolación alguna. Cada configuración se repite tres veces para el tiempo de cómputo.
 
 
 \begin{table}[H]
@@ -231,7 +231,7 @@ Sigue habiendo una diferencia de robustez más marcada que de costo, pero concen
 
 % Sin embargo, la diferencia más grande está en la robustez,  CVODE completa las seis configuraciones; \verb|gbode| falla en una; DASSL falla en dos, ambas del modelo E36 y con las dos tolerancias ensayadas. Es notable remarcar que DASSL aborta en el E36 incluso con la maniobra suave, cuando en el benchmark de costo solo fallaba sobre terreno sinusoidal, su fragilidad sobre este modelo no se limita a los regímenes de saturación.
 
-La tabla~\ref{tab:acuerdo} y la figura~\ref{fig:acuerdo} presentan la diferencia entre pares de integradores con tolerancia $10^{-6}$, junto con el error propio de CVODE contra si mismo utilizando una tolerancia de $10^{-10}$, que sirve de comparación.
+La tabla~\ref{tab:acuerdo} y la figura~\ref{fig:acuerdo} presentan la diferencia entre pares de integradores con tolerancia $10^{-6}$, junto con el error propio de CVODE contra sí mismo utilizando una tolerancia de $10^{-10}$, que sirve de comparación.
 
 \begin{table}[H]
 \centering
@@ -257,7 +257,7 @@ Civic  & $95{,}2$  & $72{,}2$  & $164{,}3$ & $274{,}8$ \\
 
 El resultado es el buscado. Las diferencias entre pares de solver van de  $10{,}8$ a $164{,}3$ micrómetros, es decir, el mismo orden de magnitud que el error propio de CVODE frente a su referencia, de $46{,}8$ a $274{,}8$ micrómetros. Los tres métodos coinciden dentro de la exactitud que cada uno alcanza a esa tolerancia, no se detecta ningún sesgo generado por algún integrador en particular. Y dado que \verb|gbode| pertenece a otra familia de métodos, la coincidencia no puede explicarse por un problema compartido de la formulación BDF.
 
-Con la tolerancia en $10^{-4}$ las diferencias crecen dos órdenes de magnitud, hasta $23{,}6$ mm, lo que también es consistente ya que el error propio de cada método es mayor de todas forams. El acuerdo entre integradores empeora en la misma proporción que la exactitud individual.
+Con la tolerancia en $10^{-4}$ las diferencias crecen dos órdenes de magnitud, hasta $23{,}6$ mm, lo que también es consistente ya que el error propio de cada método es mayor de todas formas. El acuerdo entre integradores empeora en la misma proporción que la exactitud individual.
 
 % La excepción vuelve a ser el modelo E36, que no admite verificación cruzada porque es el único que ningún otro integrador puede hacer que complete correctamente. El encadenamiento de eventos con tolerancias bajas refuerza de que puede ser un problema del modelo en sí y no del integrador. Queda pendiente identificar la conmutación responsable, probablemente en los topes de suspensión de la topología \verb|MultiLink|, queda como trabajo pendiente.
 
@@ -268,7 +268,7 @@ Con la tolerancia en $10^{-4}$ las diferencias crecen dos órdenes de magnitud, 
 
 
 
-% El hallazgo más significativo de este capítulo no es de rendimiento, si no de robustez. En el benchmark de costo DASSL aborta en cuatro de seis configuraciones, en la comparación de integradores falla en dos de seis y \verb|gbode| en una. CVODE, sin embargo, completa las doce configuraciones ejecutadas en ambos experimentos sin una sola falla.
+% El hallazgo más significativo de este capítulo no es de rendimiento, sino de robustez. En el benchmark de costo DASSL aborta en cuatro de seis configuraciones, en la comparación de integradores falla en dos de seis y \verb|gbode| en una. CVODE, sin embargo, completa las doce configuraciones ejecutadas en ambos experimentos sin una sola falla.
 
 Lo habitual al elegir un integrador es negociar entre velocidad y robustez. Sin embargo en este caso, CVODE es al mismo tiempo el más rápido (entre $1{,}1$ y $1{,}3$ veces más que DASSL, y entre $3$ y $22$ veces más que \verb|gbode|) y el único que no presenta fallas en las ejecuciones. Por lo tanto, la elección resulta sencilla y CVODE se adopta como integrador de referencia de la biblioteca.
 
@@ -276,7 +276,7 @@ Lo habitual al elegir un integrador es negociar entre velocidad y robustez. Sin 
 
 Los resultados de las pruebas de costo y exactitud proveen un resultado claro con respecto al ajuste de la tolerancia. Por el lado del costo, cada dos décadas de tolerancia agregada se duplica el tiempo de cómputo. Por el lado de la exactitud, estas mismas dos décadas reducen el error en dos órdenes de magnitud. El intercambio es favorable a ajustar la tolerancia y no existe razón de rendimiento para relajarla demasiado.
  
-La medición mas relevante para observar es la magnitud absoluta del error. Con la tolerancia elegida de $10^{-6}$ la trayectoria se aparta de la referencia entre $47$ y $275$ micrómetros al cabo de diez segundos de simulación en el entorno ejecutado, e incluso con la tolerancia más permisiva, el error máximo es de $2{,}3$ cm. Ambas cifras son órdenes de magnitud menores que la incertidumbre con las que se conocen los parámetros físicos del modelo (masas, rigideces, coeficientes de fricción, geometría de la suspensión). El esfuerzo de mejora, rinde mucho más si es aplicado a la caracterización del vehículo antes que al control del error del integrador.
+La medición más relevante para observar es la magnitud absoluta del error. Con la tolerancia elegida de $10^{-6}$ la trayectoria se aparta de la referencia entre $47$ y $275$ micrómetros al cabo de diez segundos de simulación en el entorno ejecutado, e incluso con la tolerancia más permisiva, el error máximo es de $2{,}3$ cm. Ambas cifras son órdenes de magnitud menores que la incertidumbre con las que se conocen los parámetros físicos del modelo (masas, rigideces, coeficientes de fricción, geometría de la suspensión). El esfuerzo de mejora, rinde mucho más si es aplicado a la caracterización del vehículo antes que al control del error del integrador.
 
 \subsubsection{Las conmutaciones son la dificultad numérica dominante}
 
@@ -301,18 +301,18 @@ La diferencia entre el tiempo total y el de simulación se puede usar para compa
 
 Contrastando los tiempos contra la tabla~\ref{tab:complejidad} se pueden observar dos efectos separados. El primero responde al tamaño del modelo: el E36 tiene $19{,}3\text{\%}$ menos de ecuaciones comparado a los otros vehículos (debido a su suspensión \verb|McPherson|, construida sobre una única articulación \verb|Prismatic| para simplificar) y es el más rápido de ejecutar sobre terreno plano.\\
 
-El segundo efecto no se puede explicar de la misma forma. Los modelos \verb|Car| y \verb|CivicEKCar| tienen el mismo número de ecuaciones ($10\,981$), el mismo número de estados ($30$) y la misma topología de suspensión en las cuatro esquinas, pero sobre terreno sinusoidal el Civic tarda $2{,}85$ veces más que el FF1600. Dado que el tamaño del sistema es fijo, esa diferencia solo puede provenir del número de pasos que el integrador necesitar dar debido a la rigidez numérica que introducen los parámatros utilizados en el modelo. La masa suspendida, la rigidez del muelle y el amortiguamiento determinan la frecuencia del conjunto y en consecuencia el paso máximo admisible. El Civic, con $990$ kg de masa suspendida sobre muelles de $16$ y $14$ kN/m, presenta una dinámica vertical más exigente de seguir que el monoplaza de $400$ kg.\\
+El segundo efecto no se puede explicar de la misma forma. Los modelos \verb|Car| y \verb|CivicEKCar| tienen el mismo número de ecuaciones ($10\,981$), el mismo número de estados ($30$) y la misma topología de suspensión en las cuatro esquinas, pero sobre terreno sinusoidal el Civic tarda $2{,}85$ veces más que el FF1600. Dado que el tamaño del sistema es fijo, esa diferencia solo puede provenir del número de pasos que el integrador necesita dar debido a la rigidez numérica que introducen los parámetros utilizados en el modelo. La masa suspendida, la rigidez del muelle y el amortiguamiento determinan la frecuencia del conjunto y en consecuencia el paso máximo admisible. El Civic, con $990$ kg de masa suspendida sobre muelles de $16$ y $14$ kN/m, presenta una dinámica vertical más exigente de seguir que el monoplaza de $400$ kg.\\
 
 La conclusión es que el costo de estos modelos tiene dos componentes independientes: el tamaño del sistema en sí y la rigidez de la dinámica, y que reducir el primero no reduce necesariamente el segundo.
 
 
 \subsubsection{Qué limita realmente al simulador}
 
-Reuniendo todo lo anterior, la capacidad de cómputo no es la restricción principal que tiene este simulador. Con márgenes de entre $2{,}4\times$ y $16{,}1\times$ respecto del tiempo real sobre la maniobra más exigente y con un error de integración de centésimas de milímetro, ni la velocidad ni la exactitud del integrador son los factores que pueden acatar la calidad del resultado.
+Reuniendo todo lo anterior, la capacidad de cómputo no es la restricción principal que tiene este simulador. Con márgenes de entre $2{,}4\times$ y $16{,}1\times$ respecto del tiempo real sobre la maniobra más exigente y con un error de integración de centésimas de milímetro, ni la velocidad ni la exactitud del integrador son los factores que pueden acotar la calidad del resultado.
 
-Las principal restricción que posee el modelo es su robustez, un modelo puede resultar numéricamente frágil con independencia del margen de cómputo disponible.
+La principal restricción que posee el modelo es su robustez, un modelo puede resultar numéricamente frágil con independencia del margen de cómputo disponible.
 
-Este margen extra se puede invertir, en las pruebas de lazo cerrado, parte de este se va a ir a la ejecución tanto de las interfaces como de el entorno gráfico. Sin embargo, el margen es lo suficientemente grande como para agregar modelos de neumático o de suspensión más detallados, o la simulación simultánea de varios vehículos sin comprometer la operación interactiva.
+Este margen extra se puede invertir, en las pruebas de lazo cerrado, parte de este se va a ir a la ejecución tanto de las interfaces como del entorno gráfico. Sin embargo, el margen es lo suficientemente grande como para agregar modelos de neumático o de suspensión más detallados, o la simulación simultánea de varios vehículos sin comprometer la operación interactiva.
 
 \subsection{Fidelidad del manejo}
 
@@ -329,7 +329,7 @@ La frecuencia de la suspensión en su translación vertical (\textit{ride freque
 
 % El ensayo se realiza, por lo tanto, dejando asentar el vehículo y perturbando después el estado correspondiente, con acceso al vector de estados a través de la interfaz de bajo nivel del FMU descrita en la Sección~\ref{sec:cosim}. Sobre la respuesta resultante se identifica un sistema de segundo orden, $\ddot{e} = -a\,\dot{e} - b\,e$, cuyo ajuste es lineal en los coeficientes y no depende de localizar máximos —escasos en una respuesta amortiguada—, de donde $\omega_n = \sqrt{b}$ y $\zeta = a / (2\omega_n)$.
 
-Para realizar este ensayo se perturbó el estado de velocidad vertical del chasis, haciendo esto, los neumáticos conservan su compresión y los resortes de su deflexión al inicio, y al aplicar el impulso se excitan de forma natural, haciendo que el chasis se desplace mientras las ruedas permaneces quietas. El impulso empleado es de $0{,}05$ m/s, que produce amplitudes de $1{,}7$ a $2{,}4$ mm.
+Para realizar este ensayo se perturbó el estado de velocidad vertical del chasis, haciendo esto, los neumáticos conservan su compresión y los resortes de su deflexión al inicio, y al aplicar el impulso se excitan de forma natural, haciendo que el chasis se desplace mientras las ruedas permanecen quietas. El impulso empleado es de $0{,}05$ m/s, que produce amplitudes de $1{,}7$ a $2{,}4$ mm.
 
 Sobre el resultado se obtiene un sistema de segundo orden. Dado que es un sistema resorte-amortiguador la ecuación que lo describe es la siguiente (escrita para un desplazamiento $e$ respecto a la altura de equilibrio).
 
@@ -347,7 +347,7 @@ donde $m$ es la masa suspendida, $k$ la rigidez vertical y $c$ el amortiguamient
 	\label{eq:fn-zeta}
 \end{equation}
 
-El valor $R^2$ es el coeficiente de determinación, que es una medida de comparación entre el resultado esperado según la fórmula y el real, particularmente compara las aceleraciones. Un número cercano a 1 de de este valor confirmaría que este sistema es efectivamente de segundo orden y que no hay factores externos que lo modifiquen.
+El valor $R^2$ es el coeficiente de determinación, que es una medida de comparación entre el resultado esperado según la fórmula y el real, particularmente compara las aceleraciones. Un número cercano a 1 de este valor confirmaría que este sistema es efectivamente de segundo orden y que no hay factores externos que lo modifiquen.
 
 % El ajuste es lineal en ambos cocientes, de modo que tiene solución cerrada y aprovecha todas las muestras en lugar de depender de localizar máximos, que en una respuesta amortiguada son escasos. Su coeficiente de determinación $R^2$ sirve además de control: la Ecuación~\ref{eq:segundo-orden} es una hipótesis sobre el comportamiento del vehículo, no un hecho, y el $R^2$ mide si un único par de cocientes explica efectivamente toda la respuesta registrada. De no ser así, la frecuencia identificada no significaría nada.
 
@@ -384,16 +384,16 @@ El resultado más interesante es la comparación con vehículos reales, para la 
 
 % El FF1600 queda donde corresponde un monoplaza sin carga aerodinámica, más duro que un vehículo de calle pero no tanto como un auto de competición con apoyo aerodinámico. En ambos casos el ensayo muestra que el comportamiento vertical coincide con el vehículo real.
 
-El Civic también queda por encima del rango que le correspondería y es el que más se aparta de su predicción teórica. Esto se debe a que la predicción supone que el resorte se comprime lo mismo que la rueda, pero este está montado sobre los brazos de la suspensión, por lo que el cociente entre ambos recorridos (relación de instalación) depende de donde se fijen sus extremos. Calculando ese cociente en el modelo resulta en que el resorte recorre un $24\%$ más que la rueda, cuando en un vehículo real recorre menos de lo que recorre la rueda. Corregir los puntos de anclaje del conjunto resorte-amortiguador, llevándolos a una posición correspondiente al vehículo real ayudaría a que el modelo tenga valores más cercanos a la realidad, sin necesidad de tocar las rigideces declaradas.
+El Civic también queda por encima del rango que le correspondería y es el que más se aparta de su predicción teórica. Esto se debe a que la predicción supone que el resorte se comprime lo mismo que la rueda, pero este está montado sobre los brazos de la suspensión, por lo que el cociente entre ambos recorridos (relación de instalación) depende de dónde se fijen sus extremos. Calculando ese cociente en el modelo resulta en que el resorte recorre un $24\%$ más que la rueda, cuando en un vehículo real recorre menos de lo que recorre la rueda. Corregir los puntos de anclaje del conjunto resorte-amortiguador, llevándolos a una posición correspondiente al vehículo real ayudaría a que el modelo tenga valores más cercanos a la realidad, sin necesidad de tocar las rigideces declaradas.
 
 % El Civic, con $1{,}67$ Hz, es el único que queda por encima del rango que le correspondería, y también el que más se aparta de su predicción teórica. Ambas desviaciones tienen la misma causa. La predicción supone que el resorte se comprime lo mismo que sube la rueda, pero el resorte no está montado sobre la rueda sino sobre los brazos de la suspensión, de modo que el cociente entre ambos recorridos —la \textit{relación de instalación}— depende de dónde se fijen sus extremos. En el Civic ese cociente vale $1{,}24$: el resorte recorre un $24\,\%$ más que la rueda, cuando en un automóvil real recorre \emph{menos}, entre un $50$ y un $70\,\%$ de lo que recorre la rueda. Como la rigidez percibida en la rueda escala con el cuadrado de esa relación, el vehículo resulta alrededor de un $50\,\%$ más rígido de lo que sus resortes declaran, y su frecuencia sube en consecuencia. Corregir los puntos de anclaje del conjunto muelle-amortiguador, llevándolos a una posición representativa de un vehículo real, situaría al Civic dentro del rango de calle sin necesidad de retocar las rigideces declaradas, que son valores realistas. Los otros dos vehículos no presentan el problema: el eje delantero del E36 tiene una relación de instalación de $1$ por construcción, su eje trasero de $0{,}92$ y el monoplaza de $0{,}97$.
 
-El amortiguamiento relativo supera en los tres casos el rango habitual de $0{,}2$ a $0{,}4$ de un vehículo de calle \cite{giaraffa_springs3}, lo que se traduciría en una respuesta vertical algo más apagada que la real. Queda pendiente hacer una investigación más profunda para ver que puede llegar a causar esta diferencia.
+El amortiguamiento relativo supera en los tres casos el rango habitual de $0{,}2$ a $0{,}4$ de un vehículo de calle \cite{giaraffa_springs3}, lo que se traduciría en una respuesta vertical algo más apagada que la real. Queda pendiente hacer una investigación más profunda para ver qué puede llegar a causar esta diferencia.
 
 
 \subsubsection{Cargas estáticas por rueda}
 
-En equilibro, la velocidad vertical del contacto es nula, por lo que la ley de fuerza del suelo se reduce a $N = c \cdot (h + R_\text{wheel} - y)$ y la carga de cada rueda se obtiene de la altura de su centro, sin necesidad de exponer variables protegidas del modelo de contacto. La suma de las cuatro cargas debe igualar el peso total del vehículo, por lo que se va a realizar este ensayo para verificar la distribución de masas de el ensamblaje.
+En equilibrio, la velocidad vertical del contacto es nula, por lo que la ley de fuerza del suelo se reduce a $N = c \cdot (h + R_\text{wheel} - y)$ y la carga de cada rueda se obtiene de la altura de su centro, sin necesidad de exponer variables protegidas del modelo de contacto. La suma de las cuatro cargas debe igualar el peso total del vehículo, por lo que se va a realizar este ensayo para verificar la distribución de masas del ensamblaje.
 
 
 \begin{table}[H]
@@ -413,7 +413,7 @@ En equilibro, la velocidad vertical del contacto es nula, por lo que la ley de f
 
 El resultado tiene errores de entre el $0{,}6$ y el $1{,}4\%$, atribuible a la masa de componentes como brazos de suspensión, bujes, etc. que no se incluyen en la estimación. Esto valida la ley de contacto, la propagación del radio del neumático y el ensamblaje completo del vehículo. 
 
-El reparto de cargas revela una limitación del modelo: los tres vehículos resultan equilibrados entre ejes, mientras que en la vida real esto no sucede siempre. Esto se debe a como está modelado el chasis, el hecho de que esté construido como un paralelepípedo de masa uniforme logra una abstracción que captura razonablemente las inercias pero no representa la posición longitudinal del centro de masa.
+El reparto de cargas revela una limitación del modelo: los tres vehículos resultan equilibrados entre ejes, mientras que en la vida real esto no sucede siempre. Esto se debe a cómo está modelado el chasis, el hecho de que esté construido como un paralelepípedo de masa uniforme logra una abstracción que captura razonablemente las inercias pero no representa la posición longitudinal del centro de masa.
 
 % El estado asentado muestra además una segunda limitación: la vía (distancia entre ruedas del mismo eje) es mayor de lo que debería en los tres vehículos. El E36 mide $2{,}02$ m de vía delantera y $1{,}96$ m trasera frente a los $1{,}42$ y $1{,}44$ m del vehículo real, el Civic $2{,}00$ m contra $1{,}47$ m y el FF1600 $2{,}46$ m. La causa es que no se pudieron obtener los valores del largo de brazos de suspensión el semiancho al que se fijan los anclajes ni la extensión lateral de los brazos se ajustaron a la geometría del vehículo que cada modelo representa. La consecuencia no es estética: una vía un $40\,\%$ mayor que la real aumenta en esa misma proporción el brazo de palanca con que las cargas verticales resisten el momento de vuelco, de modo que el modelo sobreestima la rigidez al balanceo y los límites laterales de la sección siguiente deben leerse como optimistas por ese motivo.
 
@@ -470,7 +470,7 @@ Los resultados son consistentes con la cota mencionada anteriormente. Las desace
 
 % El monoplaza se detiene con una aceleración media menor, a pesa de que tiene el mismo coeficiente de fricción. Esto se debe a que la frenada no llega a alcanzar el agarre máximo de los neumáticos con el par que se le aplica, probablemente debido al menor peso del chasis. Si se quiere alcanzar una mejor frenada, se puede simplemente aumentar el parámetro de par máximo en el modelo para poder alcanzar el límite de adherencia.
 
-Los valores pico superan la cota mencionada anteriormente porque corresponden a momentos transitorios en el momento de aplicar el freno, cuando la transferencia de pesos por el cabeceo del chasis incrementa la carga normal en el eje delantero, además de que la resistencia aerodinámica y de rodadura están más presentas a altas velocidades.
+Los valores pico superan la cota mencionada anteriormente porque corresponden a momentos transitorios en el momento de aplicar el freno, cuando la transferencia de pesos por el cabeceo del chasis incrementa la carga normal en el eje delantero, además de que la resistencia aerodinámica y de rodadura están más presentes a altas velocidades.
 
 
 
@@ -492,7 +492,7 @@ La principal limitación es el reparto de cargas entre ejes, que es uniforme cua
 
 Además quedan dos observaciones menos importantes: El Civic presenta una relación de instalación de $1{,}24$ cuando un automóvil real tiene alrededor de $0{,}5$ a $0{,}7$, lo que explica que la frecuencia vertical quede algo por fuera del rango de su tipo de vehículo. Revisar los puntos de anclaje del conjunto resorte-amortiguador, utilizando valores correspondientes a los reales debería corregir el problema sin modificar las rigideces declaradas. La otra observación es que en los tres modelos el amortiguamiento relativo excede el rango habitual.
 
-Ninguna de estas limitaciones afecta a las conclusiones sobre desempeño de las secciones anteriores, pero si reducen la efectividad de su uso como simulador realista de conducción.
+Ninguna de estas limitaciones afecta a las conclusiones sobre desempeño de las secciones anteriores, pero sí reducen la efectividad de su uso como simulador realista de conducción.
 
 % Ninguna de estas limitaciones afecta a las conclusiones sobre desempeño de las secciones anteriores, que se refieren al costo y la exactitud de la integración y no al realismo del vehículo. Sí acotan, en cambio, el uso del simulador como herramienta de evaluación de comportamiento dinámico, y señalan con precisión qué habría que corregir para levantar esa restricción.
 
@@ -507,7 +507,7 @@ Ninguna de estas limitaciones afecta a las conclusiones sobre desempeño de las 
 % Debe señalarse además que un valor medio de tiempo por paso, aun holgadamente inferior al umbral de tiempo real, no garantiza por sí solo una experiencia interactiva satisfactoria: lo que percibe el conductor es el peor caso, no el promedio.
 
 
-\section{Simulación a lazo cerrado}
+\section{Simulación de Lazo Cerrado}
 
 Todas las mediciones anteriores son simulaciones por lotes, el modelo se ejecuta con una maniobra predefinida y se observan los resultados luego de que esta termina. En esta sección se va a medir el sistema completo en funcionamiento, con el volante y pedales físicos generando comandos al vehículo y el visualizador de Unity recibiendo las poses. Esta medición va a caracterizar al simulador tal y como lo experimenta un conductor humano.
 
@@ -556,7 +556,7 @@ Civic  & $15{,}6$ & $24{,}3$ & $30{,}7$ & $7{,}24$ & $16{,}30$ & $21{,}64$ & $34
 
 Las nueve corridas completan su horizonte con un factor de $1{,}00\times$ respecto del reloj de tiempo real y sin descartar una sola pose. Se emitieron entre $22\,500$ y $22\,700$ datagramas por corrida, cinco por paso. La sincronización se mantiene con un período mediano de $10{,}07$ ms frente a los $10$ ms nominales.
 
-Con medianas de $13$ a $16$ ms y percentiles $99$ de $26$ a $31$ ms, la contribución del modelo equivale a entre una y dos tramas a $60$ Hz. La antigüedad mediana del comando al aplicarse es de $7{,}6$ ms, mientras que la integración mediana cuesta entre $3{,}8$ y $7{,}2$ ms. Es decir aproximadente la mitad de la latencia no viene de la simulación si no de la espera del comando, sin embargo, siguen siendo valores bajos e imperceptibles para el humano.
+Con medianas de $13$ a $16$ ms y percentiles $99$ de $26$ a $31$ ms, la contribución del modelo equivale a entre una y dos tramas a $60$ Hz. La antigüedad mediana del comando al aplicarse es de $7{,}6$ ms, mientras que la integración mediana cuesta entre $3{,}8$ y $7{,}2$ ms. Es decir aproximadamente la mitad de la latencia no viene de la simulación sino de la espera del comando, sin embargo, siguen siendo valores bajos e imperceptibles para el humano.
 
 Esta espera viene de la frecuencia de actualización del periférico. La separación mediana entre datagramas de comandos es de $15{,}60$ ms, equivalente a $64{,}1$ Hz, y no a los $100$ Hz que la aplicación de control asume. Elevar esta frecuencia reduciría el término dominante de la latencia. Un detalle a tener en cuenta es que la base utilizada en estas pruebas reporta una frecuencia de $1000$ Hz, por lo que esa limitante probablemente venga de la implementación de \textit{DeviceDrivers}.
 
@@ -573,6 +573,19 @@ La extracción de las cinco poses y su conversión a cuaternión consumen entre 
 \subsection{Limitaciones de esta medición} 
 La conducción no fue guionada, los tres vehículos no se condujeron de forma idéntica, aunque se intentó mantener un comportamiento similar, por lo que las comparaciones entre ellos son indicativas y no controladas.
 
+\subsection{Demostración} 
+
+En el subtítulo de la figura~\ref{fig:video_demo} se encuentra el enlace a un video-demostración de la librería funcionando en tiempo real. El modelo utilizado es el \textit{E36Car} con los comandos emitidos por un volante \textit{Moza R9} y una pedalera \textit{SimMagic P1000}. Todo el hardware utilizado es de carácter comercial y puede adquirirse por cualquier persona que lo desee.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.75\textwidth]{img/video_frame.png}
+	\hfill
+	\caption[Demostración en tiempo real]{Fotograma del video de demostración: conducción
+		del \textit{E36Car} con volante y pedales, visualizado en Unity. El video completo está
+		disponible en \url{https://youtube.com/shorts/oBp1MOn9HcQ?si=oMNrngoNIWHef9YS}.}
+	\label{fig:video_demo}
+\end{figure}
 
 % \subsection*{Discusión}
 
