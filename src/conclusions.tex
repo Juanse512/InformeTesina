@@ -14,7 +14,7 @@ La conclusión principal es positiva. Se pudo construir una biblioteca de dinám
 
 Modelica organiza los modelos como componentes conectados por interfaces. Esa estructura resultó determinante a la hora de implementar la biblioteca. Por ejemplo, las tres topologías de suspensión implementadas comparten una misma interfaz, por lo que cambiar la geometría de suspensión de un vehículo es tan simple como cambiar un bloque y sus parámetros por otro basado en esa misma clase. Esto se aplica a cualquier componente del vehículo, lo que permite la creación de diferentes variantes de manera muy simple.
 
-Esto además permite la fácil expansión de la librería, por ejemplo, las barras estabilizadoras fue un componente que se agregó a último momento, y lo único que se tuvo que hacer para implementarlo fue crear el modelo que lo represente y conectarlo a los marcos ya expuestos.
+Esto además permite la fácil expansión de la librería, por ejemplo, la barra estabilizadora fue un componente que se agregó a último momento, y lo único que se tuvo que hacer para implementarlo fue crear el modelo que lo represente y conectarlo a los marcos ya expuestos.
 % Dos observaciones de este trabajo muestran que la propiedad no es solo declarativa. La primera es que los tres vehículos presentan exactamente el mismo número de estados continuos, treinta, pese a montar suspensiones de doble triángulo, de puntal telescópico y multibrazo: la interfaz común no impone un costo de representación, porque el cierre analítico del bucle cinemático evita introducir restricciones adicionales. La segunda es que incorporar la barra estabilizadora, un componente que no existía cuando se diseñaron las suspensiones, no requirió modificar ninguno de los modelos previos: bastó con escribir un componente nuevo que se conecta a los marcos ya expuestos.
 
 % La parametrización también cumple un papel similar. Dos de tres vehículos representados tienen la misma geometría de suspensión, sin embargo son dos tipos de autos muy diferentes ( 
@@ -61,7 +61,7 @@ El balance sobre la herramienta tiene altos y bajos. Como entorno de modelado y 
 
 Como entorno de ejecución en tiempo real mostró un problema que llevó a tener que buscar alternativas para este tipo de entorno: un reloj periódico de muestreo impide integrar con CVODE.
 
-% Como entorno de ejecución en tiempo real, en cambio, mostró límites concretos. Se identificaron y documentaron cuatro defectos, cada uno con su caso mínimo de reproducción, y dos de ellos afectan de lleno al lazo cerrado: un reloj periódico de muestreo impide integrar con CVODE, y los FMU de co-simulación terminan durante el avance. El primero es el que obligó a trasladar el muestreo fuera del modelo; el segundo, a exportar como FMU de intercambio de modelos y proveer el integrador desde la aplicación externa.
+% Como entorno de ejecución en tiempo real, en cambio, mostró límites concretos. Se identificaron y documentaron cuatro defectos, cada uno con su caso mínimo de reproducción, y dos de ellos afectan de lleno al lazo cerrado: un reloj periódico de muestreo impide integrar con CVODE, y los FMU de cosimulación terminan durante el avance. El primero es el que obligó a trasladar el muestreo fuera del modelo; el segundo, a exportar como FMU de intercambio de modelos y proveer el integrador desde la aplicación externa.
 
 Esta limitación no tiene que ver con el lenguaje Modelica, sino que viene de su implementación concreta del integrador CVODE específicamente. Aquí el carácter de software libre de OpenModelica permite la modificación de esta implementación, lo que hace que si se quisiese solucionar esta dificultad, se puede hacer sin problemas, en cambio una herramienta propietaria haría que se tenga que buscar una alternativa de forma obligatoria.
 
@@ -74,7 +74,7 @@ El simulador desarrollado es funcional y posee una arquitectura que permite su c
 
 \subsection{Ampliación del catálogo de componentes}
 
-La extensión más directa es agregar modelos nuevos sobre las interfaces definidas. Cada paquete de componentes de la biblioteca se define a partir de una clase base que fija su interfaz, por lo que un modelo nuevo se puede crear a partir de escribir la física correspondiente y adhiriéndose a la interfaz ya escrita, lo que permite que sea agregado a un vehículo sin modificar el resto de elementos.
+La extensión más directa es agregar modelos nuevos sobre las interfaces definidas, ya sea para extender el rango de vehículos que se pueden modelar como para definir modelos más complejos. Cada paquete de componentes de la biblioteca se define a partir de una clase base que fija su interfaz, por lo que un modelo nuevo se puede crear a partir de escribir la física correspondiente y adhiriéndose a la interfaz ya escrita, lo que permite que sea agregado a un vehículo sin modificar el resto de elementos.
 
 %Por ejemplo, un diferencial autoblocante sería una buena adición al sistema. El diferencial actual reparte el par por partes iguales en las dos ruedas, en cambio, un autoblocante transfiere par hacia la rueda con más agarre entre ambas salidas. Implementarlo simplemente consiste en crear un modelo a partir de la interfaz de diferencial y escribir la ley sobre los elementos de esta. De esta misma forma se pueden agregar geometrías de suspensión adicionales, frenos con distribución regulable entre ejes, entre otros.
 
@@ -93,7 +93,7 @@ El punto de conexión ya existe hoy en día, es la brida de par que alimenta al 
 
 El modelo de contacto actual toma el coeficiente de fricción como un parámetro del vehículo, por lo que toda la pista tiene el mismo agarre. Darle propiedades locales al terreno leyendo el coeficiente de fricción en el punto de cada rueda, en vez de leerlo de un parámetro permitiría representar zonas de distinto agarre, superficies mojadas o pasto fuera de la pista, y lo haría sin alterar la estructura del modelo de contacto.
 
-A esta mejora se lo podría sumar otra de consistencia. El terreno existe dos veces, una en el modelo físico y otra en el entorno gráfico, si se actualiza una, la otra también tiene que modificarse para que coincida. Unificarlas evitaría inconsistencias entre lo que ve el conductor y lo que se está calculando en la simulación, es particularmente útil en circuitos donde la geometría no es trivial.
+A esta mejora se le podría sumar otra de consistencia. El terreno existe dos veces, una en el modelo físico y otra en el entorno gráfico, si se actualiza una, la otra también tiene que modificarse para que coincida. Unificarlas evitaría inconsistencias entre lo que ve el conductor y lo que se está calculando en la simulación, es particularmente útil en circuitos donde la geometría no es trivial.
 
 
 \subsection{Modelo de neumático}
@@ -133,10 +133,10 @@ Entre las mejoras de rendimiento, una mejora potencial no está en el modelo sin
 
 \subsection{Unificación del entorno de ejecución}
 
-Toda la arquitectura de co-simulación adoptada existe porque OpenModelica no permite integrar con CVODE un modelo que tenga un reloj de muestreo. Corregir este defecto en el propio compilador permitiría ejecutar la totalidad del sistema desde OpenModelica, unificando todas las herramientas de la simulación en sí, lo cual es posible debido a la naturaleza de código abierto del compilador.
+Toda la arquitectura de cosimulación adoptada existe porque OpenModelica no permite integrar con CVODE un modelo que tenga un reloj de muestreo. Corregir este defecto en el propio compilador permitiría ejecutar la totalidad del sistema desde OpenModelica, unificando todas las herramientas de la simulación en sí, lo cual es posible debido a la naturaleza de código abierto del compilador.
 
 
 
-% La última línea no es sobre el simulador sino sobre la herramienta. La arquitectura de co-simulación adoptada, con el muestreo y el acompasamiento fuera del modelo, existe porque OpenModelica no admite integrar con CVODE un modelo que contenga un reloj periódico de muestreo. Corregir ese defecto en el propio compilador permitiría ejecutar el lazo cerrado íntegramente dentro de OpenModelica y disponer de una única herramienta para modelar, ensayar y ejecutar, en lugar de las dos que este trabajo debió combinar.
+% La última línea no es sobre el simulador sino sobre la herramienta. La arquitectura de cosimulación adoptada, con el muestreo y el acompasamiento fuera del modelo, existe porque OpenModelica no admite integrar con CVODE un modelo que contenga un reloj periódico de muestreo. Corregir ese defecto en el propio compilador permitiría ejecutar el lazo cerrado íntegramente dentro de OpenModelica y disponer de una única herramienta para modelar, ensayar y ejecutar, en lugar de las dos que este trabajo debió combinar.
 
 % El defecto está documentado en el apéndice con su caso mínimo de reproducción, que es el insumo que un informe al proyecto necesita. Vale aclarar que la corrección no invalidaría la arquitectura desarrollada: el desacoplamiento entre el motor físico, la entrada y la visualización seguiría siendo deseable por sí mismo, y de hecho es lo que permite sustituir el motor físico por otro. Lo que la corrección aportaría es la posibilidad de elegir, en lugar de la obligación de rodear una limitación.

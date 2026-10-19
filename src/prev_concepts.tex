@@ -1,5 +1,5 @@
 \section{Simulación y modelado}
-Antes de comenzar, se va a definir rápidamente los conceptos de simulación y modelado, ya que son la base de este proyecto. \\
+Antes de comenzar, se van a definir rápidamente los conceptos de simulación y modelado, ya que son la base de este proyecto. \\
 El proceso de modelado se refiere a la extracción de conocimiento 
 de un sistema físico que se desea simular, organizándolo de manera adecuada y representándolo de forma clara y sin ambigüedades. 
 Por otro lado, el proceso de simulación hace referencia al desarrollo de experimentos sobre el modelo para hacer predicciones
@@ -72,7 +72,7 @@ Como se mencionó anteriormente, una vez traducido y compilado, el conjunto de c
 
 \subsubsection*{DASSL}
 
-DASSL (\textit{Differential/Algebraic System Solver}) es el solver por defecto de OpenModelica, desarrollado por Petzold en Sandia National Laboratories \cite{petzold1982}. La principal ventaja es que opera directamente sobre la forma implícita  $F(t, y, \dot{y}) = 0$, más general que la forma explícita estándar $\dot{y} = f(t, y)$, lo que lo hace más apto ante sistema DAE como los que surgen del análisis dinámico de sistemas mecánicos multicuerpo. En particular, DASSL es aplicable incluso  cuando la matriz jacobiana $\partial F / \partial \dot{y}$ es singular, situación habitual en presencia de restricciones algebraicas.
+DASSL (\textit{Differential/Algebraic System Solver}) es el solver por defecto de OpenModelica, desarrollado por Petzold en Sandia National Laboratories \cite{petzold1982}. La principal ventaja es que opera directamente sobre la forma implícita  $F(t, y, \dot{y}) = 0$, más general que la forma explícita estándar $\dot{y} = f(t, y)$, lo que lo hace más apto ante sistemas DAE como los que surgen del análisis dinámico de sistemas mecánicos multicuerpo. En particular, DASSL es aplicable incluso  cuando la matriz jacobiana $\partial F / \partial \dot{y}$ es singular, situación habitual en presencia de restricciones algebraicas.
 
 
 El algoritmo se basa en la idea de Gear de reemplazar la derivada $\dot{y}$ en la ecuación implícita por una aproximación en diferencias, y resolver la ecuación no lineal resultante en el instante actual $t_n$ mediante el método de Newton. Para ello, emplea la fórmula de diferenciación regresiva (\textit{Backward Differentiation Formula}, BDF) de orden $k$, con $k$ variable entre $1$ y $5$. En su forma más simple, de primer orden, la aproximación es:
@@ -181,7 +181,7 @@ Tanto el gráfico como el código orientado a objetos son una forma de facilitar
 
 
 
-Primero, el código pasa por las etapas clásicas de un compilador: análisis léxico, análisis sintáctico y análisis semántico. El árbol resultante de las etapas anteriores se traduce a una representación intermedia denominada SCode, que el \textit{frontend} continúa procesando hasta obtener una representación DAE del modelo \cite{om_compiler}. En este proceso se realiza el aplanamiento o \textit{flattening}, que produce una representación plana del modelo que contiene solamente declaraciones de variables, funciones, registros y ecuaciones. Todos los elementos de un lenguaje orientado a objetos se eliminan \cite{om_flattening}. Cada conexión entre componentes se reemplaza por otras generadas automáticamente a partir de las definiciones de dicho modelo. El resultado es un sistema DAE implícito como el de la ecuación~\eqref{eq:example_flat}, que en modelos multicuerpo puede alcanzar las miles de ecuaciones.
+Primero, el código pasa por las etapas clásicas de un compilador: análisis léxico, análisis sintáctico y análisis semántico. El árbol resultante de las etapas anteriores se traduce a una representación intermedia denominada SCode, que el \textit{frontend} continúa procesando hasta obtener una representación DAE del modelo \cite{om_compiler}. En este proceso se realiza el aplanamiento o \textit{flattening}, que produce una representación plana del modelo que contiene solamente declaraciones de variables, funciones, registros y ecuaciones. Todos los elementos de un lenguaje orientado a objetos se eliminan \cite{om_flattening}. Cada conexión entre componentes se reemplaza por otras generadas automáticamente a partir de las definiciones de dicho modelo. El resultado es un sistema DAE implícito como el de la ecuación~\eqref{eq:example_flat}, que en modelos multicuerpo puede alcanzar miles de ecuaciones.
 
 \begin{subequations}
 	\label{eq:example_flat}
@@ -291,7 +291,7 @@ Adicionalmente, la biblioteca \textit{MultiBody} incluye un motor de animación 
 
 \subsection{Componentes de la biblioteca \textit{MultiBody}}
 
-A continuación se van a detallar los componentes de la librería \textit{MultiBody} que son relevantes para comprender los modelos desarrollados en esta tesina. Toda la información sobre ellos se toman de la documentación oficial de la \textit{Modelica Standard Library} \cite{msl_multibody, otter2003}.
+A continuación se van a detallar los componentes de la librería \textit{MultiBody} que son relevantes para comprender los modelos desarrollados en esta tesina. Toda la información sobre ellos se toma de la documentación oficial de la \textit{Modelica Standard Library} \cite{msl_multibody, otter2003}.
 
 \subsection*{Sistema de referencia y conectores}
 
@@ -346,10 +346,10 @@ Pertenece al subpaquete \verb|Joints.Assemblies| y agrega tres articulaciones de
 \subsection*{Elementos de fuerza}
 
 \subsubsection{SpringDamperParallel} 
-Elemento de fuerza que conecta un resorte lineal en paralelo con un amortiguador lineal, actuando a lo largo de la recta definida por \verb|frame_a| y \verb|frame_b|. Sus parámetros se componen de la constante de rigidez $c$, el coeficiente de amortiguamiento $d$ y la longitud sin estirar \verb|s_unstretched|. La fuerza resultante a lo largo de la línea de acción es $f = c\,(s - s_0) + d\,\dot{s}$, siendo $s$ la distancia entre \verb|frame_a| y \verb|frame_b|. Constituye la base de todos los conjunto resorte-amortiguador de la suspensión.
+Elemento de fuerza que conecta un resorte lineal en paralelo con un amortiguador lineal, actuando a lo largo de la recta definida por \verb|frame_a| y \verb|frame_b|. Sus parámetros se componen de la constante de rigidez $c$, el coeficiente de amortiguamiento $d$ y la longitud sin estirar \verb|s_unstretched|. La fuerza resultante a lo largo de la línea de acción es $f = c\,(s - s_0) + d\,\dot{s}$, siendo $s$ la distancia entre \verb|frame_a| y \verb|frame_b|. Constituye la base de todos los conjuntos resorte-amortiguador de la suspensión.
 
 \subsubsection{WorldForce / WorldForceAndTorque}
-Aplican un vector de fuerza y adicionalmente un vector de torque, respectivamente, sobre el marco al que se conectan, resueltos en el marco global. Se emplean para agregar en el modelo las fuerzas de contacto con el suelo y la fricción calculados en el paquete \verb|Roads|.
+Aplican un vector de fuerza y adicionalmente un vector de torque, respectivamente, sobre el marco al que se conectan, resueltos en el marco global. Se emplean para agregar en el modelo las fuerzas de contacto con el suelo y la fricción calculadas en el paquete \verb|Roads|.
 
 \subsection*{Visualización}
 

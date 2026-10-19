@@ -95,12 +95,17 @@ En este capítulo se van a presentar diferentes conceptos necesarios para compre
 % Contributions
 \chapter{Desarrollo}
 \label{sec:method}
-En este capítulo se va a describir el desarrollo de las diferentes herramientas creadas para esta tesina. Incluye el desarrollo de los modelos físicos, la aplicación utilizada para capturar el hardware, el visualizador y el entorno de co-simulación.
+En este capítulo se va a describir el desarrollo de la librería de dinámica vehicular creada para esta tesina. Se van a describir tanto los conceptos físicos reales que se están queriendo modelar, como la implementación de estos en Modelica. Además, se incluye el desarrollo de las herramientas externas a Modelica que son necesarias para cerrar el bucle de la simulación: la aplicación utilizada para capturar el hardware, el visualizador en Unity y el entorno de cosimulación.
+
+
+%En este capítulo se va a describir el desarrollo de las diferentes herramientas creadas para esta tesina. Incluye el desarrollo de los modelos físicos, la aplicación utilizada para capturar el hardware, el visualizador y el entorno de co-simulación. \\
+
+%En los elementos de la librería 
 \input{src/method.tex}
 
 \chapter{Experimentos}
 \label{sec:experiments}
-En este capítulo se muestran resultados de los experimentos ejecutados sobre la librería desarrollada, tanto de desempeño como de fidelidad. Se divide en pruebas de lazo abierto y de lazo cerrado.
+En este capítulo se muestran resultados de los experimentos realizados sobre la librería desarrollada. Se ejecutaron pruebas tanto de lazo abierto como de lazo cerrado y de estas se obtuvieron valores de desempeño, mediciones de complejidad del modelo y una comparación de fidelidad contra valores típicos de autos reales acordes a lo simulado. Además, se incluye un video-demostración de la librería funcionando en tiempo real.
 \input{src/experiments.tex}
 
 % Conclusions and Future Work

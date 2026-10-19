@@ -81,9 +81,9 @@ Para interpretar mejor los tiempos, conviene tener una medida del tamaño de cad
 \hline
 Modelo & Ecuaciones & Triviales & Estados & Ind. de evento \\
 \hline
-\verb|Car| (FF1600) & 12\,269 & 8\,585 & 30 & 8 \\
-\verb|CivicEKCar|   & 12\,269 & 8\,584 & 30 & 8 \\
-\verb|E36Car|       &  9\,897 & 6\,746 & 30 & 8 \\
+\verb|Car| (FF1600) & 12\,269 & 9\,703 & 32 & 8 \\
+\verb|CivicEKCar|   & 12\,269 & 9\,702 & 32 & 8 \\
+\verb|E36Car|       &  9\,900 & 7\,854 & 32 & 8 \\
 \hline
 \end{tabular}
 
@@ -91,7 +91,7 @@ Modelo & Ecuaciones & Triviales & Estados & Ind. de evento \\
 \label{tab:complejidad}
 \end{table}
 
-El dato más relevante de la tabla es que los tres vehículos tienen exactamente el mismo número de estados continuos, a pesar de que utilizan topologías distintas. Esto es debido al uso del componente  \verb|JointRRR| señalada en la Sección~\ref{sec:method}: al resolver analíticamente el bucle cinemático, no introduce restricciones ni variables de estado adicionales. Los treinta estados corresponden a los seis grados de libertad del chasis, los cuatro recorridos de suspensión y los cuatro giros de rueda, con sus respectivas derivadas, independientemente de que la suspensión sea de doble triángulo, McPherson o multibrazo. A notar también de que tanto el FF1600 como el CivicEKCar contienen la misma cantidad de ecuaciones, a pesar de ser vehículos completamente distintos en papel, sin embargo, su topología de suspensión es la misma (doble triángulo en las cuatro esquinas). 
+El dato más relevante de la tabla es que los tres vehículos tienen exactamente el mismo número de estados continuos, a pesar de que utilizan topologías distintas. Esto es debido al uso del componente  \verb|JointRRR| señalado en la Sección~\ref{sec:method}: al resolver analíticamente el bucle cinemático, no introduce restricciones ni variables de estado adicionales. Los treinta y dos estados corresponden a los seis grados de libertad del chasis, los cuatro recorridos de suspensión y los cuatro giros de rueda, cada uno con su derivada, más cuatro estados asociados a la actuación de la dirección. Los ocho estados de giro reflejan que el diferencial permite a las dos ruedas motrices girar a velocidades distintas. A notar también de que tanto el FF1600 como el CivicEKCar contienen la misma cantidad de ecuaciones, a pesar de ser vehículos completamente distintos en papel, sin embargo, su topología de suspensión es la misma (doble triángulo en las cuatro esquinas). 
 
 
 \subsection{Sensibilidad a la tolerancia}
@@ -145,26 +145,26 @@ Las medidas utilizadas para medir el error de la trayectoria son: el error de po
 \begin{table}[H]
 \centering
 \begin{tabular}{llccc}
-\hline
-Modelo & Tolerancia & Error final (m) & NRMSE (\%) & Razón de mejora \\
-\hline
-\multirow{3}{*}{FF1600}
- & $10^{-4}$ & $1{,}85\times10^{-2}$ & $1{,}8\times10^{-2}$ & --- \\
- & $10^{-6}$ & $4{,}68\times10^{-5}$ & $4{,}7\times10^{-5}$ & $395$ \\
- & $10^{-8}$ & $7{,}59\times10^{-7}$ & $<10^{-5}$ & $62$ \\
-\hline
-\multirow{3}{*}{E36}
- & $10^{-4}$ & $1{,}44\times10^{-2}$ & $9{,}4\times10^{-3}$ & --- \\
- & $10^{-6}$ & $2{,}30\times10^{-4}$ & $2{,}2\times10^{-4}$ & $63$ \\
- & $10^{-8}$ & $2{,}26\times10^{-6}$ & $<10^{-5}$ & $102$ \\
-\hline
-\multirow{3}{*}{Civic}
- & $10^{-4}$ & $2{,}25\times10^{-2}$ & $1{,}8\times10^{-2}$ & --- \\
- & $10^{-6}$ & $2{,}75\times10^{-4}$ & $1{,}7\times10^{-4}$ & $82$ \\
- & $10^{-8}$ & $1{,}12\times10^{-6}$ & $<10^{-5}$ & $245$ \\
-\hline
+	\hline
+	Modelo & Tolerancia & Error final (m) & NRMSE (\%) & Razón de mejora \\
+	\hline
+	\multirow{3}{*}{FF1600}
+	& $10^{-4}$ & $1{,}94\times10^{-2}$ & $2{,}1\times10^{-2}$ & --- \\
+	& $10^{-6}$ & $9{,}54\times10^{-5}$ & $7{,}6\times10^{-5}$ & $203$ \\
+	& $10^{-8}$ & $2{,}24\times10^{-6}$ & $<10^{-5}$ & $43$ \\
+	\hline
+	\multirow{3}{*}{E36}
+	& $10^{-4}$ & $2{,}04\times10^{-2}$ & $2{,}0\times10^{-2}$ & --- \\
+	& $10^{-6}$ & $1{,}29\times10^{-4}$ & $8{,}8\times10^{-5}$ & $159$ \\
+	& $10^{-8}$ & $9{,}12\times10^{-6}$ & $1{,}0\times10^{-5}$ & $14$ \\
+	\hline
+	\multirow{3}{*}{Civic}
+	& $10^{-4}$ & $2{,}13\times10^{-2}$ & $1{,}4\times10^{-2}$ & --- \\
+	& $10^{-6}$ & $3{,}43\times10^{-4}$ & $3{,}0\times10^{-4}$ & $62$ \\
+	& $10^{-8}$ & $3{,}57\times10^{-6}$ & $<10^{-5}$ & $96$ \\
+	\hline
 \end{tabular}
-\caption[Exactitud de la solución en función de la tolerancia]{Error respecto de la solución de referencia, calculada con tolerancia $10^{-10}$, para una maniobra suave de $10$ s. La razón de mejora es el cociente entre el error de la fila anterior y el de la fila actual. Los desplazamientos totales recorridos son de $42{,}9$ m (FF1600), $48{,}9$ m (E36) y $50{,}0$ m (Civic).}
+\caption[Exactitud de la solución en función de la tolerancia]{Error respecto de la solución de referencia, calculada con tolerancia $10^{-10}$, para una maniobra suave de $10$ s. La razón de mejora es el cociente entre el error de la fila anterior y el de la fila actual. Los desplazamientos totales recorridos son de $43{,}8$ m (FF1600), $48{,}0$ m (E36) y $47{,}4$ m (Civic).}
 \label{tab:exactitud}
 \end{table}
 
@@ -175,9 +175,9 @@ Modelo & Tolerancia & Error final (m) & NRMSE (\%) & Razón de mejora \\
 \label{fig:errorposicion}
 \end{figure}
 
-El comportamiento es el esperado, cada dos décadas de tolerancia el error se reduce aproximadamente dos órdenes de magnitud. Esta convergencia regular es evidencia de que la integración se comporta correctamente sobre este modelo.
+Hay una mejora fuerte entre $10^{-4}$ y $10^{-6}$ y es menos pronunciada contra $10^{-8}$. 
 
-En términos absolutos, las cifras son aceptables para el objetivo del simulador. Con la tolerancia $10^{-6}$ elegida, el error de posición al cabo de diez segundos de simulación es de $47$ a $275$ micrómetros sobre recorridos de unos cincuenta metros, equivalente a un NRMSE inferior al $0{,}0002\text{\%}$. Incluso con la tolerancia más baja ensayada, $10^{-4}$, el apartamiento máximo es de $2{,}3$ cm, un valor que es imperceptible para un conductor e inferior a la incertidumbre de los propios parámetros del modelo (masas, rigideces y coeficientes de fricción) que se conocen con una precisión mucho menor. La tolerancia deja de ser el factor limitante de la fidelidad del simulador y en mi opinión pasaría a ser, por un lado, el conocimiento con mayor exactitud de las características del vehículo y por otro, una mayor fidelidad a la hora de plasmar ciertos aspectos de este, por ejemplo, eliminando la abstracción del chasis como un paralelepípedo e intercambiándola por algo más preciso.
+En términos absolutos, las cifras son aceptables para el objetivo del simulador. Con la tolerancia $10^{-6}$ elegida, el error de posición al cabo de diez segundos de simulación es de $95$ a $342$ micrómetros sobre recorridos de unos cincuenta metros. Incluso con la tolerancia más baja ensayada, $10^{-4}$, el apartamiento máximo es de $21{,}3$ mm, un valor que es imperceptible para un conductor e inferior a la incertidumbre de los propios parámetros del modelo (masas, rigideces y coeficientes de fricción) que se conocen con una precisión mucho menor. La tolerancia deja de ser el factor limitante de la fidelidad del simulador y en mi opinión pasaría a ser, por un lado, el conocimiento con mayor exactitud de las características del vehículo y por otro, una mayor fidelidad a la hora de plasmar ciertos aspectos de este, por ejemplo, eliminando la abstracción del chasis como un paralelepípedo e intercambiándola por algo más preciso.
 
 Vale la pena mencionar que en casi todos los casos el error máximo sobre la trayectoria coincide con el error del final, lo que indica que este crece de forma monótona a lo largo de la maniobra, mostrando de que es un error acumulativo por truncamiento.
 
@@ -187,7 +187,7 @@ Vale la pena mencionar que en casi todos los casos el error máximo sobre la tra
 
 \subsection{Comparación de integradores}
 
-Las mediciones de exactitud de la sección anterior compara CVODE contra sí mismo, por lo que mide la convergencia del sistema al modificar la tolerancia, pero no detectaría si hubiera un error común en el solver, independientemente de los parámetros. Esta sección agrega la verificación cruzada con otros solvers, comparando tres diferentes sobre el mismo modelo y maniobra.
+Las mediciones de exactitud de la sección anterior comparan CVODE contra sí mismo, por lo que miden la convergencia del sistema al modificar la tolerancia, pero no detectaría si hubiera un error común en el solver, independientemente de los parámetros. Esta sección agrega la verificación cruzada con otros solvers, comparando tres diferentes sobre el mismo modelo y maniobra.
 
 Los integradores utilizados fueron: CVODE y DASSL, ambos de la familia de (BDF) y \verb|gbode|, de la familia de métodos Runge-Kutta de OpenModelica. Agregar el tercer método responde a una necesidad de agregar un solver que no comparta familia con los dos anteriores, para evitar ocultar errores posibles debido a la naturaleza de los sistemas, por lo que agregar un método de Runge-Kutta descarta esa posibilidad. 
 
@@ -204,28 +204,28 @@ Se emplea la misma maniobra suave utilizada en la prueba de exactitud, por la mi
 Modelo & Integrador & Tol. $10^{-4}$ & Tol. $10^{-6}$ \\
 \hline
 \multirow{3}{*}{FF1600}
- & CVODE & $0{,}49 \pm 0{,}02$ & $0{,}60 \pm 0{,}00$ \\
- & DASSL & falla$^{\S}$ & falla$^{\S}$ \\
- & gbode & $10{,}46 \pm 0{,}27$ & $12{,}97 \pm 0{,}34$ \\
+& CVODE & $0{,}72 \pm 0{,}02$ & $1{,}01 \pm 0{,}08$ \\
+& DASSL & $1{,}02 \pm 0{,}01$ & $1{,}88 \pm 0{,}07$ \\
+& gbode & $18{,}15 \pm 0{,}08$ & $21{,}97 \pm 0{,}23$ \\
 \hline
 \multirow{3}{*}{E36}
- & CVODE & $0{,}34 \pm 0{,}00$ & $0{,}38 \pm 0{,}00$ \\
- & DASSL & $0{,}38 \pm 0{,}00$ & $0{,}43 \pm 0{,}01$ \\
- & gbode & $4{,}98 \pm 0{,}14$ & $7{,}03 \pm 0{,}07$ \\
+& CVODE & $0{,}37 \pm 0{,}01$ & $0{,}45 \pm 0{,}00$ \\
+& DASSL & $0{,}43 \pm 0{,}00$ & $0{,}55 \pm 0{,}01$ \\
+& gbode & $2{,}91 \pm 0{,}09$ & $5{,}48 \pm 0{,}01$ \\
 \hline
 \multirow{3}{*}{Civic}
- & CVODE & $0{,}43 \pm 0{,}00$ & $0{,}53 \pm 0{,}00$ \\
- & DASSL & $0{,}48 \pm 0{,}01$ & $0{,}67 \pm 0{,}01$ \\
- & gbode & $1{,}30 \pm 0{,}01$ & $2{,}22 \pm 0{,}00$ \\
+& CVODE & $0{,}71 \pm 0{,}00$ & $0{,}80 \pm 0{,}01$ \\
+& DASSL & $0{,}90 \pm 0{,}00$ & $1{,}36 \pm 0{,}02$ \\
+& gbode & $3{,}54 \pm 0{,}09$ & $6{,}47 \pm 0{,}04$ \\
 \hline
 \end{tabular}
-\caption[Tiempo de cómputo de los tres integradores]{Tiempo de cómputo en segundos (media $\pm$ desviación estándar de tres repeticiones) para la maniobra suave de $10$ s. $^{\S}$ Aborta a los $0{,}29$ s.}
+\caption[Tiempo de cómputo de los tres integradores]{Tiempo de cómputo en segundos (media $\pm$ desviación estándar de tres repeticiones) para la maniobra suave de $10$ s.}
 \label{tab:solvers}
 \end{table}
 
-CVODE sigue siendo el solver más rápido en todas las configuraciones que completa:  DASSL cuesta entre $1{,}1$ y $1{,}3$ veces más, y \verb|gbode| entre $3$ y $22$ veces más. La diferencia era esperable en el caso de \verb|gbode|, cuyos métodos Runge-Kutta implícitos resuelven varios sistemas no lineales por paso.
+CVODE sigue siendo el solver más rápido en todas las configuraciones que completa:  DASSL cuesta entre $1{,}2$ y $1{,}9$ veces más, y \verb|gbode| entre $5$ y $25$ veces más. La diferencia era esperable en el caso de \verb|gbode|, cuyos métodos Runge-Kutta implícitos resuelven varios sistemas no lineales por paso.
 
-Sigue habiendo una diferencia de robustez más marcada que de costo, pero concentrada en un único modelo, CVODE y \verb|gbode| completan todas las configuraciones, DASSL, sin embargo, falla en ambas pruebas del monoplaza.
+% Sigue habiendo una diferencia de robustez más marcada que de costo, pero concentrada en un único modelo, CVODE y \verb|gbode| completan todas las configuraciones, DASSL, sin embargo, falla en ambas pruebas del monoplaza.
 
 % La brecha de robustez sigue siendo más marcada que la de costo, pero se concentra en un único modelo. CVODE y \verb|gbode| completan las seis configuraciones cada uno; DASSL falla en dos, ambas del monoplaza y con las dos tolerancias ensayadas. El aborto se produce a los $0{,}29$ s, durante el transitorio de asentamiento inicial y no en régimen establecido, lo que sugiere que la dificultad está en la fase en que la suspensión recorre su rango completo antes de estabilizarse. El diagnóstico es el mismo de siempre, \textit{«linear system solver failed»}, y no depende de la tolerancia, lo que descarta que se trate de un problema de control de error.
 
@@ -239,25 +239,25 @@ La tabla~\ref{tab:acuerdo} y la figura~\ref{fig:acuerdo} presentan la diferencia
 \hline
 Modelo & CVODE--DASSL & CVODE--gbode & DASSL--gbode & Error propio de CVODE \\
 \hline
-FF1600 & ---       & $10{,}8$  & ---       & $46{,}8$  \\
-E36    & $67{,}9$  & $87{,}6$  & $135{,}4$ & $229{,}6$ \\
-Civic  & $95{,}2$  & $72{,}2$  & $164{,}3$ & $274{,}8$ \\
+FF1600 & $66{,}8$  & $33{,}4$ & $47{,}4$  & $95{,}4$  \\
+E36    & $227{,}2$ & $61{,}3$ & $283{,}5$ & $129{,}0$ \\
+Civic  & $155{,}4$ & $75{,}5$ & $226{,}8$ & $342{,}6$ \\
 \hline
 \end{tabular}
-\caption[Diferencia entre integradores]{Diferencia de posición final entre pares de integradores, en micrómetros, con tolerancia $10^{-6}$. La última columna es el error de CVODE respecto de su propia referencia $10^{-10}$ (Tabla~\ref{tab:exactitud}). Los pares en que se usa DASSL no se informan para el monoplaza, porque ese integrador aborta sobre ese modelo.}
+\caption[Diferencia entre integradores]{Diferencia de posición final entre pares de integradores, en micrómetros, con tolerancia $10^{-6}$. La última columna es el error de CVODE respecto de su propia referencia $10^{-10}$ (Tabla~\ref{tab:exactitud}).}
 \label{tab:acuerdo}
 \end{table}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.86\textwidth]{img/solvers_acuerdo.pdf}
-\caption[Acuerdo entre integradores]{Diferencia de posición final entre pares de integradores con tolerancia $10^{-6}$, en escala logarítmica. La línea discontinua marca, para cada vehículo, el error propio de CVODE a esa tolerancia: las diferencias del mismo orden indican acuerdo dentro de la exactitud alcanzable.}
+\caption[Acuerdo entre integradores]{Diferencia de posición final entre pares de integradores con tolerancia $10^{-6}$, en escala logarítmica. La línea discontinua marca, para cada vehículo, el error propio de CVODE a esa tolerancia: las diferencias del mismo orden indican acuerdo dentro de la exactitud alcanzable, con la excepción del modelo del E36, sin embargo, el error sigue sin ser significativo.}
 \label{fig:acuerdo}
 \end{figure}
 
 El resultado es el buscado. Las diferencias entre pares de solver van de  $10{,}8$ a $164{,}3$ micrómetros, es decir, el mismo orden de magnitud que el error propio de CVODE frente a su referencia, de $46{,}8$ a $274{,}8$ micrómetros. Los tres métodos coinciden dentro de la exactitud que cada uno alcanza a esa tolerancia, no se detecta ningún sesgo generado por algún integrador en particular. Y dado que \verb|gbode| pertenece a otra familia de métodos, la coincidencia no puede explicarse por un problema compartido de la formulación BDF.
 
-Con la tolerancia en $10^{-4}$ las diferencias crecen dos órdenes de magnitud, hasta $23{,}6$ mm, lo que también es consistente ya que el error propio de cada método es mayor de todas formas. El acuerdo entre integradores empeora en la misma proporción que la exactitud individual.
+Con la tolerancia en $10^{-4}$ las diferencias crecen dos órdenes de magnitud, hasta $15{,}0$ mm, lo que también es consistente ya que el error propio de cada método es mayor de todas formas. El acuerdo entre integradores empeora en la misma proporción que la exactitud individual.
 
 % La excepción vuelve a ser el modelo E36, que no admite verificación cruzada porque es el único que ningún otro integrador puede hacer que complete correctamente. El encadenamiento de eventos con tolerancias bajas refuerza de que puede ser un problema del modelo en sí y no del integrador. Queda pendiente identificar la conmutación responsable, probablemente en los topes de suspensión de la topología \verb|MultiLink|, queda como trabajo pendiente.
 
@@ -270,13 +270,13 @@ Con la tolerancia en $10^{-4}$ las diferencias crecen dos órdenes de magnitud, 
 
 % El hallazgo más significativo de este capítulo no es de rendimiento, sino de robustez. En el benchmark de costo DASSL aborta en cuatro de seis configuraciones, en la comparación de integradores falla en dos de seis y \verb|gbode| en una. CVODE, sin embargo, completa las doce configuraciones ejecutadas en ambos experimentos sin una sola falla.
 
-Lo habitual al elegir un integrador es negociar entre velocidad y robustez. Sin embargo en este caso, CVODE es al mismo tiempo el más rápido (entre $1{,}1$ y $1{,}3$ veces más que DASSL, y entre $3$ y $22$ veces más que \verb|gbode|) y el único que no presenta fallas en las ejecuciones. Por lo tanto, la elección resulta sencilla y CVODE se adopta como integrador de referencia de la biblioteca.
+Lo habitual al elegir un integrador es negociar entre velocidad y robustez. Sin embargo en este caso, CVODE es al mismo tiempo el más rápido (entre $1{,}2$ y $1{,}9$ veces más que DASSL, y entre $5$ y $25$ veces más que \verb|gbode|) y no presenta fallas en las ejecuciones. Por lo tanto, la elección resulta sencilla y CVODE se adopta como integrador de referencia de la biblioteca.
 
 \subsubsection{La tolerancia dejó de ser el factor limitante}
 
-Los resultados de las pruebas de costo y exactitud proveen un resultado claro con respecto al ajuste de la tolerancia. Por el lado del costo, cada dos décadas de tolerancia agregada se duplica el tiempo de cómputo. Por el lado de la exactitud, estas mismas dos décadas reducen el error en dos órdenes de magnitud. El intercambio es favorable a ajustar la tolerancia y no existe razón de rendimiento para relajarla demasiado.
+Los resultados de las pruebas de costo y exactitud proveen un resultado claro con respecto al ajuste de la tolerancia. Por el lado del costo, cada dos décadas de tolerancia agregada se duplica el tiempo de cómputo. Por el lado de la exactitud, estas mismas dos décadas reducen el error en 43× (FF1600), 14× (E36) y 96× (Civic). El intercambio es favorable a ajustar la tolerancia y no existe razón de rendimiento para relajarla demasiado.
  
-La medición más relevante para observar es la magnitud absoluta del error. Con la tolerancia elegida de $10^{-6}$ la trayectoria se aparta de la referencia entre $47$ y $275$ micrómetros al cabo de diez segundos de simulación en el entorno ejecutado, e incluso con la tolerancia más permisiva, el error máximo es de $2{,}3$ cm. Ambas cifras son órdenes de magnitud menores que la incertidumbre con las que se conocen los parámetros físicos del modelo (masas, rigideces, coeficientes de fricción, geometría de la suspensión). El esfuerzo de mejora, rinde mucho más si es aplicado a la caracterización del vehículo antes que al control del error del integrador.
+La medición más relevante para observar es la magnitud absoluta del error. Con la tolerancia elegida de $10^{-6}$ la trayectoria se aparta de la referencia entre $95$ y $342$ micrómetros al cabo de diez segundos de simulación en el entorno ejecutado, e incluso con la tolerancia más permisiva, el error máximo es de $21{,}3$ mm. Ambas cifras son órdenes de magnitud menores que la incertidumbre con la que se conocen los parámetros físicos del modelo (masas, rigideces, coeficientes de fricción, geometría de la suspensión). El esfuerzo de mejora, rinde mucho más si es aplicado a la caracterización del vehículo antes que al control del error del integrador.
 
 \subsubsection{Las conmutaciones son la dificultad numérica dominante}
 
@@ -301,7 +301,7 @@ La diferencia entre el tiempo total y el de simulación se puede usar para compa
 
 Contrastando los tiempos contra la tabla~\ref{tab:complejidad} se pueden observar dos efectos separados. El primero responde al tamaño del modelo: el E36 tiene $19{,}3\text{\%}$ menos de ecuaciones comparado a los otros vehículos (debido a su suspensión \verb|McPherson|, construida sobre una única articulación \verb|Prismatic| para simplificar) y es el más rápido de ejecutar sobre terreno plano.\\
 
-El segundo efecto no se puede explicar de la misma forma. Los modelos \verb|Car| y \verb|CivicEKCar| tienen el mismo número de ecuaciones ($10\,981$), el mismo número de estados ($30$) y la misma topología de suspensión en las cuatro esquinas, pero sobre terreno sinusoidal el Civic tarda $2{,}85$ veces más que el FF1600. Dado que el tamaño del sistema es fijo, esa diferencia solo puede provenir del número de pasos que el integrador necesita dar debido a la rigidez numérica que introducen los parámetros utilizados en el modelo. La masa suspendida, la rigidez del muelle y el amortiguamiento determinan la frecuencia del conjunto y en consecuencia el paso máximo admisible. El Civic, con $990$ kg de masa suspendida sobre muelles de $16$ y $14$ kN/m, presenta una dinámica vertical más exigente de seguir que el monoplaza de $400$ kg.\\
+El segundo efecto no se puede explicar de la misma forma. Los modelos \verb|Car| y \verb|CivicEKCar| tienen el mismo número de ecuaciones ($10\,981$), el mismo número de estados ($32$) y la misma topología de suspensión en las cuatro esquinas, pero sobre terreno sinusoidal el Civic tarda $2{,}85$ veces más que el FF1600. Dado que el tamaño del sistema es fijo, esa diferencia solo puede provenir del número de pasos que el integrador necesita dar debido a la rigidez numérica que introducen los parámetros utilizados en el modelo. La masa suspendida, la rigidez del muelle y el amortiguamiento determinan la frecuencia del conjunto y en consecuencia el paso máximo admisible. El Civic, con $990$ kg de masa suspendida sobre muelles de $16$ y $14$ kN/m, presenta una dinámica vertical más exigente de seguir que el monoplaza de $400$ kg.\\
 
 La conclusión es que el costo de estos modelos tiene dos componentes independientes: el tamaño del sistema en sí y la rigidez de la dinámica, y que reducir el primero no reduce necesariamente el segundo.
 
@@ -329,7 +329,7 @@ La frecuencia de la suspensión en su translación vertical (\textit{ride freque
 
 % El ensayo se realiza, por lo tanto, dejando asentar el vehículo y perturbando después el estado correspondiente, con acceso al vector de estados a través de la interfaz de bajo nivel del FMU descrita en la Sección~\ref{sec:cosim}. Sobre la respuesta resultante se identifica un sistema de segundo orden, $\ddot{e} = -a\,\dot{e} - b\,e$, cuyo ajuste es lineal en los coeficientes y no depende de localizar máximos —escasos en una respuesta amortiguada—, de donde $\omega_n = \sqrt{b}$ y $\zeta = a / (2\omega_n)$.
 
-Para realizar este ensayo se perturbó el estado de velocidad vertical del chasis, haciendo esto, los neumáticos conservan su compresión y los resortes de su deflexión al inicio, y al aplicar el impulso se excitan de forma natural, haciendo que el chasis se desplace mientras las ruedas permanecen quietas. El impulso empleado es de $0{,}05$ m/s, que produce amplitudes de $1{,}7$ a $2{,}4$ mm.
+Para realizar este ensayo se perturbó el estado de velocidad vertical del chasis, haciendo esto, los neumáticos conservan su compresión y los resortes su deflexión al inicio, y al aplicar el impulso se excitan de forma natural, haciendo que el chasis se desplace mientras las ruedas permanecen quietas. El impulso empleado es de $0{,}05$ m/s, que produce amplitudes de $1{,}7$ a $2{,}4$ mm.
 
 Sobre el resultado se obtiene un sistema de segundo orden. Dado que es un sistema resorte-amortiguador la ecuación que lo describe es la siguiente (escrita para un desplazamiento $e$ respecto a la altura de equilibrio).
 
@@ -411,7 +411,7 @@ En equilibrio, la velocidad vertical del contacto es nula, por lo que la ley de 
 	\label{tab:cargas}
 \end{table}
 
-El resultado tiene errores de entre el $0{,}6$ y el $1{,}4\%$, atribuible a la masa de componentes como brazos de suspensión, bujes, etc. que no se incluyen en la estimación. Esto valida la ley de contacto, la propagación del radio del neumático y el ensamblaje completo del vehículo. 
+El resultado tiene errores de entre el $0{,}6$ y el $1{,}4\%$, atribuibles a la masa de componentes como brazos de suspensión, bujes, etc. que no se incluyen en la estimación. Esto valida la ley de contacto, la propagación del radio del neumático y el ensamblaje completo del vehículo. 
 
 El reparto de cargas revela una limitación del modelo: los tres vehículos resultan equilibrados entre ejes, mientras que en la vida real esto no sucede siempre. Esto se debe a cómo está modelado el chasis, el hecho de que esté construido como un paralelepípedo de masa uniforme logra una abstracción que captura razonablemente las inercias pero no representa la posición longitudinal del centro de masa.
 
@@ -436,7 +436,7 @@ La característica obtenida es la correcta, a baja aceleración lateral el radio
 
 % La característica obtenida es la correcta en su forma. A baja aceleración lateral el radio se mantiene aproximadamente constante y algo por encima del radio de Ackermann, y a partir de cierto punto crece abruptamente sin que la aceleración lateral siga aumentando: el neumático ha alcanzado su límite de adherencia y el vehículo se abre, esto es, subvira en el límite. Es el comportamiento que corresponde y el deseable desde el punto de vista de la seguridad.
 
-El límite lateral alcanzado es de  $0{,}85$ g para el FF1600, $0{,}77$ g para el E36 y $0{,}85$ g para el Civic. Cabe aclarar que es un límite combinado y no puramente lateral, ya que al aplicar acelerador parte del presupuesto de agarre va también a la aceleración. Para un vehículo de calle sobre asfalto seco estos valores son válidos, sin embargo, para el monoplaza resultan bajos \cite{hyperphysics_tires}. Esto se debe a que el modelo de neumático utilizado fue el mismo para los tres vehículos, si se quisiera obtener un valor más preciso, habría que obtener y aplicar los parámetros de un neumático de competición.
+El límite lateral alcanzado es de  $0{,}94$ g para el FF1600, $0{,}87$ g para el E36 y $0{,}90$ g para el Civic. Cabe aclarar que es un límite combinado y no puramente lateral, ya que al aplicar acelerador parte del presupuesto de agarre va también a la aceleración. Para un vehículo de calle sobre asfalto seco estos valores son válidos, sin embargo, para el monoplaza resultan algo bajos \cite{hyperphysics_tires}. Esto se debe a que el modelo de neumático utilizado fue el mismo para los tres vehículos, si se quisiera obtener un valor más preciso, habría que obtener y aplicar los parámetros de un neumático de competición.
 
 % El ángulo de balanceo resulta remarcable. Los dos vehículos de calle se inclinan alrededor de $9$ grados por cada g de aceleración lateral (el E36 $6{,}8$ grados a $0{,}76$ g y el Civic $7{,}7$ a $0{,}82$ g) aproximadamente el doble de los $4$ a $5$ de un automóvil real. El monoplaza, con $3{,}3$ grados por g, queda donde corresponde.
 
@@ -575,7 +575,7 @@ La conducción no fue guionada, los tres vehículos no se condujeron de forma id
 
 \subsection{Demostración} 
 
-En el subtítulo de la figura~\ref{fig:video_demo} se encuentra el enlace a un video-demostración de la librería funcionando en tiempo real. El modelo utilizado es el \textit{E36Car} con los comandos emitidos por un volante \textit{Moza R9} y una pedalera \textit{SimMagic P1000}. Todo el hardware utilizado es de carácter comercial y puede adquirirse por cualquier persona que lo desee.
+En el subtítulo de la figura~\ref{fig:video_demo} se encuentra el enlace a un video de demostración de la librería funcionando en tiempo real. El modelo utilizado es el \textit{E36Car} con los comandos emitidos por un volante \textit{Moza R9} y una pedalera \textit{SimMagic P1000}. Todo el hardware utilizado es de carácter comercial y puede adquirirse por cualquier persona que lo desee.
 
 \begin{figure}[htbp]
 	\centering
