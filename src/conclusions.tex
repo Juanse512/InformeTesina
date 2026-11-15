@@ -30,7 +30,7 @@ Los tres programas mencionados anteriormente son tres procesos independientes qu
 
 \subsection*{El desempeño es holgado con CVODE}
 
-A la hora de elegir integradores hay una clara elección, CVODE es a la vez el más rápido y el más robusto de todos los ensayados. Es entre $1{,}1$ y $1{,}3$ veces más rápido que DASSL y $3$ a $22$ veces más rápido que \verb|gbode|.
+A la hora de elegir integradores hay una clara elección, CVODE es a la vez el más rápido y el más robusto de todos los ensayados. Es entre $1{,}2$ y $1{,}9$ veces más rápido que DASSL y $5$ a $25$ veces más rápido que \verb|gbode|.
 
 Con esa elección el margen con respecto al tiempo real es más que suficiente. Ejecutando el modelo en lazo abierto, el desempeño se encuentra entre $2{,}4$ y $16{,}1$ veces más rápido que el tiempo real. Al cerrar el lazo el margen es menor, lo que es esperado debido a que la entrada deja de ser constante y el sistema debe coordinar la comunicación, pero sigue siendo suficiente, la latencia total se mantiene en el orden de la decena de milisegundos, lo que deja espacio para agregar modelos de suspensión o neumáticos más complejos por ejemplo.
 
@@ -38,7 +38,7 @@ Con esa elección el margen con respecto al tiempo real es más que suficiente. 
 
 \subsection*{Lo que limita la fidelidad no es el cómputo}
 
-Los ensayos de fidelidad muestran que el techo del simulador no está en la parte numérica. Con la tolerancia elegida el apartamiento de la trayectoria respecto a una solución de referencia es de entre $47$ y $275$ micrómetros al cabo de diez segundos de conducción, incluso con la tolerancia más permisiva ensayada el error máximo es de $2{,}3$ cm. Son cifras con órdenes de magnitud menores que la incertidumbre con la que se conocen las masas, rigideces y geometría de las suspensiones.
+Los ensayos de fidelidad muestran que el techo del simulador no está en la parte numérica. Con la tolerancia elegida el apartamiento de la trayectoria respecto a una solución de referencia es de entre $95$ y $342$ micrómetros al cabo de diez segundos de conducción, incluso con la tolerancia más permisiva ensayada el error máximo es de $21{,}3$ mm. Son cifras con órdenes de magnitud menores que la incertidumbre con la que se conocen las masas, rigideces y geometría de las suspensiones.
 
 Las limitaciones encontradas fueron del último tipo mencionado. El reparto de cargas resulta uniforme porque el chasis se modela como un cuerpo de masa homogénea, lo que afecta a algunos modelos y la relación del conjunto resorte-amortiguador del Civic queda fuera del rango real porque no se tienen sus puntos de anclaje reales. Estos problemas se pueden solucionar agregando otra forma de modelar el chasis en el primer caso, y con datos en el segundo, en ambos casos es sencillo adaptar la solución al sistema ya existente.
 

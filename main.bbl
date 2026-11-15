@@ -9,6 +9,16 @@
 F.~E. Cellier, E.~Kofman, Continuous System Simulation, Springer, Nueva York,
   EE.UU., 2006.
 
+\bibitem{petzold1982}
+L.~R. Petzold, A description of {DASSL}: A differential/algebraic system
+  solver, Tech. Rep. SAND82-8637, Sandia National Laboratories, Livermore, CA,
+  EE.UU. (1982).
+
+\bibitem{cohen1995}
+S.~D. Cohen, A.~C. Hindmarsh, {CVODE}, a stiff/nonstiff {ODE} solver in {C},
+  Tech. Rep. UCRL-JC-121014, Rev. 1, Lawrence Livermore National Laboratory,
+  Livermore, CA, EE.UU. (1995).
+
 \bibitem{msl}
 {Modelica Association}, Modelica standard library,
   \url{https://doc.modelica.org/}, documentación oficial, versión 4.0.0
@@ -19,6 +29,50 @@ F.~E. Cellier, E.~Kofman, Continuous System Simulation, Springer, Nueva York,
   {OpenModelica} {Compiler},
   \url{https://openmodelica.org/doc/OpenModelicaUsersGuide/latest/compiler.html},
   versión 1.28.0-dev. Consultado en octubre de 2026.
+
+\bibitem{om_flattening}
+{Open Source Modelica Consortium}, {OpenModelica} {User's} {Guide} ---
+  flattening models to {BaseModelica},
+  \url{https://openmodelica.org/doc/OpenModelicaUsersGuide/latest/basemodelica.html},
+  versión 1.28.0-dev. Consultado en octubre de 2026.
+
+\bibitem{om_flags}
+{Open Source Modelica Consortium}, {OpenModelica} {User's} {Guide} ---
+  {OpenModelica} compiler flags,
+  \url{https://openmodelica.org/doc/OpenModelicaUsersGuide/latest/omchelptext.html},
+  versión 1.28.0-dev. Consultado en octubre de 2026.
+
+\bibitem{om_solving}
+{Open Source Modelica Consortium}, {OpenModelica} {User's} {Guide} --- solving
+  {Modelica} models,
+  \url{https://openmodelica.org/doc/OpenModelicaUsersGuide/latest/solving.html},
+  versión 1.28.0-dev. Consultado en octubre de 2026.
+
+\bibitem{msl_multibody}
+{Modelica Association}, Modelica standard library ---
+  {Modelica.Mechanics.MultiBody}, \url{https://doc.modelica.org/},
+  documentación oficial, versión 4.0.0 (2020).
+
+\bibitem{otter2003}
+M.~Otter, H.~Elmqvist, S.~E. Mattsson, The new {Modelica} {MultiBody} library,
+  in: 3rd International Modelica Conference, Link{\"o}ping, Suecia, 2003.
+
+\bibitem{mdd}
+B.~Thiele, T.~Bellmann, {Modelica\_DeviceDrivers}: A free library for
+  interfacing hardware drivers to modelica models,
+  \url{https://github.com/modelica-3rdparty/Modelica_DeviceDrivers},
+  documentación oficial, versión 2.2.0 (2022).
+
+\bibitem{mdd_docs}
+B.~Thiele, T.~Beutlich, T.~Bellmann, {Modelica\_DeviceDrivers} ---
+  documentación de la biblioteca,
+  \url{https://build.openmodelica.org/Documentation/Modelica_DeviceDrivers.html},
+  versión 2.2.0. Documentación generada por {OpenModelica}. Consultado en
+  octubre de 2026.
+
+\bibitem{unity_docs}
+{Unity Technologies}, Unity documentation --- {Scripting API and User Manual},
+  \url{https://docs.unity3d.com/}, unity 6 (versión 6000.2) (2025).
 
 \bibitem{modelon}
 Clientes de {Modelon}, \url{https://modelon.com/}.
@@ -39,21 +93,6 @@ Simple {DirectMedia} {Layer}, \url{https://www.libsdl.org/}.
 \bibitem{di}
 {DirectInput},
   \url{https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee416842(v=vs.85)}.
-
-\bibitem{msl_multibody}
-{Modelica Association}, Modelica standard library ---
-  {Modelica.Mechanics.MultiBody}, \url{https://doc.modelica.org/},
-  documentación oficial, versión 4.0.0 (2020).
-
-\bibitem{otter2003}
-M.~Otter, H.~Elmqvist, S.~E. Mattsson, The new {Modelica} {MultiBody} library,
-  in: 3rd International Modelica Conference, Link{\"o}ping, Suecia, 2003.
-
-\bibitem{mdd}
-B.~Thiele, T.~Bellmann, {Modelica\_DeviceDrivers}: A free library for
-  interfacing hardware drivers to modelica models,
-  \url{https://github.com/modelica-3rdparty/Modelica_DeviceDrivers},
-  documentación oficial, versión 2.2.0 (2022).
 
 \bibitem{gillespie1992}
 T.~D. Gillespie, Fundamentals of Vehicle Dynamics, SAE International, 1992.
@@ -98,19 +137,10 @@ B.~Armstrong-H{\'e}louvry, P.~Dupont, C.~C. de~Wit, A survey of models,
   analysis tools and compensation methods for the control of machines with
   friction, Automatica 30~(7) (1994) 1083--1138.
 
-\bibitem{petzold1982}
-L.~R. Petzold, A description of {DASSL}: A differential/algebraic system
-  solver, Tech. Rep. SAND82-8637, Sandia National Laboratories, Livermore, CA,
-  EE.UU. (1982).
-
-\bibitem{cohen1995}
-S.~D. Cohen, A.~C. Hindmarsh, {CVODE}, a stiff/nonstiff {ODE} solver in {C},
-  Tech. Rep. UCRL-JC-121014, Rev. 1, Lawrence Livermore National Laboratory,
-  Livermore, CA, EE.UU. (1995).
-
-\bibitem{unity_docs}
-{Unity Technologies}, Unity documentation --- {Scripting API and User Manual},
-  \url{https://docs.unity3d.com/}, unity 6 (versión 6000.2) (2025).
+\bibitem{gadola2021}
+M.~Gadola, D.~Chindamo, B.~Lenzo, Revisiting the mechanical limited-slip
+  differential for high-performance and race car applications, Engineering
+  Letters 29~(3) (2021) 824--839.
 
 \bibitem{fmpy}
 T.~Sommer, {FMPy}: Simulate {Functional} {Mock-up} {Units} ({FMUs}) in
@@ -143,22 +173,23 @@ R.~Nave, Friction and automobile tires,
   \url{https://hyperphysics.gsu.edu/hbase/Mechanics/frictire.html}, consultado
   en octubre de 2026.
 
-\bibitem{om_flattening}
-{Open Source Modelica Consortium}, {OpenModelica} {User's} {Guide} ---
-  flattening models to {BaseModelica},
-  \url{https://openmodelica.org/doc/OpenModelicaUsersGuide/latest/basemodelica.html},
-  versión 1.28.0-dev. Consultado en octubre de 2026.
+\bibitem{ual_tmm_posicion}
+{Ingeniería Mecánica, Universidad de Almería}, Position analysis --- machine
+  and mechanism theory,
+  \url{https://ingmec.ual.es/tmm/L02_02_position_analysis.html}.
 
-\bibitem{om_solving}
-{Open Source Modelica Consortium}, {OpenModelica} {User's} {Guide} --- solving
-  {Modelica} models,
-  \url{https://openmodelica.org/doc/OpenModelicaUsersGuide/latest/solving.html},
-  versión 1.28.0-dev. Consultado en octubre de 2026.
+\bibitem{bourke_circles}
+P.~Bourke, Circle, cylinder, sphere --- intersection of two circles,
+  \url{https://paulbourke.net/geometry/circlesphere/} (1997).
 
-\bibitem{om_flags}
-{Open Source Modelica Consortium}, {OpenModelica} {User's} {Guide} ---
-  {OpenModelica} compiler flags,
-  \url{https://openmodelica.org/doc/OpenModelicaUsersGuide/latest/omchelptext.html},
-  versión 1.28.0-dev. Consultado en octubre de 2026.
+\bibitem{kistler_camber}
+{Kistler}, Camber angle,
+  \url{https://www.kistler.com/en/camber-angle/C00000098}.
+
+\bibitem{ual_tmm_invertida}
+{Ingeniería Mecánica, Universidad de Almería}, Example 2.4: Kinematic
+  analysis of an inverted slider-crank mechanism --- machine and mechanism
+  theory, \url{https://ingmec.ual.es/tmm/L02_08_example4.html}, consultado en
+  noviembre de 2026.
 
 \end{thebibliography}

@@ -32,19 +32,20 @@ La tabla~\ref{tab:tiempos} grafica las mediciones. El símbolo $\dagger$ marca l
 \begin{table}[H]
 \centering
 \begin{tabular}{llcccccc}
-\hline
- & & \multicolumn{3}{c}{Tiempo total (s)} & \multicolumn{3}{c}{Tiempo de simulación (s)} \\
-Terreno & Solver & Civic & E36 & FF1600 & Civic & E36 & FF1600 \\
-\hline
-\multirow{2}{*}{Plano}
- & DASSL & 1{,}468 & 1{,}658 & 0{,}396$^\dagger$ & 1{,}152 & 1{,}339 & 0{,}329$^\dagger$ \\
- & CVODE & 0{,}793 & 0{,}654 & 0{,}780 & 0{,}756 & 0{,}619 & 0{,}741 \\
-\hline
-\multirow{2}{*}{Sinusoidal}
- & DASSL & 0{,}323$^\dagger$ & 0{,}502$^\dagger$ & 2{,}353$^\dagger$ & 0{,}238$^\dagger$ & 0{,}411$^\dagger$ & 1{,}984$^\dagger$ \\
- & CVODE & 4{,}184 & 1{,}867 & 1{,}486 & 4{,}095 & 1{,}805 & 1{,}435 \\
-\hline
+	\hline
+	& & \multicolumn{3}{c}{Tiempo total (s)} & \multicolumn{3}{c}{Tiempo de simulación (s)} \\
+	Terreno & Solver & Civic & E36 & FF1600 & Civic & E36 & FF1600 \\
+	\hline
+	\multirow{2}{*}{Plano}
+	& DASSL & 1{,}468 & 0{,}878 & 0{,}396$^\dagger$ & 1{,}152 & 0{,}715 & 0{,}329$^\dagger$ \\
+	& CVODE & 0{,}793 & 0{,}410 & 0{,}780 & 0{,}756 & 0{,}395 & 0{,}741 \\
+	\hline
+	\multirow{2}{*}{Sinusoidal}
+	& DASSL & 0{,}323$^\dagger$ & 0{,}154$^\dagger$ & 2{,}353$^\dagger$ & 0{,}238$^\dagger$ & 0{,}083$^\dagger$ & 1{,}984$^\dagger$ \\
+	& CVODE & 4{,}184 & 1{,}831 & 1{,}486 & 4{,}095 & 1{,}790 & 1{,}435 \\
+	\hline
 \end{tabular}
+
 
 \caption[Tiempos de ejecución de los modelos de vehículo]{Tiempos de ejecución para una maniobra de $10$ s con dirección al tope, acelerador máximo y frenada máxima a partir de $t = 5$ s, con tolerancia relativa $10^{-6}$. $^\dagger$ La ejecución abortó antes de completar la simulación, el valor indica el tiempo hasta la falla y no es comparable con el de una corrida completa.}
 \label{tab:tiempos}
@@ -61,13 +62,13 @@ La figura~\ref{fig:tiempos} representa gráficamente los tiempos de simulación 
 \label{fig:tiempos}
 \end{figure}
 
-El resultado más interesante para la tesina no es el tiempo absoluto, sino cómo se compara este con el tiempo total de la simulación, ya que una relación menor a 1x limita la capacidad de ejecutar un entorno en tiempo real. La Figura~\ref{fig:tiemporeal} expresa las mediciones de CVODE (ya que fue el único integrador en completar todas las configuraciones) como factor un coeficiente entre el tiempo total de la simulación y el tiempo que tardó en ejecutarse. La línea discontinua en $1\times$ marca la frontera del tiempo real: por encima de ella la simulación avanza más rápido que el reloj y, por lo tanto, admite operación con el conductor dentro del lazo.
+El resultado más interesante para la tesina no es el tiempo absoluto, sino cómo se compara este con el tiempo total de la simulación, ya que una relación menor a 1x limita la capacidad de ejecutar un entorno en tiempo real. La Figura~\ref{fig:tiemporeal} expresa las mediciones de CVODE (ya que fue el único integrador en completar todas las configuraciones) como un coeficiente entre el tiempo total de la simulación y el tiempo que tardó en ejecutarse. La línea discontinua en $1\times$ marca la frontera del tiempo real: por encima de ella la simulación avanza más rápido que el reloj y, por lo tanto, admite operación con el conductor dentro del lazo.
 
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.86\textwidth]{img/tiempo_real.pdf}
-\caption[Aceleración respecto del tiempo real]{Factor de aceleración respecto del tiempo real de los tres modelos de vehículo con CVODE, definido como el cociente entre el horizonte simulado ($10$ s) y el tiempo de cómputo. La línea discontinua marca el umbral de tiempo real: todos los casos se sitúan por encima, con márgenes entre $2{,}4\times$ y $16{,}1\times$.}
+\caption[Aceleración respecto del tiempo real]{Factor de aceleración respecto del tiempo real de los tres modelos de vehículo con CVODE, definido como el cociente entre el horizonte simulado ($10$ s) y el tiempo de cómputo. La línea discontinua marca el umbral de tiempo real: todos los casos se sitúan por encima, con márgenes entre $2{,}4\times$ y $25{,}3\times$.}
 \label{fig:tiemporeal}
 \end{figure}
 
@@ -78,20 +79,21 @@ Para interpretar mejor los tiempos, conviene tener una medida del tamaño de cad
 \begin{table}[H]
 \centering
 \begin{tabular}{lrrrr}
-\hline
-Modelo & Ecuaciones & Triviales & Estados & Ind. de evento \\
-\hline
-\verb|Car| (FF1600) & 12\,269 & 9\,703 & 32 & 8 \\
-\verb|CivicEKCar|   & 12\,269 & 9\,702 & 32 & 8 \\
-\verb|E36Car|       &  9\,900 & 7\,854 & 32 & 8 \\
-\hline
+	\hline
+	Modelo & Ecuaciones & Triviales & Estados & Ind. de evento \\
+	\hline
+	\verb|Car| (FF1600) & 12\,269 & 9\,703 & 32 & 8 \\
+	\verb|CivicEKCar|   & 12\,269 & 9\,702 & 32 & 8 \\
+	\verb|E36Car|       & 11\,716 & 9\,248 & 32 & 8 \\
+	\hline
 \end{tabular}
+
 
 \caption[Complejidad de los modelos de vehículo]{Tamaño de cada modelo de vehículo. Las ecuaciones triviales son las que el compilador resuelve por sustitución directa y no llegan al sistema que resuelve el integrador. Los estados continuos y los indicadores de evento se obtuvieron de la descripción del FMU exportado de cada modelo.}
 \label{tab:complejidad}
 \end{table}
 
-El dato más relevante de la tabla es que los tres vehículos tienen exactamente el mismo número de estados continuos, a pesar de que utilizan topologías distintas. Esto es debido al uso del componente  \verb|JointRRR| señalado en la Sección~\ref{sec:method}: al resolver analíticamente el bucle cinemático, no introduce restricciones ni variables de estado adicionales. Los treinta y dos estados corresponden a los seis grados de libertad del chasis, los cuatro recorridos de suspensión y los cuatro giros de rueda, cada uno con su derivada, más cuatro estados asociados a la actuación de la dirección. Los ocho estados de giro reflejan que el diferencial permite a las dos ruedas motrices girar a velocidades distintas. A notar también de que tanto el FF1600 como el CivicEKCar contienen la misma cantidad de ecuaciones, a pesar de ser vehículos completamente distintos en papel, sin embargo, su topología de suspensión es la misma (doble triángulo en las cuatro esquinas). 
+El dato más relevante de la tabla es que los tres vehículos tienen exactamente el mismo número de estados continuos, a pesar de que utilizan topologías distintas. Esto es debido al uso de los componentes \verb|JointRRR| y \verb|JointRRP| señalado en la Sección~\ref{sec:method}: al resolver analíticamente el bucle cinemático, no introduce restricciones ni variables de estado adicionales. Los treinta y dos estados corresponden a los seis grados de libertad del chasis, los cuatro recorridos de suspensión y los cuatro giros de rueda, cada uno con su derivada, más cuatro estados asociados a la actuación de la dirección. Los ocho estados de giro reflejan que el diferencial permite a las dos ruedas motrices girar a velocidades distintas. A notar también que tanto el FF1600 como el CivicEKCar contienen la misma cantidad de ecuaciones, a pesar de ser vehículos completamente distintos en papel, sin embargo, su topología de suspensión es la misma (doble triángulo en las cuatro esquinas). 
 
 
 \subsection{Sensibilidad a la tolerancia}
@@ -101,14 +103,14 @@ La tolerancia relativa del integrador es el parámetro que controla el compromis
 \begin{table}[H]
 \centering
 \begin{tabular}{lcccccc}
-\hline
- & \multicolumn{3}{c}{Tiempo total (s)} & \multicolumn{3}{c}{Tiempo de simulación (s)} \\
-Tolerancia & Civic & E36 & FF1600 & Civic & E36 & FF1600 \\
-\hline
-$10^{-4}$ & 2{,}473 & 1{,}015 & 0{,}963 & 2{,}232 & 0{,}804 & 0{,}728 \\
-$10^{-6}$ & 4{,}767 & 1{,}555 & 1{,}487 & 4{,}549 & 1{,}375 & 1{,}271 \\
-$10^{-8}$ & 7{,}721 & 2{,}582 & 2{,}446 & 7{,}508 & 2{,}405 & 2{,}232 \\
-\hline
+	\hline
+	& \multicolumn{3}{c}{Tiempo total (s)} & \multicolumn{3}{c}{Tiempo de simulación (s)} \\
+	Tolerancia & Civic & E36 & FF1600 & Civic & E36 & FF1600 \\
+	\hline
+	$10^{-4}$ & 2{,}473 & 0{,}884 & 0{,}963 & 2{,}232 & 0{,}857 & 0{,}728 \\
+	$10^{-6}$ & 4{,}767 & 1{,}831 & 1{,}487 & 4{,}549 & 1{,}790 & 1{,}271 \\
+	$10^{-8}$ & 7{,}721 & 2{,}252 & 2{,}446 & 7{,}508 & 2{,}208 & 2{,}232 \\
+	\hline
 \end{tabular}
 \caption[Sensibilidad del costo a la tolerancia del integrador]{Tiempos con CVODE sobre terreno sinusoidal para tres tolerancias relativas.}
 \label{tab:tolerancia}
@@ -121,7 +123,7 @@ $10^{-8}$ & 7{,}721 & 2{,}582 & 2{,}446 & 7{,}508 & 2{,}405 & 2{,}232 \\
 \label{fig:tolerancia}
 \end{figure}
 
-El costo crece de forma regular: cada dos órdenes de magnitud de tolerancia adicional, se multiplica el tiempo de cómputo por un factor de entre $1{,}7$ y $2{,}0$.  \\
+El costo crece de forma regular: cada dos órdenes de magnitud de tolerancia adicional, se multiplica el tiempo de cómputo por un factor de entre $1{,}7$ y $2{,}1$.  \\
 
 Comparando contra el tiempo real, incluso utilizando la tolerancia más estricta se preserva el margen: la relación contra el reloj con $10^{-8}$ es de $1{,}3\times$ para el Civic y $4{,}5\times$ para el FF1600, contra $12{,}4\times$ y $13{,}7\times$ respectivamente con $10^{-4}$. La elección de la tolerancia $10^{-6}$ para el resto de los experimentos se dio debido a que es un punto medio: conserva un buen margen contra el tiempo real, permitiendo más overhead para incluir carga adicional proveniente del resto del entorno, manteniendo un nivel de tolerancia aceptable. \\
 
@@ -136,7 +138,7 @@ El experimento se realizó de forma diferente al protocolo utilizado anteriormen
 
 Las ejecuciones se realizaron sobre los FMU mediante la biblioteca \verb|fmpy| y no sobre el ejecutable de OpenModelica. La justificación es que el FMU admite tolerancias más estrictas. Utilizando esta metodología los tres vehículos pueden ejecutarse hasta  $10^{-10}$, valor que se toma como referencia. 
 
-Los inputs de la simulación fueron reemplazados por una maniobra suave (dirección $0{,}2$ y acelerador $0{,}3$ constantes, sin frenada) en lugar de la maniobra extrema del benchmark de costo. Esto se realizó debido a que, utilizando los inputs anteriores, el neumático opera en el límite (y superando) de fricción, lugar donde las trayectorias vecinas divergen. Por lo tanto, utilizar la maniobra agresiva sirve para medir la divergencia del sistema, pero no es la mejor forma de medir la exactitud del integrador. Además, al ser una maniobra menos extrema, el tiempo de cómputo es menor, por lo que esta métrica no es directamente comparable con los de la tabla~\ref{tab:tolerancia}, que corresponden a otra maniobra y otro terreno.
+Los inputs de la simulación fueron reemplazados por una maniobra suave (dirección $0{,}2$ y acelerador $0{,}3$ constantes, sin frenada) en lugar de la maniobra extrema del benchmark de costo. Esto se realizó debido a que, utilizando los inputs anteriores, el neumático opera en el límite (y superando) de fricción, lugar donde las trayectorias vecinas divergen. Por lo tanto, utilizar la maniobra agresiva sirve para medir la divergencia del sistema, pero no es la mejor forma de medir la exactitud del integrador. Además, al ser una maniobra menos extrema, el tiempo de cómputo es menor, por lo que esta métrica no es directamente comparable con las de la tabla~\ref{tab:tolerancia}, que corresponden a otra maniobra y otro terreno.
 
 Por último, todas las corridas se interpolan sobre una grilla temporal común. Fijar el intervalo de ejecución no es suficiente, porque \verb|fmpy| agrega una muestra por cada evento y el número de estos (y por lo tanto de entradas) varía según la tolerancia especificada. Los instantes de la grilla utilizada están presentes en los datos originales, de forma que la interpolación no introduce error de remuestreo.
 
@@ -154,9 +156,9 @@ Las medidas utilizadas para medir el error de la trayectoria son: el error de po
 	& $10^{-8}$ & $2{,}24\times10^{-6}$ & $<10^{-5}$ & $43$ \\
 	\hline
 	\multirow{3}{*}{E36}
-	& $10^{-4}$ & $2{,}04\times10^{-2}$ & $2{,}0\times10^{-2}$ & --- \\
-	& $10^{-6}$ & $1{,}29\times10^{-4}$ & $8{,}8\times10^{-5}$ & $159$ \\
-	& $10^{-8}$ & $9{,}12\times10^{-6}$ & $1{,}0\times10^{-5}$ & $14$ \\
+	& $10^{-4}$ & $2{,}06\times10^{-2}$ & $1{,}7\times10^{-2}$ & --- \\
+	& $10^{-6}$ & $1{,}95\times10^{-4}$ & $3{,}0\times10^{-4}$ & $106$ \\
+	& $10^{-8}$ & $1{,}39\times10^{-5}$ & $1{,}5\times10^{-5}$ & $14$ \\
 	\hline
 	\multirow{3}{*}{Civic}
 	& $10^{-4}$ & $2{,}13\times10^{-2}$ & $1{,}4\times10^{-2}$ & --- \\
@@ -175,11 +177,11 @@ Las medidas utilizadas para medir el error de la trayectoria son: el error de po
 \label{fig:errorposicion}
 \end{figure}
 
-Hay una mejora fuerte entre $10^{-4}$ y $10^{-6}$ y es menos pronunciada contra $10^{-8}$. 
+Hay mejoras fuertes entre $10^{-4}$ y $10^{-6}$ y también contra $10^{-8}$. 
 
 En términos absolutos, las cifras son aceptables para el objetivo del simulador. Con la tolerancia $10^{-6}$ elegida, el error de posición al cabo de diez segundos de simulación es de $95$ a $342$ micrómetros sobre recorridos de unos cincuenta metros. Incluso con la tolerancia más baja ensayada, $10^{-4}$, el apartamiento máximo es de $21{,}3$ mm, un valor que es imperceptible para un conductor e inferior a la incertidumbre de los propios parámetros del modelo (masas, rigideces y coeficientes de fricción) que se conocen con una precisión mucho menor. La tolerancia deja de ser el factor limitante de la fidelidad del simulador y en mi opinión pasaría a ser, por un lado, el conocimiento con mayor exactitud de las características del vehículo y por otro, una mayor fidelidad a la hora de plasmar ciertos aspectos de este, por ejemplo, eliminando la abstracción del chasis como un paralelepípedo e intercambiándola por algo más preciso.
 
-Vale la pena mencionar que en casi todos los casos el error máximo sobre la trayectoria coincide con el error del final, lo que indica que este crece de forma monótona a lo largo de la maniobra, mostrando de que es un error acumulativo por truncamiento.
+Vale la pena mencionar que en casi todos los casos el error máximo sobre la trayectoria coincide con el error del final, lo que indica que este crece de forma monótona a lo largo de la maniobra, mostrando que es un error acumulativo por truncamiento.
 
 
 
@@ -187,9 +189,9 @@ Vale la pena mencionar que en casi todos los casos el error máximo sobre la tra
 
 \subsection{Comparación de integradores}
 
-Las mediciones de exactitud de la sección anterior comparan CVODE contra sí mismo, por lo que miden la convergencia del sistema al modificar la tolerancia, pero no detectaría si hubiera un error común en el solver, independientemente de los parámetros. Esta sección agrega la verificación cruzada con otros solvers, comparando tres diferentes sobre el mismo modelo y maniobra.
+Las mediciones de exactitud de la sección anterior comparan CVODE contra sí mismo, por lo que miden la convergencia del sistema al modificar la tolerancia, pero no detectarían si hubiera un error común en el solver, independientemente de los parámetros. Esta sección agrega la verificación cruzada con otros solvers, comparando tres diferentes sobre el mismo modelo y maniobra.
 
-Los integradores utilizados fueron: CVODE y DASSL, ambos de la familia de (BDF) y \verb|gbode|, de la familia de métodos Runge-Kutta de OpenModelica. Agregar el tercer método responde a una necesidad de agregar un solver que no comparta familia con los dos anteriores, para evitar ocultar errores posibles debido a la naturaleza de los sistemas, por lo que agregar un método de Runge-Kutta descarta esa posibilidad. 
+Los integradores utilizados fueron: CVODE y DASSL, ambos de la familia de métodos BDF y \verb|gbode|, de la familia de métodos Runge-Kutta de OpenModelica. Agregar el tercer método responde a una necesidad de agregar un solver que no comparta familia con los dos anteriores, para evitar ocultar errores posibles debido a la naturaleza de los sistemas, por lo que agregar un método de Runge-Kutta descarta esa posibilidad. 
 
 Las ejecuciones se vuelven a correr como al principio de esta sección, utilizando el ejecutable de OpenModelica y no sobre el FMU. Esto es debido a dos razones, la primera es que \verb|fmpy| no ofrece ni DASSL ni \verb|gbode|, y la segunda es metodológica: comparar el CVODE de \verb|fmpy| contra el DASSL de OpenModelica agrega una segunda variable, el entorno de simulación, por lo que se decidió volver a realizar todo sobre un mismo entorno.
 
@@ -200,24 +202,24 @@ Se emplea la misma maniobra suave utilizada en la prueba de exactitud, por la mi
 \begin{table}[H]
 \centering
 \begin{tabular}{llcc}
-\hline
-Modelo & Integrador & Tol. $10^{-4}$ & Tol. $10^{-6}$ \\
-\hline
-\multirow{3}{*}{FF1600}
-& CVODE & $0{,}72 \pm 0{,}02$ & $1{,}01 \pm 0{,}08$ \\
-& DASSL & $1{,}02 \pm 0{,}01$ & $1{,}88 \pm 0{,}07$ \\
-& gbode & $18{,}15 \pm 0{,}08$ & $21{,}97 \pm 0{,}23$ \\
-\hline
-\multirow{3}{*}{E36}
-& CVODE & $0{,}37 \pm 0{,}01$ & $0{,}45 \pm 0{,}00$ \\
-& DASSL & $0{,}43 \pm 0{,}00$ & $0{,}55 \pm 0{,}01$ \\
-& gbode & $2{,}91 \pm 0{,}09$ & $5{,}48 \pm 0{,}01$ \\
-\hline
-\multirow{3}{*}{Civic}
-& CVODE & $0{,}71 \pm 0{,}00$ & $0{,}80 \pm 0{,}01$ \\
-& DASSL & $0{,}90 \pm 0{,}00$ & $1{,}36 \pm 0{,}02$ \\
-& gbode & $3{,}54 \pm 0{,}09$ & $6{,}47 \pm 0{,}04$ \\
-\hline
+	\hline
+	Modelo & Integrador & Tol. $10^{-4}$ & Tol. $10^{-6}$ \\
+	\hline
+	\multirow{3}{*}{FF1600}
+	& CVODE & $0{,}72 \pm 0{,}02$ & $1{,}01 \pm 0{,}08$ \\
+	& DASSL & $1{,}02 \pm 0{,}01$ & $1{,}88 \pm 0{,}07$ \\
+	& gbode & $18{,}15 \pm 0{,}08$ & $21{,}97 \pm 0{,}23$ \\
+	\hline
+	\multirow{3}{*}{E36}
+	& CVODE & $0{,}52 \pm 0{,}01$ & $0{,}56 \pm 0{,}01$ \\
+	& DASSL & $0{,}57 \pm 0{,}00$ & $0{,}74 \pm 0{,}00$ \\
+	& gbode & $8{,}24 \pm 0{,}46$ & $10{,}85 \pm 0{,}39$ \\
+	\hline
+	\multirow{3}{*}{Civic}
+	& CVODE & $0{,}71 \pm 0{,}00$ & $0{,}80 \pm 0{,}01$ \\
+	& DASSL & $0{,}90 \pm 0{,}00$ & $1{,}36 \pm 0{,}02$ \\
+	& gbode & $3{,}54 \pm 0{,}09$ & $6{,}47 \pm 0{,}04$ \\
+	\hline
 \end{tabular}
 \caption[Tiempo de cómputo de los tres integradores]{Tiempo de cómputo en segundos (media $\pm$ desviación estándar de tres repeticiones) para la maniobra suave de $10$ s.}
 \label{tab:solvers}
@@ -236,13 +238,13 @@ La tabla~\ref{tab:acuerdo} y la figura~\ref{fig:acuerdo} presentan la diferencia
 \begin{table}[H]
 \centering
 \begin{tabular}{lccc|c}
-\hline
-Modelo & CVODE--DASSL & CVODE--gbode & DASSL--gbode & Error propio de CVODE \\
-\hline
-FF1600 & $66{,}8$  & $33{,}4$ & $47{,}4$  & $95{,}4$  \\
-E36    & $227{,}2$ & $61{,}3$ & $283{,}5$ & $129{,}0$ \\
-Civic  & $155{,}4$ & $75{,}5$ & $226{,}8$ & $342{,}6$ \\
-\hline
+	\hline
+	Modelo & CVODE--DASSL & CVODE--gbode & DASSL--gbode & Error propio de CVODE \\
+	\hline
+	FF1600 & $66{,}8$  & $33{,}4$ & $47{,}4$  & $95{,}4$  \\
+	E36    & $88{,}0$  & $85{,}3$ & $169{,}3$ & $194{,}8$ \\
+	Civic  & $155{,}4$ & $75{,}5$ & $226{,}8$ & $342{,}6$ \\
+	\hline
 \end{tabular}
 \caption[Diferencia entre integradores]{Diferencia de posición final entre pares de integradores, en micrómetros, con tolerancia $10^{-6}$. La última columna es el error de CVODE respecto de su propia referencia $10^{-10}$ (Tabla~\ref{tab:exactitud}).}
 \label{tab:acuerdo}
@@ -251,11 +253,11 @@ Civic  & $155{,}4$ & $75{,}5$ & $226{,}8$ & $342{,}6$ \\
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.86\textwidth]{img/solvers_acuerdo.pdf}
-\caption[Acuerdo entre integradores]{Diferencia de posición final entre pares de integradores con tolerancia $10^{-6}$, en escala logarítmica. La línea discontinua marca, para cada vehículo, el error propio de CVODE a esa tolerancia: las diferencias del mismo orden indican acuerdo dentro de la exactitud alcanzable, con la excepción del modelo del E36, sin embargo, el error sigue sin ser significativo.}
+\caption[Acuerdo entre integradores]{Diferencia de posición final entre pares de integradores con tolerancia $10^{-6}$, en escala logarítmica. La línea discontinua marca, para cada vehículo, el error propio de CVODE a esa tolerancia: las diferencias del mismo orden indican acuerdo dentro de la exactitud alcanzable.}
 \label{fig:acuerdo}
 \end{figure}
 
-El resultado es el buscado. Las diferencias entre pares de solver van de  $10{,}8$ a $164{,}3$ micrómetros, es decir, el mismo orden de magnitud que el error propio de CVODE frente a su referencia, de $46{,}8$ a $274{,}8$ micrómetros. Los tres métodos coinciden dentro de la exactitud que cada uno alcanza a esa tolerancia, no se detecta ningún sesgo generado por algún integrador en particular. Y dado que \verb|gbode| pertenece a otra familia de métodos, la coincidencia no puede explicarse por un problema compartido de la formulación BDF.
+El resultado es el buscado. Las diferencias entre pares de solver van de  $33{,}4$ a $226{,}8$ micrómetros, es decir, el mismo orden de magnitud que el error propio de CVODE frente a su referencia, de $95{,}4$ a $342{,}6$ micrómetros. Los tres métodos coinciden dentro de la exactitud que cada uno alcanza a esa tolerancia, no se detecta ningún sesgo generado por algún integrador en particular. Y dado que \verb|gbode| pertenece a otra familia de métodos, la coincidencia no puede explicarse por un problema compartido de la formulación BDF.
 
 Con la tolerancia en $10^{-4}$ las diferencias crecen dos órdenes de magnitud, hasta $15{,}0$ mm, lo que también es consistente ya que el error propio de cada método es mayor de todas formas. El acuerdo entre integradores empeora en la misma proporción que la exactitud individual.
 
@@ -274,7 +276,7 @@ Lo habitual al elegir un integrador es negociar entre velocidad y robustez. Sin 
 
 \subsubsection{La tolerancia dejó de ser el factor limitante}
 
-Los resultados de las pruebas de costo y exactitud proveen un resultado claro con respecto al ajuste de la tolerancia. Por el lado del costo, cada dos décadas de tolerancia agregada se duplica el tiempo de cómputo. Por el lado de la exactitud, estas mismas dos décadas reducen el error en 43× (FF1600), 14× (E36) y 96× (Civic). El intercambio es favorable a ajustar la tolerancia y no existe razón de rendimiento para relajarla demasiado.
+Los resultados de las pruebas de costo y exactitud proveen un resultado claro con respecto al ajuste de la tolerancia. Por el lado del costo, cada dos décadas de tolerancia agregada se duplica aproximadamente el tiempo de cómputo. Por el lado de la exactitud, estas mismas dos décadas reducen el error en 43× (FF1600), 14× (E36) y 96× (Civic). El intercambio es favorable a ajustar la tolerancia y no existe razón de rendimiento para relajarla demasiado.
  
 La medición más relevante para observar es la magnitud absoluta del error. Con la tolerancia elegida de $10^{-6}$ la trayectoria se aparta de la referencia entre $95$ y $342$ micrómetros al cabo de diez segundos de simulación en el entorno ejecutado, e incluso con la tolerancia más permisiva, el error máximo es de $21{,}3$ mm. Ambas cifras son órdenes de magnitud menores que la incertidumbre con la que se conocen los parámetros físicos del modelo (masas, rigideces, coeficientes de fricción, geometría de la suspensión). El esfuerzo de mejora, rinde mucho más si es aplicado a la caracterización del vehículo antes que al control del error del integrador.
 
@@ -299,16 +301,16 @@ La diferencia entre el tiempo total y el de simulación se puede usar para compa
 
 \subsubsection{Complejidad del modelo y costo}
 
-Contrastando los tiempos contra la tabla~\ref{tab:complejidad} se pueden observar dos efectos separados. El primero responde al tamaño del modelo: el E36 tiene $19{,}3\text{\%}$ menos de ecuaciones comparado a los otros vehículos (debido a su suspensión \verb|McPherson|, construida sobre una única articulación \verb|Prismatic| para simplificar) y es el más rápido de ejecutar sobre terreno plano.\\
+%Contrastando los tiempos contra la tabla~\ref{tab:complejidad} se pueden observar dos efectos separados. El primero responde al tamaño del modelo: el E36 tiene $19{,}3\text{\%}$ menos de ecuaciones comparado a los otros vehículos (debido a su suspensión \verb|McPherson|, construida sobre una única articulación \verb|Prismatic| para simplificar) y es el más rápido de ejecutar sobre terreno plano.\\
 
-El segundo efecto no se puede explicar de la misma forma. Los modelos \verb|Car| y \verb|CivicEKCar| tienen el mismo número de ecuaciones ($10\,981$), el mismo número de estados ($32$) y la misma topología de suspensión en las cuatro esquinas, pero sobre terreno sinusoidal el Civic tarda $2{,}85$ veces más que el FF1600. Dado que el tamaño del sistema es fijo, esa diferencia solo puede provenir del número de pasos que el integrador necesita dar debido a la rigidez numérica que introducen los parámetros utilizados en el modelo. La masa suspendida, la rigidez del muelle y el amortiguamiento determinan la frecuencia del conjunto y en consecuencia el paso máximo admisible. El Civic, con $990$ kg de masa suspendida sobre muelles de $16$ y $14$ kN/m, presenta una dinámica vertical más exigente de seguir que el monoplaza de $400$ kg.\\
+Contrastando los tiempos contra la tabla~\ref{tab:complejidad} se puede observar un efecto particular. Los modelos \verb|Car| y \verb|CivicEKCar| tienen el mismo número de ecuaciones ($12\,269$), el mismo número de estados ($32$) y la misma topología de suspensión en las cuatro esquinas, pero sobre terreno sinusoidal el Civic tarda $2{,}85$ veces más que el FF1600. Dado que el tamaño del sistema es fijo, esa diferencia solo puede provenir del número de pasos que el integrador necesita dar debido a la rigidez numérica que introducen los parámetros utilizados en el modelo. La masa suspendida, la rigidez del muelle y el amortiguamiento determinan la frecuencia del conjunto y en consecuencia el paso máximo admisible. El Civic, con $990$ kg de masa suspendida sobre muelles de $16$ y $14$ kN/m, presenta una dinámica vertical más exigente de seguir que el monoplaza de $400$ kg.\\
 
 La conclusión es que el costo de estos modelos tiene dos componentes independientes: el tamaño del sistema en sí y la rigidez de la dinámica, y que reducir el primero no reduce necesariamente el segundo.
 
 
 \subsubsection{Qué limita realmente al simulador}
 
-Reuniendo todo lo anterior, la capacidad de cómputo no es la restricción principal que tiene este simulador. Con márgenes de entre $2{,}4\times$ y $16{,}1\times$ respecto del tiempo real sobre la maniobra más exigente y con un error de integración de centésimas de milímetro, ni la velocidad ni la exactitud del integrador son los factores que pueden acotar la calidad del resultado.
+Reuniendo todo lo anterior, la capacidad de cómputo no es la restricción principal que tiene este simulador. Con márgenes de entre $2{,}4\times$ y $25{,}3\times$ respecto del tiempo real sobre la maniobra más exigente y con un error de integración de décimas de milímetro, ni la velocidad ni la exactitud del integrador son los factores que pueden acotar la calidad del resultado.
 
 La principal restricción que posee el modelo es su robustez, un modelo puede resultar numéricamente frágil con independencia del margen de cómputo disponible.
 
@@ -316,9 +318,9 @@ Este margen extra se puede invertir, en las pruebas de lazo cerrado, parte de es
 
 \subsection{Fidelidad del manejo}
 
-Todas las mediciones anteriores son de carácter numérico, cuánto cuesta la simulación, cuánto tardan los integradores en coincidir, y con qué exactitud converge son medidas útiles para comparar el performance del modelo y de los integradores, pero no dicen nada sobre si el resultado se comporta como un vehículo real. Esta sección se centra en responder esa cuestión, comparando cuatro magnitudes del modelo contra lo que predice la teoría de dinámica vehicular y los valores típicos de automóviles reales.
+Todas las mediciones anteriores son de carácter numérico, cuánto cuesta la simulación, cuánto tardan los integradores en coincidir, y con qué exactitud converge son medidas útiles para comparar la performance del modelo y de los integradores, pero no dicen nada sobre si el resultado se comporta como un vehículo real. Esta sección se centra en responder esa cuestión, comparando cuatro magnitudes del modelo contra lo que predice la teoría de dinámica vehicular y los valores típicos de automóviles reales.
 
-Estos cuatro ensayos se eligieron por ser medibles sin instrumentar el modelo y cubren los ejes de la dinámica vehicular: el vertical, el lateral y el longitudinal.
+Estos cinco ensayos se eligieron por ser medibles sin instrumentar el modelo y cubren los ejes de la dinámica vehicular: el vertical, el lateral y el longitudinal.
 
 \subsubsection{Frecuencia propia de la suspensión}
 
@@ -367,7 +369,7 @@ El valor $R^2$ es el coeficiente de determinación, que es una medida de compara
 		Modelo & $f_n$ medida (Hz) & $\zeta$ & $R^2$ & Predicción (Hz) & Vehículo real (Hz) \\
 		\hline
 		FF1600 & $2{,}44$ & $0{,}56$ & $0{,}969$ & $2{,}42$ & $1{,}5$--$2{,}0$ \\
-		E36    & $1{,}33$ & $0{,}45$ & $0{,}987$ & $1{,}24$ & $0{,}5$--$1{,}5$ \\
+		E36    & $1{,}36$ & $0{,}44$ & $0{,}989$ & $1{,}24$ & $0{,}5$--$1{,}5$ \\
 		Civic  & $1{,}67$ & $0{,}61$ & $0{,}966$ & $1{,}16$ & $0{,}5$--$1{,}5$ \\
 		\hline
 	\end{tabular}
@@ -473,10 +475,160 @@ Los resultados son consistentes con la cota mencionada anteriormente. Las desace
 Los valores pico superan la cota mencionada anteriormente porque corresponden a momentos transitorios en el momento de aplicar el freno, cuando la transferencia de pesos por el cabeceo del chasis incrementa la carga normal en el eje delantero, además de que la resistencia aerodinámica y de rodadura están más presentes a altas velocidades.
 
 
+\subsubsection{Verificación cinemática de la suspensión}
+
+Para comprobar que las suspensiones están bien ensambladas y se comportan como deben geométricamente se comparó su cinemática simulada con la solución analítica de los mecanismos que representan. Vistas desde el plano transversal tanto la suspensión de doble triángulo como la McPherson son mecanismos planos de un solo grado de libertad (\textit{four bar linkage} para doble triángulo y \textit{four bar linkage with slider} para McPherson). Si se fija un ángulo de entrada, se pueden calcular las posiciones de todas las piezas de forma cerrada \cite{ual_tmm_posicion}. \\
+Para esta prueba se simuló una esquina aislada, barriendo la carga vertical. Se toma el ángulo de entrada registrado en cada instante y a partir de él se calcula la posición del centro de la rueda y la caída (\textit{camber}).
+
+\subsubsection{Doble triángulo}
+
+Es un cuadrilátero articulado (figura~\ref{fig:cuadrilatero}). El brazo superior gira alrededor de su pivote $A$, haciendo que la rótula superior $C$ recorra una circunferencia de radio $a$.  La rótula inferior $D$ debe estar a distancia $h$ de $C$ porque el mangueto es rígido y a distancia $b$ de $B$, porque también lo es el brazo inferior, es decir, es la intersección de dos circunferencias:
+
+\begin{equation}
+	C(\varphi) = \bigl(a\cos\varphi,\; u - a\sin\varphi\bigr), \qquad
+	\lVert D - C \rVert = h, \qquad \lVert D - B \rVert = b
+\end{equation}
+
+Esa intersección tiene solución cerrada \cite{bourke_circles}, con dos soluciones que corresponden a las dos formas de armar el mecanismo \cite{ual_tmm_posicion}, se toma la que deja el mangueto hacia abajo. El centro de rueda $W$ es el punto medio del mangueto y la caída es su inclinación con respecto de la vertical, que se toma como negativa cuando la parte superior de la rueda se inclina hacia el chasis \cite{kistler_camber}.
+
+
+\begin{figure}[H]
+	\centering
+	\shorthandoff{<>}% babel-spanish activa < y >, que TikZ usa en las flechas
+	\begin{tikzpicture}[scale=11, >=Stealth,
+		pt/.style={circle, fill=black, inner sep=1.2pt},
+		piv/.style={circle, draw=black, fill=white, inner sep=1.6pt}]
+		\fill[gray!15] (-0.16,-0.22) rectangle (-0.10,0.32);
+		\draw[gray!60] (-0.10,-0.22) -- (-0.10,0.32);
+		\node[gray!70!black, rotate=90] at (-0.13,0.05) {\small chasis};
+		\draw[gray!50, dashed] (0,0.25) -- (0.30,0.25);
+		\coordinate (A) at (0,0.25);
+		\coordinate (B) at (-0.08,-0.15);
+		\coordinate (C) at (0.2819,0.1474);
+		\coordinate (D) at (0.2859,-0.2526);
+		\coordinate (W) at ($(C)!0.5!(D)$);
+		\draw[very thick, blue!60!black] (A) -- node[above, sloped, pos=0.7] {\small $a$} (C);
+		\draw[very thick, blue!60!black] (B) -- node[below, sloped] {\small $b$} (D);
+		\draw[very thick, red!60!black] (C) -- node[left, pos=0.25] {\small $h$} (D);
+		\draw[->] (0.07,0.25) arc[start angle=0, end angle=-20, radius=0.07];
+		\node at (0.095,0.232) {\small $\varphi$};
+		\node[piv, label=above left:{\small $A$}] at (A) {};
+		\node[piv, label=below left:{\small $B$}] at (B) {};
+		\node[pt,  label=above right:{\small $C$}] at (C) {};
+		\node[pt,  label=below right:{\small $D$}] at (D) {};
+		\node[pt,  fill=red!60!black, label=right:{\small $W$}] at (W) {};
+		\draw[<->, gray] (-0.04,0) -- node[left] {\small $u$} (-0.04,0.25);
+		\draw[<->, gray] (-0.04,0) -- node[left] {\small $\ell$} (-0.04,-0.15);
+		\draw[gray!50, densely dotted] (-0.04,0.25) -- (A);
+		\draw[gray!50, densely dotted] (-0.04,-0.15) -- (B);
+	\end{tikzpicture}
+	\caption[Cuadrilátero articulado de la suspensión de doble triángulo]{Suspensión de
+		doble triángulo en el plano transversal: pivotes $A$ y $B$ en el chasis, rótulas $C$ y
+		$D$ y centro de rueda $W$. La línea discontinua es la posición del brazo superior para
+		$\varphi = 0$.}
+	\label{fig:cuadrilatero}
+\end{figure}
+
+\subsubsection{McPherson}
+
+Este mecanismo es una biela-manivela invertida (Figura~\ref{fig:mcpherson-esquema}): el brazo inferior gira alrededor de $B$, el mangueto se une a él en la rótula $D$, y el amortiguador que es solidario al mangueto desde su anclaje $S$ se desliza a través del apoyo superior $T$. En este ejemplo la entrada es el ángulo $\theta$ del brazo inferior, que ubica a $D$ sobre una circunferencia de radio $a$ centrada en $B$. Como el mangueto es rígido, la distancia de $T$ a $D$ fija el largo $s$ del amortiguador mediante un triángulo rectángulo \cite{ual_tmm_invertida}:
+
+\begin{equation}
+	D(\theta) = B + a\,(\cos\theta,\; \sin\theta), \qquad
+	s = \sqrt{\lVert D - T \rVert^2 - h_\perp^2} \;-\; r_\parallel
+\end{equation}
+donde $r_\parallel$ y $h_\perp$ son las componentes, paralela y perpendicular al
+amortiguador, del segmento que va de $S$ a $D$. El ángulo que gira el amortiguador para
+pasar por $D$ es el giro del mangueto, que es directamente la caída.
+
+\begin{figure}[H]
+	\centering
+	\shorthandoff{<>}% babel-spanish activa < y >, que TikZ usa en las flechas
+	\begin{tikzpicture}[scale=8.5, >=Stealth,
+		pt/.style={circle, fill=black, inner sep=1.2pt},
+		piv/.style={circle, draw=black, fill=white, inner sep=1.6pt}]
+		\fill[gray!15] (-0.19,-0.20) rectangle (-0.13,0.70);
+		\draw[gray!60] (-0.13,-0.20) -- (-0.13,0.70);
+		\node[gray!70!black, rotate=90] at (-0.16,0.25) {\small chasis};
+		\fill[gray!15] (-0.13,0.645) rectangle (0.18,0.70);
+		\draw[gray!60] (-0.13,0.645) -- (0.18,0.645);
+		\draw[gray!50, dashed] (-0.11,-0.0465) -- (0.24,-0.0465);
+		\coordinate (B) at (-0.11,-0.0465);
+		\coordinate (T) at (0.1219,0.6167);
+		\coordinate (D) at (0.2296,-0.1312);
+		\coordinate (S) at (0.1969,0.0900);
+		\coordinate (W) at (0.2935,-0.0132);
+		\fill[gray!25] (S) -- (W) -- (D) -- cycle;
+		\draw[gray!60] (S) -- (W) -- (D) -- cycle;
+		\draw[very thick, blue!60!black] (B) -- node[below, sloped] {\small $a$} (D);
+		\draw[very thick, red!60!black] (T) -- node[right, pos=0.45] {\small $s$} (S);
+		\draw[gray!50, densely dotted] (T) -- ++(0,-0.20);
+		\draw[->] (0.05,-0.0465) arc[start angle=0, end angle=-14, radius=0.16];
+		\node at (0.075,-0.068) {\small $\theta$};
+		\node[piv, label=below left:{\small $B$}] at (B) {};
+		\node[piv, label=right:{\small $T$}] at (T) {};
+		\node[pt,  label=below right:{\small $D$}] at (D) {};
+		\node[pt,  label=left:{\small $S$}] at (S) {};
+		\node[pt,  fill=red!60!black, label=right:{\small $W$}] at (W) {};
+	\end{tikzpicture}
+	\caption[Biela-manivela invertida de la suspensión McPherson]{Suspensión McPherson
+		delantera del E36 en el plano transversal, con el brazo inferior girado
+		$\theta = -14^\circ$: articulaciones $B$ y $T$ en el chasis, rótula $D$, anclaje del
+		amortiguador $S$ y centro de rueda $W$, estos tres últimos sobre el mangueto. La línea
+		discontinua es la posición del brazo para $\theta = 0$.}
+	\label{fig:mcpherson-esquema}
+\end{figure}
+
+\subsubsection{Resultados de la verificación}
+Se probaron tres configuraciones:  el doble triángulo con brazos iguales, que utilizan el FF1600 y el Civic, en el cual la caída se mantiene constante, un doble triángulo con brazos desiguales, en el que la caída varía con el recorrido y la McPherson delantera del E36. La Tabla~\ref{tab:cinematica} y las Figuras~\ref{fig:cinematica}
+y~\ref{fig:cinematica-mcpherson} reúnen los resultados.
+
+\begin{table}[H]
+	\centering
+	\small
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular}{lccccc}
+		\hline
+		Configuración & Recorrido & Desplaz. & Variación & Error & Error \\
+		&           & lateral  & de caída  & posición & caída \\
+		& (mm) & (mm) & (grados) & (m) & (grados) \\
+		\hline
+		Doble triángulo, iguales    & $287{,}9$ & $80{,}2$ & $0{,}00$ & $3{,}6\times10^{-16}$ & $4{,}9\times10^{-14}$ \\
+		Doble triángulo, desiguales & $307{,}4$ & $74{,}1$ & $3{,}13$ & $3{,}6\times10^{-16}$ & $4{,}7\times10^{-14}$ \\
+		McPherson (E36)             & $227{,}6$ & $34{,}5$ & $5{,}52$ & $5{,}0\times10^{-16}$ & $4{,}0\times10^{-14}$ \\
+		\hline
+	\end{tabular}
+	\caption[Verificación cinemática de las suspensiones]{Comparación entre la cinemática
+		simulada de \texttt{DoubleWishbone} y \texttt{McPherson} y la solución analítica de los
+		mecanismos planos que representan. Los errores son los máximos sobre todo el barrido.}
+	\label{tab:cinematica}
+\end{table}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{img/cinematica.pdf}
+	\caption[Cinemática del doble triángulo frente a la solución analítica]{Trayectoria
+		del centro de rueda (izquierda) y caída (derecha) del doble triángulo en función del
+		recorrido vertical. Las líneas corresponden a la solución analítica y los marcadores a
+		la simulación.}
+	\label{fig:cinematica}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{img/cinematica_mcpherson.pdf}
+	\caption[Cinemática de la McPherson frente a la solución analítica]{Trayectoria del
+		centro de rueda (izquierda) y caída (derecha) de la McPherson delantera del E36 en
+		función del recorrido vertical. Las líneas corresponden a la solución analítica y los
+		marcadores a la simulación.}
+	\label{fig:cinematica-mcpherson}
+\end{figure}
+
+El mínimo error que tiene se da por la precisión de la máquina en los tres casos. Es lo esperable, ya que \verb|JointRRR| y \verb|JointRRP| resuelven sus lazos con soluciones cerradas equivalentes \cite{msl_multibody}. El ensayo no evalúa la integración numérica, sino que el modelo está bien construido, la ubicación de los pivotes, las longitudes de los brazos y la posición del centro de rueda coinciden con lo que debería pasar en un vehículo real.
 
 \subsubsection{Discusión sobre la fidelidad}
 
-Tres de los cuatro ensayos dan resultados satisfactorios y el cuarto identifica una limitación concreta.
+Cuatro de los cinco ensayos dan resultados satisfactorios y el cuarto identifica una limitación concreta.
 
 La contabilidad de las masas cierra con un error menor al $1{,}5\%$ con respecto a la suma de las masas declaradas, lo que valida la ley de contacto, la propagación del radio del neumático y el ensamblaje completo del vehículo. El comportamiento en frenada se corresponde a la cota del coeficiente de fricción y tiene valores coherentes con vehículos reales. El ensayo vertical sitúa tanto al E36 como al FF1600 dentro del rango esperado para la clase de vehículos que son.
 
@@ -531,9 +683,9 @@ Para separar el costo propio del modelo del que introduce la interacción, cada 
  & \multicolumn{3}{c}{Latencia entrada$\rightarrow$pose} & \multicolumn{3}{c}{Integración por paso} & \multicolumn{2}{c}{Pasos $>10$ ms} \\
 Vehículo & p50 & p95 & p99 & p50 & p95 & p99 & viva & const. \\
 \hline
-FF1600 & $15{,}1$ & $22{,}0$ & $27{,}1$ & $6{,}69$ & $14{,}28$ & $18{,}72$ & $29{,}0\%$ & $0{,}03\%$ \\
-E36    & $13{,}1$ & $18{,}4$ & $26{,}5$ & $3{,}81$ & $9{,}49$  & $14{,}11$ & $3{,}8\%$  & $0{,}03\%$ \\
-Civic  & $15{,}6$ & $24{,}3$ & $30{,}7$ & $7{,}24$ & $16{,}30$ & $21{,}64$ & $34{,}9\%$ & $0{,}03\%$ \\
+FF1600 & $15{,}5$ & $23{,}8$ & $28{,}8$ & $7{,}08$ & $16{,}43$ & $20{,}27$ & $34{,}6\%$ & $0{,}07\%$ \\
+E36    & $15{,}4$ & $22{,}4$ & $27{,}7$ & $7{,}28$ & $14{,}82$ & $18{,}93$ & $32{,}7\%$ & $0{,}02\%$ \\
+Civic  & $16{,}1$ & $25{,}6$ & $32{,}0$ & $7{,}93$ & $17{,}70$ & $22{,}99$ & $39{,}2\%$ & $0{,}02\%$ \\
 \hline
 \end{tabular}
 \caption[Perfil del lazo cerrado en tiempo real]{Percentiles en milisegundos medidos sobre $45$ s de conducción real con cada vehículo, con paso de comunicación de $10$ ms y tolerancia $10^{-6}$. Las dos últimas columnas indican la fracción de pasos cuya integración excede el presupuesto de $10$ ms, con entrada viva y con la entrada constante de la condición de control.}
@@ -543,7 +695,7 @@ Civic  & $15{,}6$ & $24{,}3$ & $30{,}7$ & $7{,}24$ & $16{,}30$ & $21{,}64$ & $34
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.86\textwidth]{img/latencia_lazo.pdf}
-\caption[Distribución de la latencia del lazo cerrado]{Distribución acumulada de la latencia entrada$\rightarrow$pose para los tres vehículos. Los puntos marcan los percentiles $95$ y $99$. La mediana se sitúa entre $13$ y $16$ ms y la cola no supera los $31$ ms en el percentil $99$.}
+\caption[Distribución de la latencia del lazo cerrado]{Distribución acumulada de la latencia entrada$\rightarrow$pose para los tres vehículos. Los puntos marcan los percentiles $95$ y $99$. La mediana se sitúa entre $15$ y $16$ ms y la cola no supera los $32$ ms en el percentil $99$.}
 \label{fig:latencialazo}
 \end{figure}
 
@@ -554,20 +706,20 @@ Civic  & $15{,}6$ & $24{,}3$ & $30{,}7$ & $7{,}24$ & $16{,}30$ & $21{,}64$ & $34
 \label{fig:pasolazo}
 \end{figure}
 
-Las nueve corridas completan su horizonte con un factor de $1{,}00\times$ respecto del reloj de tiempo real y sin descartar una sola pose. Se emitieron entre $22\,500$ y $22\,700$ datagramas por corrida, cinco por paso. La sincronización se mantiene con un período mediano de $10{,}07$ ms frente a los $10$ ms nominales.
+Las seis corridas completan su horizonte con un factor de $1{,}00\times$ respecto del reloj de tiempo real y sin descartar una sola pose. Se emitieron entre $22\,500$ y $22\,510$ datagramas por corrida, cinco por paso. La sincronización se mantiene con un período mediano de $10{,}08$ ms frente a los $10$ ms nominales.
 
-Con medianas de $13$ a $16$ ms y percentiles $99$ de $26$ a $31$ ms, la contribución del modelo equivale a entre una y dos tramas a $60$ Hz. La antigüedad mediana del comando al aplicarse es de $7{,}6$ ms, mientras que la integración mediana cuesta entre $3{,}8$ y $7{,}2$ ms. Es decir aproximadamente la mitad de la latencia no viene de la simulación sino de la espera del comando, sin embargo, siguen siendo valores bajos e imperceptibles para el humano.
+Con medianas de $15$ a $16$ ms y percentiles $99$ de $28$ a $32$ ms, la contribución del modelo equivale a entre una y dos tramas a $60$ Hz. La antigüedad mediana del comando al aplicarse es de $7{,}2$ ms, mientras que la integración mediana cuesta entre $7{,}1$ y $7{,}9$ ms. Es decir aproximadamente la mitad de la latencia no viene de la simulación sino de la espera del comando, sin embargo, siguen siendo valores bajos e imperceptibles para el humano.
 
-Esta espera viene de la frecuencia de actualización del periférico. La separación mediana entre datagramas de comandos es de $15{,}60$ ms, equivalente a $64{,}1$ Hz, y no a los $100$ Hz que la aplicación de control asume. Elevar esta frecuencia reduciría el término dominante de la latencia. Un detalle a tener en cuenta es que la base utilizada en estas pruebas reporta una frecuencia de $1000$ Hz, por lo que esa limitante probablemente venga de la implementación de \textit{DeviceDrivers}.
+Esta espera viene de la frecuencia de actualización del periférico. La separación mediana entre datagramas de comandos es de $15{,}56$ ms, equivalente a $64{,}3$ Hz, y no a los $100$ Hz que la aplicación de control asume. Elevar esta frecuencia reduciría el término dominante de la latencia. Un detalle a tener en cuenta es que la base utilizada en estas pruebas reporta una frecuencia de $1000$ Hz, por lo que esa limitante probablemente venga de la implementación de \textit{DeviceDrivers}.
 
-Con la entrada constante, la integración cuesta entre $0{,}30$ y $0{,}42$ ms por paso, con el conductor real, entre $3{,}81$ y $7{,}24$ ms. El factor es de $11{,}0$ a $14{,}3$ según el vehículo. La causa de esto es la variación generada por la entrada: cada actualización del comando introduce un escalón en la señal mantenida, y con actualizaciones cada $15{,}6$ ms, prácticamente todo paso arrastra una perturbación que obliga al integrador a reducir el paso interno para recuperar la exactitud.
+Con la entrada constante, la integración cuesta entre $0{,}45$ y $0{,}49$ ms por paso, con el conductor real, entre $7{,}08$ y $7{,}93$ ms. El factor es de $12{,}0$ a $13{,}2$ según el vehículo. La causa de esto es la variación generada por la entrada: cada actualización del comando introduce un escalón en la señal mantenida, y con actualizaciones cada $15{,}6$ ms, prácticamente todo paso arrastra una perturbación que obliga al integrador a reducir el paso interno para recuperar la exactitud.
 
-La consecuencia de esto es que las mediciones de lazo abierto obtenidas anteriormente, y particularmente los márgenes de $2{,}4\times$ a $16{,}1\times$ de la figura~\ref{fig:tiemporeal} son correctos para lo que miden, pero su comparación no es directa con la operación interactiva.
+La consecuencia de esto es que las mediciones de lazo abierto obtenidas anteriormente, y particularmente los márgenes de $2{,}4\times$ a $25{,}3\times$ de la figura~\ref{fig:tiemporeal} son correctos para lo que miden, pero su comparación no es directa con la operación interactiva.
 
 
 % \paragraph{La media no es la magnitud que importa.} Entre el $3{,}8\,\%$ y el $34{,}9\,\%$ de los pasos exceden el presupuesto de $10$ ms y, sin embargo, el lazo sostiene $1{,}00\times$ el tiempo real. La aparente contradicción se explica porque el acompasamiento solo espera cuando hay holgura: un paso de $16$ ms se compensa con los siguientes, que no duermen. En promedio el presupuesto se cumple; instante a instante, no. Contra la condición de control, donde apenas un paso de tres mil excede el presupuesto, queda claro que la ocupación pasa de un $4\,\%$ a un rango del $38$ al $72\,\%$ al cerrar el lazo con un conductor real. La holgura sigue existiendo, pero es un factor y no un orden de magnitud.
 
-La extracción de las cinco poses y su conversión a cuaternión consumen entre $0{,}14$ y $0{,}20$ ms por paso, esto es, del $2$ al $3\%$ del total. La elección de Python para la aplicación de control no penaliza demasiado, la totalidad del costo reside en la integración, que ocurre en el código compilado de SUNDIALS.
+La extracción de las cinco poses y su conversión a cuaternión consumen entre $0{,}19$ y $0{,}22$ ms por paso, equivalente a un $3\%$ del total. La elección de Python para la aplicación de control no penaliza demasiado, la totalidad del costo reside en la integración, que ocurre en el código compilado de SUNDIALS.
 
 
 \subsection{Limitaciones de esta medición} 
