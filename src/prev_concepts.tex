@@ -354,6 +354,16 @@ Elemento de fuerza que conecta un resorte lineal en paralelo con un amortiguador
 \subsubsection{WorldForce / WorldForceAndTorque}
 Aplican un vector de fuerza y adicionalmente un vector de torque, respectivamente, sobre el marco al que se conectan, resueltos en el marco global. Se emplean para agregar en el modelo las fuerzas de contacto con el suelo y la fricción calculadas en el paquete \verb|Roads|.
 
+\subsubsection{LineForceWithMass}
+Aplica una fuerza a lo largo de una recta que une \verb|frame_a| y \verb|frame_b|, pero no define esa fuerza, esta es tomada por los componentes de la biblioteca traslacional que se conecten entre sus dos bridas, \verb|flange_a| y \verb|flange_b|, que ven como desplazamiento la distancia entre ambos marcos \cite{msl_multibody}. En este trabajo se usa como puente entre el dominio tridimensional y el unidimensional, para montar los topes de las suspensiones sobre la línea del amortiguador.
+
+
+\subsubsection{ElastoGap}
+
+Este elemento no pertenece a la biblioteca \verb|MultiBody|, pero es parte de la librería estándar traslacional de Modelica, \verb|Translational| y es útil conocer su funcionamiento para entender los modelos de suspensión.
+
+\verb|ElastoGap| modela un resorte-amortiguador que solo actúa cuando hay contacto, es útil para modelar contactos entre elementos y su carcasa \cite{msl_translational}. Mientras el desplazamiento relativo $s_\text{rel}$ es mayor que la holgura $s_\text{rel0}$ no ejerce fuerza, al cerrarse, aparece una fuerza de rigidez $c$ y amortiguamiento $d$. El amortiguamiento se limita para que la fuerza nunca supere a la elástica, de modo que el contacto solo empuja \cite{msl_translational}.  Se utiliza como tope de carrera de las suspensiones: dos \verb|ElastoGap| sobre el \verb|LineForceWithMass| del amortiguador, uno para la compresión y otro para la extensión, que detienen el recorrido antes de que el mecanismo llegue a una posición singular.
+
 \subsection*{Visualización}
 
 

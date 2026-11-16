@@ -127,6 +127,10 @@ El sistema ya tiene lo necesario para hacerlo. Las fuerzas que tienen que enviar
 
 Entre las mejoras de rendimiento, una mejora potencial no está en el modelo sino en la entrada que le llega. Los comandos del conductor se reciben en intervalos discretos y se mantienen constantes entre actualizaciones, por lo que cada actualización genera un escalón que el integrador debe procesar, reduciendo el paso. Reconstruir el comando de forma continua (interpolando entre muestras por ejemplo) eliminaría estas discontinuidades sin alterar la física.
 
+\subsection{Topes de suspensión sin eventos}
+
+Los topes de la suspensión son la fuente más probable de los eventos que encarecen y vuelven frágil la integración de algunos modelos.  Una alternativa es reemplazar \verb|ElastoGap| por un componente propio, con una ley de contacto suave en todo su recorrido. A esto se le suma hacer más experimentos con diferentes rigideces de topes, para reducir el modo que se aplica cuando el \verb|ElastoGap| está en contacto.
+
 % Entre las mejoras de rendimiento, la de mayor efecto potencial no está en el modelo sino en su entrada. Los comandos del conductor llegan a intervalos discretos y se mantienen constantes entre actualizaciones, de modo que cada actualización introduce un escalón que el integrador debe absorber reduciendo el paso. Reconstruir el comando de forma continua —interpolando entre muestras, o filtrando la señal con una constante de tiempo pequeña frente a la respuesta del vehículo pero grande frente al paso de comunicación— eliminaría esas discontinuidades sin alterar la física.
 
 % Es la aplicación directa de la lección que atraviesa todo el capítulo de experimentos, y la que mejor relación ofrece entre esfuerzo de implementación y margen de cómputo recuperado.

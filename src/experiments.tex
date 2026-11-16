@@ -284,7 +284,9 @@ La medición más relevante para observar es la magnitud absoluta del error. Con
 
 Hay un patrón que se repite en todos los experimentos realizados: la dificultad numérica observada se atribuye a una no linealidad conmutativa y no al tamaño del sistema ni a la complejidad cinemática.
 
-Se observó que la saturación del círculo de fricción degrada la convergencia de un factor $41$ a un factor $3{,}3$, haciendo que se invalide la maniobra agresiva para la prueba de exactitud.
+Se observó que la saturación del círculo de fricción degrada la convergencia de un factor $41$ a un factor $3{,}3$, haciendo que se invalide la maniobra agresiva para la prueba de exactitud. \\
+
+Además, los topes de suspensión fueron la fuente de las fallas de integración más persistentes en las pruebas. Esto se puede deber a que el componente \verb*|ElastoGap| genera eventos cada vez que hay un contacto, haciendo que el integrador tenga que localizar el instante exacto del cruce, detenerse y reiniciar la integración con un paso pequeño y de orden bajo. Sumado a eso, mientras el tope está en contacto, su rigidez de $10^7$ N/m introduce un modo de alrededor de $80$ Hz sobre la masa no suspendida, mucho más rápido que la dinámica de marcha, que obliga a reducir el paso.
 
 La lección aprendida con estas pruebas es que rinde más invertir esfuerzo en suavizar de forma controlada las conmutaciones antes que ajustar los parámetros del integrador. Una discontinuidad que se encuentra en una condición de operación habitual puede costar más que el resto del modelo.
 
