@@ -1296,6 +1296,31 @@ FMPy es una implementación del estándar FMI en Python \cite{fmpy} y es la que 
 
 El segundo componente utilizado es \verb|CVodeSolver|, un enlace a la biblioteca SUNDIALS \cite{hindmarsh2005} que provee el integrador CVODE \cite{cohen1995}. Este es el mismo algoritmo empleado en OpenModelica, pero con una implementación y entorno diferentes, lo que nos permite evitar ciertos problemas que presentaba el entorno de OpenModelica, que resultaron claves para la ejecución de algunos experimentos.
 
+\subsubsection{Funcionamiento de la aplicación de control}
+Se explica a continuación el funcionamiento de la aplicación de control, cuyos pasos se ejecutan en el orden establecido:
+\begin{enumerate}
+	\item Se toma como argumento el FMU exportado desde OpenModelica, junto con otros parámetros como el tamaño del paso y los puertos de entrada/salida de información.
+	\item Se crea un objeto \verb|FMU2Model| que toma como argumento la dirección donde se encuentra el FMU y se verifica que tanto sus entradas como salidas respeten la interfaz definida.
+	\item Se crean dos hilos concurrentes, uno que escucha y otro que envía información en los puertos especificados.
+	\begin{itemize}
+		\item Se toma como válida solo la última pose recibida en la entrada, debido a que tomar valores anteriores haría inconsistente la simulación.
+		\item Se envían de forma indiscriminada los paquetes de pose al puerto indicado, no se espera un acuse de recibo del visualizador, el procesamiento de estos paquetes depende del receptor.
+	\end{itemize}
+	\item Se inicializa el objeto \verb|FMU2Model| utilizando las propias herramientas de la librería, se fija el tiempo inicial en 0.
+	\item Se crea un objeto \verb|CVodeSolver| de la librería SUNDIALS, definiendo sus funciones \textit{get} y \textit{set} con las propias del \verb|FMU2Model| creado y usando el tamaño de paso especificado.
+	\item Se inicia el bucle de la simulación:
+		\begin{itemize}
+			\item Se reciben los últimos comandos enviados por la interfaz de hardware.
+			\item Estos son asignados a las variables que actúan como entrada del modelo usando el método \verb|setReal| de \verb|FMU2Model|.
+			\item La simulación avanza una unidad de tiempo igual al tamaño de paso utilizando el método \verb|step| de \verb|CVodeSolver|.
+			\item Si hay eventos, estos se procesan utilizando el modo \textit{event} de \verb|FMU2Model|, luego, se reinicializa \verb|CVodeSolver| y continúa la ejecución.
+			\item Se leen las variables que actúan como salida del modelo utilizando el método \verb|getReal| de \verb|FMU2Model| y se transforma la orientación a cuaterniones.
+			\item Se envía la pose por el puerto especificado.
+			\item Se vuelve a comenzar desde el punto $6.$
+		\end{itemize}
+	\item Cuando se recibe la orden de finalizar, se cierran los hilos de transmisión/recepción y se termina de forma prolija la instancia de \verb|FMU2Model|.
+\end{enumerate}
+
  % es precisamente esa independencia la que permite eludir los defectos del entorno de OpenModelica documentados en el Apéndice~\ref{sec:appendix}.
 
 
